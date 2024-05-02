@@ -111,6 +111,7 @@ public class MenuBar
                     if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, 25 * ImGuiHelpers.GlobalScale)))
                     {
                         Service.CharDataManager.SetCharacter(CharSelector.SelectByName(historyEntry.FirstName, historyEntry.LastName, historyEntry.WorldName));
+                        Service.MainWindow.IsPartyView = false;
                         ImGui.CloseCurrentPopup();
                     }
 
