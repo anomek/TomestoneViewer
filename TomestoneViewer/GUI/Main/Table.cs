@@ -163,20 +163,25 @@ public class Table
 
         if (ImGui.BeginCombo("##EncounterLayoutCombo", comboPreview, ImGuiComboFlags.HeightLargest))
         {
-            foreach (var encounter in allLocations)
+            ImGui.Separator();
+            foreach (var category in EncounterLocation.LOCATIONS)
             {
-                var name = encounter.DisplayName;
-
-                if (ImGui.Selectable(name))
+                foreach (var encounter in category.Locations)
                 {
-                    Service.CharDataManager.CurrentEncounterDisplayName = encounter.DisplayName;
+                    var name = encounter.DisplayName;
+
+                    if (ImGui.Selectable(name))
+                    {
+                        Service.CharDataManager.CurrentEncounterDisplayName = encounter.DisplayName;
+                    }
                 }
+
+                ImGui.Separator();
             }
 
             ImGui.EndCombo();
         }
     }
-
 
     private void DrawEncounterStatus(CharData character, string? locationDisplayName)
     {
