@@ -1,12 +1,9 @@
-using System;
-using System.Linq;
 using System.Numerics;
-using Dalamud.Game.ClientState.Keys;
+
 using Dalamud.Interface;
-using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
-using TomestoneViewer.Manager;
 using ImGuiNET;
+using TomestoneViewer.Manager;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -40,11 +37,10 @@ public class MenuBar
             //---------------
             ImGui.PushFont(UiBuilder.IconFont);
             var x = ImGui.GetContentRegionAvail().X
-                - ImGui.CalcTextSize(swapViewIcon.ToIconString()).X
                 - ImGui.CalcTextSize(FontAwesomeIcon.Cog.ToIconString()).X
                 - ImGui.CalcTextSize(FontAwesomeIcon.History.ToIconString()).X
-                - (ImGui.GetStyle().ItemSpacing.X * 1);
-            
+                - (ImGui.GetStyle().ItemSpacing.X * 2.5f); // why 2.5f works here? no idea, but it looks ok
+
             if (x > 0)
             {
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + x);
@@ -65,7 +61,6 @@ public class MenuBar
             Util.SetHoverTooltip("History");
 
             DrawHistoryPopup();
-
 
             //---------------------
             // Configuration button

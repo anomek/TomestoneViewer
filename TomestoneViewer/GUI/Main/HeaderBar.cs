@@ -21,14 +21,7 @@ public class HeaderBar
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4 * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y));
 
         var buttonsWidth = GetButtonsWidth();
-        var minWindowSize = GetMinWindowSize();
 
-        if (ImGui.GetWindowSize().X < minWindowSize)
-        {
-            ImGui.SetWindowSize(new Vector2(minWindowSize, -1));
-        }
-
-        // I hate ImGui
         var contentRegionAvailWidth = ImGui.GetContentRegionAvail().X;
 
         var calcInputSize = (contentRegionAvailWidth - (ImGui.GetStyle().ItemSpacing.X * 2) - buttonsWidth) / 3;

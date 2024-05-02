@@ -14,8 +14,6 @@ public class Configuration : IPluginConfiguration
 
     public int Version { get; set; } = CurrentConfigVersion;
 
-    public string? DefaultEncounterDisplayName { get; set; }
-
     public void Save()
     {
         Service.Interface.SavePluginConfig(this);

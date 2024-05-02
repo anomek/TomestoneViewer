@@ -1,3 +1,4 @@
+using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -11,12 +12,17 @@ public class MainWindow : Window
     private readonly Table table = new();
 
     public MainWindow()
-        : base("Tomestone Viewer##TomestoneViewerMainWindow")
+        : base("Tomestone Viewer##TomestoneViewerMainWindow10")
     {
         this.RespectCloseHotkey = true;
         this.Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar;
     }
 
+    public override void PreDraw()
+    {
+        base.PreDraw();
+        ImGui.SetNextWindowSize(new Vector2(HeaderBar.GetMinWindowSize(), -1));
+    }
 
     public void Open(bool takeFocus = true)
     {

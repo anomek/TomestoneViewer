@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
 using Dalamud.Interface;
-using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
-using Dalamud.Utility;
-using TomestoneViewer.Manager;
-using TomestoneViewer.Model;
-using TomestoneViewer.Model.GameData;
 using ImGuiNET;
+using TomestoneViewer.Model;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -60,13 +55,6 @@ public class Table
         // Encounter combo and favourite
         //------------------------------
         this.DrawEncounterComboMenu();
-        ImGui.SameLine();
-        if (Util.DrawButtonIcon(FontAwesomeIcon.Star))
-        {
-            Service.Configuration.DefaultEncounterDisplayName = Service.CharDataManager.CurrentEncounterDisplayName;
-        }
-
-        Util.SetHoverTooltip("Set the current encounter as default");
 
         this.DrawPartyLayout();
     }
@@ -165,28 +153,19 @@ public class Table
         ImGui.SameLine();
 
         var minWidth = allLocations.Select(location => ImGui.CalcTextSize(location.DisplayName).X).Max()
-                               + (30 * ImGuiHelpers.GlobalScale)
-                               + ImGui.CalcTextSize(" (★)").X;
-        var widthFromWindowSize = HeaderBar.GetMinWindowSize() - GetButtonsWidth();
+                               + (30 * ImGuiHelpers.GlobalScale);
+
+        var widthFromWindowSize = ImGui.GetContentRegionAvail().X;
         ImGui.SetNextItemWidth(Math.Max(minWidth, widthFromWindowSize));
 
-        Service.CharDataManager.CurrentEncounterDisplayName ??= Service.Configuration.DefaultEncounterDisplayName;
         Service.CharDataManager.CurrentEncounterDisplayName ??= allLocations[0].DisplayName;
         var comboPreview = Service.CharDataManager.CurrentEncounterDisplayName;
-        if (Service.Configuration.DefaultEncounterDisplayName == comboPreview)
-        {
-            comboPreview += " (★)";
-        }
 
         if (ImGui.BeginCombo("##EncounterLayoutCombo", comboPreview, ImGuiComboFlags.HeightLargest))
         {
             foreach (var encounter in allLocations)
             {
                 var name = encounter.DisplayName;
-                if (Service.Configuration.DefaultEncounterDisplayName == name)
-                {
-                    name += " (★)";
-                }
 
                 if (ImGui.Selectable(name))
                 {
