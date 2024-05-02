@@ -6,23 +6,27 @@ namespace TomestoneViewer;
 
 public class Commands
 {
-    private const string CommandName = "/tomestone";
-    private const string SettingsCommandName = "/tomestoneconfig";
+    private const string CommandName = "/ts";
+    private const string SettingsCommandName = "/tsconfig";
 
     public Commands()
     {
-        Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
-        {
-            HelpMessage = "Toggle the main window.\n" +
-                          "         If given \"party\" or \"p\" as argument, open the party view and refresh the party state.\n" +
-                          "         If given anything else, open the single view and search for a character name.\n" +
-                          "         Support all player character placeholders (<t>, <1>, <mo>, etc.).",
-            ShowInHelp = true,
-        });
 
+        
         Service.CommandManager.AddHandler(SettingsCommandName, new CommandInfo(OnCommand)
         {
             HelpMessage = "Toggle the config window.",
+            ShowInHelp = true,
+        });
+
+        
+
+        Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        {
+            HelpMessage = "Toggle the main window.\n" +
+                  "         If given \"party\" or \"p\" as argument, open the party view and refresh the party state.\n" +
+                  "         If given anything else, open the single view and search for a character name.\n" +
+                  "         Support all player character placeholders (<t>, <1>, <mo>, etc.).",
             ShowInHelp = true,
         });
     }

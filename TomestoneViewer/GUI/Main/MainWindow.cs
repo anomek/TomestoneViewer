@@ -1,9 +1,4 @@
-using System.Numerics;
-using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface.Windowing;
-using TomestoneViewer.Manager;
-using TomestoneViewer.Model;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 
 namespace TomestoneViewer.GUI.Main;

@@ -189,12 +189,6 @@ public class Util
         return (Math.Truncate(magnitude * value.Value) / magnitude).ToString("F" + nbOfDecimalDigits);
     }
 
-    public static void OpenFFLogsLink(CharData charData)
-    {
-        // TODO:
-        // OpenLink($"https://fflogs.com/character/{CharDataManager.GetRegionName(charData.WorldName)}/{charData.WorldName}/{charData.FirstName} {charData.LastName}");
-    }
-
     public static void OpenTomestoneLink(CharData charData)
     {
         OpenLink($"https://tomestone.gg/character-name/{charData.CharId.World}/{charData.CharId.FullName}");
