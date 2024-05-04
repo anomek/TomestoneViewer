@@ -1,38 +1,20 @@
 using System.Numerics;
+
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
-
 public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IEncounterDataError
 {
-
-    private readonly string message = Message;
-    private readonly Vector4 color = Color;
-    private readonly FontAwesomeIcon symbol = Symbol;
-
-    /// <summary>
-    /// Responses with this error can be cached
-    /// </summary>
-    private readonly bool cachable = Cachable;
-
-    public bool Cachable { get => this.cachable; }
-
     /// <summary>
     /// seperate property to know if we can ignore error returned by FetchSummary
     /// in practice this is === !cachable, but it's seperate property in case logic changes in future
     /// </summary>
-    public bool CanIgnore { get => !this.cachable; }
+    public bool CanIgnore => !this.Cachable;
 
-    public bool IsClickable { get => false; }
-
-    public string Message { get => this.message; }
-
-    public Vector4 Color { get => this.color; }
-
-    public FontAwesomeIcon Symbol { get => this.symbol; }
+    public bool IsClickable => false;
 
 
     public static readonly TomestoneClientError CharacterDoesNotExist = new(

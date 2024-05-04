@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
@@ -13,9 +9,11 @@ public class ClientResponse<T>
     private readonly T? value;
     private readonly TomestoneClientError? error;
 
-    public bool HasValue { get => this.value != null; }
+    public bool HasValue => this.value != null;
 
-    public TomestoneClientError Error { get => (TomestoneClient.TomestoneClientError)this.error; }
+    internal bool Cachable => this.error == null || this.error.Cachable;
+
+    public TomestoneClientError Error => (TomestoneClient.TomestoneClientError)this.error;
 
     public bool TryGetValue([MaybeNullWhen(false)] out T value)
     {

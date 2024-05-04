@@ -8,7 +8,7 @@ public class CharacterSummary(List<EncounterId> clearedEncounters)
 {
     private readonly List<EncounterId> clearedEncounters = clearedEncounters;
 
-    public IEnumerable<EncounterId> ClearedEncounters { get => this.clearedEncounters; }
+    public IEnumerable<EncounterId> ClearedEncounters => this.clearedEncounters;
 
     public static CharacterSummary Empty()
     {

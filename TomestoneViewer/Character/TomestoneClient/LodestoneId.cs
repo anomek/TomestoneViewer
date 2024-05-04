@@ -8,12 +8,8 @@ namespace TomestoneViewer.Character.TomestoneClient;
 
 public record LodestoneId(uint Id)
 {
-    private readonly uint id = Id;
-
-    public uint Id { get => this.id; }
-
     public override string ToString()
     {
-        return this.id.ToString();
+        return this.Id.ToString();
     }
 }

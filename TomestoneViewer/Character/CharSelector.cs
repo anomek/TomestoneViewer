@@ -8,31 +8,28 @@ namespace TomestoneViewer.Character;
 
 public class CharSelector
 {
-    private readonly CharacterId? characterId;
-    private readonly CharacterSelectorError? error;
+    internal CharacterId? CharId { get; }
 
-    internal CharacterId? CharId { get => this.characterId; }
-
-    internal CharacterSelectorError? Error { get => this.error; }
+    internal CharacterSelectorError? Error { get; }
 
     private CharSelector(CharacterId charId)
     {
-        this.characterId = charId;
+        this.CharId = charId;
     }
 
     private CharSelector(string firstName, string lastName, string world)
     {
-        this.characterId = new CharacterId(firstName, lastName, world);
+        this.CharId = new CharacterId(firstName, lastName, world);
     }
 
     private CharSelector(CharacterSelectorError charError)
     {
-        this.error = charError;
+        this.Error = charError;
     }
 
     public override string ToString()
     {
-        return this.characterId?.ToString() ?? this.error.Message;
+        return this.CharId?.ToString() ?? this.Error.Message;
     }
 
     public static CharSelector SelectCurrentTarget()

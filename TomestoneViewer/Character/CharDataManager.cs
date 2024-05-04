@@ -16,11 +16,11 @@ public class CharDataManager
     private CharData? displayedChar;
     private CharacterSelectorError? characterSelectorError = CharacterSelectorError.NoCharacterSelected;
 
-    public SearchCharacterId SearchCharacterId { get => this.searchCharacterId; }
+    public SearchCharacterId SearchCharacterId => this.searchCharacterId;
 
-    public CharData? DisplayedChar { get => this.displayedChar; }
+    public CharData? DisplayedChar => this.displayedChar;
 
-    public IReadOnlyList<CharData> PartyMembers { get => this.partyMembers; }
+    public IReadOnlyList<CharData> PartyMembers => this.partyMembers;
 
 
     public string? CurrentEncounterDisplayName
@@ -65,7 +65,7 @@ public class CharDataManager
             {
                 // add new member
                 var charData = new CharData(partyMemberId);
-  
+
                 charData.JobId = partyMember.JobId;
                 this.partyMembers.Add(charData);
             }

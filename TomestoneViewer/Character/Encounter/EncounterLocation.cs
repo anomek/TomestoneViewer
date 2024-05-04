@@ -1,9 +1,8 @@
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using System;
 using System.Collections.Generic;
 
 namespace TomestoneViewer.Character.Encounter;
 
+// FIXME: redesign / cleanup
 public record EncounterLocation
 {
     private static readonly string EndwalkerExpansionQueryParam = "endwalker";

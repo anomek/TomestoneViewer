@@ -12,11 +12,11 @@ public class CharData(CharacterId characterId)
     private readonly CharDataLoader loader = new(characterId);
 
 
-    public ReadOnlyDictionary<string, EncounterData> EncounterData { get => this.loader.EncounterData; }
+    public ReadOnlyDictionary<string, EncounterData> EncounterData => this.loader.EncounterData;
 
-    public IEncounterDataError? CharError { get => this.loader.LoadError; }
+    public IEncounterDataError? CharError => this.loader.LoadError;
 
-    public CharacterId CharId { get => this.characterId; }
+    public CharacterId CharId => this.characterId;
 
     public uint JobId { get; set; } = 0;
 

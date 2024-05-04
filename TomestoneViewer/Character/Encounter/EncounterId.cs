@@ -11,12 +11,8 @@ namespace TomestoneViewer.Character.Encounter;
 /// </summary>
 public record EncounterId(int Id)
 {
-    private readonly int id = Id;
-
-    public int Id { get => this.id; }
-
     public override string ToString()
     {
-        return this.id.ToString();
+        return this.Id.ToString();
     }
 }

@@ -2,17 +2,14 @@ namespace TomestoneViewer.Character.TomestoneClient;
 
 public record EncounterProgress
 {
-    private readonly bool cleared;
-    private readonly string? progress;
+    public bool Cleared { get; }
 
-    public bool Cleared { get => this.cleared; }
-
-    public string? Progress { get => this.progress; }
+    public string? Progress { get; }
 
     private EncounterProgress(bool cleared, string? progress)
     {
-        this.cleared = cleared;
-        this.progress = progress;
+        this.Cleared = cleared;
+        this.Progress = progress;
     }
 
     public static EncounterProgress EncounterCleared()
