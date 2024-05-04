@@ -3,6 +3,8 @@ using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using TomestoneViewer.Character;
+using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -22,7 +24,7 @@ internal class Service
     internal static HistoryManager HistoryManager { get; set; } = null!;
     internal static OpenWithManager OpenWithManager { get; set; } = null!;
     internal static TeamManager TeamManager { get; set; } = null!;
-    internal static TomestoneClient TomestoneClient { get; set; } = null!;
+    internal static ITomestoneClient TomestoneClient { get; set; } = null!;
 
     [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;

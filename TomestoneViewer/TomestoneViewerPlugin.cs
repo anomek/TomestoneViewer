@@ -1,6 +1,8 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using TomestoneViewer.Character;
+using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -25,7 +27,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.OpenWithManager = new OpenWithManager();
         Service.HistoryManager = new HistoryManager();
         Service.TeamManager = new TeamManager();
-        Service.TomestoneClient = new TomestoneClient();
+        Service.TomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
 
         Service.MainWindow = new MainWindow();
         Service.ConfigWindow = new ConfigWindow();

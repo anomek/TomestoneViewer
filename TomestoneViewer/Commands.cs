@@ -1,6 +1,6 @@
 using System;
 using Dalamud.Game.Command;
-using TomestoneViewer.Manager;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
 

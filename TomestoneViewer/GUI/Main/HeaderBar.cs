@@ -2,11 +2,11 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using TomestoneViewer.Manager;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -75,37 +75,27 @@ public class HeaderBar
 
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 2);
 
+        var characterError = Service.CharDataManager.CharacterError;
         var displayChar = Service.CharDataManager.DisplayedChar;
-        if (displayChar != null)
-        {
-            var characterError = displayChar.CharError ?? Service.CharDataManager.CharacterError;
-            if (characterError == null)
-            {
-                if (displayChar.IsDataLoading)
-                {
-                    Util.CenterSelectable($"Loading {displayChar.CharId}...");
-                }
-                else
-                {
-                    if (displayChar.IsDataReady)
-                    {
-                        Util.CenterSelectable($"Viewing {displayChar.CharId}'s logs");
-                        Util.LinkOpenOrPopup(displayChar);
-                    }
-                    else
-                    {
-                        Util.CenterSelectable($"Waiting for {displayChar.CharId} data...");
-                    }
-                }
 
+        if (characterError != null)
+        {
+            if (displayChar != null)
+            {
+                Util.CenterSelectableError(characterError, $"Click to open on Tomestone.gg");
                 Util.LinkOpenOrPopup(displayChar);
-                Util.SetHoverTooltip("Click to open on Tomestone.gg");
             }
             else
             {
-                Util.CenterSelectableError(characterError.Value, $"Click to open on Tomestone.gg");
-                Util.LinkOpenOrPopup(displayChar);
+                Util.CenterError(characterError);
             }
+        }
+        else if (displayChar != null)
+        {
+            Util.CenterSelectable($"{displayChar.CharId}");
+            Util.LinkOpenOrPopup(displayChar);
+
+            Util.SetHoverTooltip("Click to open on Tomestone.gg");
         }
     }
 

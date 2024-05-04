@@ -1,24 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TomestoneViewer.Model;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Lumina.Excel.GeneratedSheets;
 
-namespace TomestoneViewer.Manager;
+using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Model;
+
+namespace TomestoneViewer.Character;
 
 public class CharDataManager
 {
+    private readonly SearchCharacterId searchCharacterId = new();
+    private readonly List<CharData> partyMembers = [];
+
     private string? currentEncounterDisplayName;
+    private CharData? displayedChar;
+    private CharacterSelectorError? characterSelectorError = CharacterSelectorError.NoCharacterSelected;
 
-    public SearchCharacterId SearchCharacterId { get; private set; } = new();
+    public SearchCharacterId SearchCharacterId { get => this.searchCharacterId; }
 
-    public CharData? DisplayedChar { get; private set; }
+    public CharData? DisplayedChar { get => this.displayedChar; }
 
-    public CharacterError? CharacterError { get; private set; }
-
-    public List<CharData> PartyMembers { get; private set; } = [];
+    public IReadOnlyList<CharData> PartyMembers { get => this.partyMembers; }
 
 
     public string? CurrentEncounterDisplayName
@@ -29,6 +31,11 @@ public class CharDataManager
             this.currentEncounterDisplayName = value;
             this.FetchPartyLogs();
         }
+    }
+
+    public IRenderableError? CharacterError
+    {
+        get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.CharError;
     }
 
     public string[] ValidWorlds { get; private set; }
@@ -53,12 +60,14 @@ public class CharDataManager
         {
             var partyMemberId = CharacterId.From(partyMember);
             var member = this.PartyMembers.FirstOrDefault(x => x.CharId == partyMemberId);
+
             if (member == null)
             {
                 // add new member
                 var charData = new CharData(partyMemberId);
+  
                 charData.JobId = partyMember.JobId;
-                this.PartyMembers.Add(charData);
+                this.partyMembers.Add(charData);
             }
             else
             {
@@ -68,56 +77,56 @@ public class CharDataManager
         }
 
         // remove members that are no longer in party
-        foreach (var charData in this.PartyMembers.Where(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y))))
+        foreach (var charData in PartyMembers.Where(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y))))
         {
-            _ = charData.Disable();
+            charData.Disable();
         }
 
-        this.PartyMembers.RemoveAll(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y)));
+        this.partyMembers.RemoveAll(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y)));
 
-        this.PartyMembers = [.. this.PartyMembers.OrderBy(
-            charData => currPartyMembers.FindIndex(
-                member => charData.CharId == CharacterId.From(member)))];
+        //      FIXME: sort party member
+        //       this.partyMembers.Sort(  = [.. PartyMembers.OrderBy(
+        //            charData => currPartyMembers.FindIndex(
+        //                member => charData.CharId == CharacterId.From(member)))];
 
         this.FetchPartyLogs();
     }
 
     public void SetCharacter(CharSelector selector)
     {
-        if (selector.CharError != null)
+        Service.PluginLog.Debug($"CharDataManger.SetCharacter {selector}");
+        if (selector.Error != null)
         {
-            this.CharacterError = selector.CharError.Value;
-            this.DisplayedChar = null;
+            this.characterSelectorError = selector.Error;
+            this.displayedChar = null;
         }
         else if (selector.CharId != null)
         {
             var previousDisplayedChar = this.DisplayedChar;
-            var newCharacterData = new CharData(selector.CharId);
-            this.DisplayedChar = newCharacterData;
+            this.displayedChar = new CharData(selector.CharId);
             if (previousDisplayedChar != null)
             {
-                previousDisplayedChar?.Disable()
-                     .ContinueWith(x => newCharacterData.FetchLogs());
-            }
-            else
-            {
-                this.DisplayedChar.FetchLogs();
+                previousDisplayedChar?.Disable();
             }
 
-            this.CharacterError = null;
-            this.SearchCharacterId.Copy(newCharacterData.CharId);
+            this.displayedChar.FetchLogs();
+            this.characterSelectorError = null;
+            this.searchCharacterId.Copy(this.displayedChar.CharId);
         }
     }
 
     public void Reset()
     {
-        this.PartyMembers.Clear();
-        this.DisplayedChar = null;
+        Service.PluginLog.Debug("CharDataManger.Reset");
+        this.partyMembers.Clear();
+        this.displayedChar = null;
+        this.characterSelectorError = CharacterSelectorError.NoCharacterSelected;
         this.SearchCharacterId.Reset();
     }
 
     private void FetchPartyLogs()
     {
+        Service.PluginLog.Debug("CharDataManger.FetchPartyLogs");
         if (this.CurrentEncounterDisplayName != null)
         {
             foreach (var charData in this.PartyMembers)

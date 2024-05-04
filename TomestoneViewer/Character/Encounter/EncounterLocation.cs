@@ -2,9 +2,9 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using System;
 using System.Collections.Generic;
 
-namespace TomestoneViewer.Model;
+namespace TomestoneViewer.Character.Encounter;
 
-public class EncounterLocation
+public record EncounterLocation
 {
     private static readonly string EndwalkerExpansionQueryParam = "endwalker";
     private static readonly string ShadowbringersExpansionQueryParam = "shadowbringers";
@@ -24,35 +24,35 @@ public class EncounterLocation
                     DisplayName = "TOP",
                     EncounterQueryParam = "the-omega-protocol-ultimate",
                     ExpansionQueryParam = EndwalkerExpansionQueryParam,
-                    Id = 4652,
+                    Id = new(4652),
                 },
                 new()
                 {
                     DisplayName = "DSR",
                     EncounterQueryParam = "dragonsongs-reprise-ultimate",
                     ExpansionQueryParam = EndwalkerExpansionQueryParam,
-                    Id = 4651,
+                    Id = new(4651),
                 },
                 new()
                 {
                     DisplayName = "TEA",
                     EncounterQueryParam = "the-epic-of-alexander-ultimate",
                     ExpansionQueryParam = ShadowbringersExpansionQueryParam,
-                    Id = 3651,
+                    Id = new(3651),
                 },
                 new()
                 {
                     DisplayName = "UWU",
                     EncounterQueryParam = "the-weapons-refrain-ultimate",
                     ExpansionQueryParam = StormbloodExpansionQueryParam,
-                    Id = 2652,
+                    Id = new(2652),
                 },
                 new()
                 {
                     DisplayName = "UCOB",
                     EncounterQueryParam = "the-unending-coil-of-bahamut-ultimate",
                     ExpansionQueryParam = StormbloodExpansionQueryParam,
-                    Id = 2651,
+                    Id = new(2651),
                 },
             ],
         },
@@ -114,11 +114,11 @@ public class EncounterLocation
     public string EncounterQueryParam { get; set; } = null!;
     public string ExpansionQueryParam { get; set; } = null!;
 
-    public int? Id { get; set; }
+    public EncounterId? Id { get; set; }
 
     public class Category
     {
-        
+
         public string DisplayName { get; set; } = null!;
         public string CategoryQueryParam { get; set; } = null!;
         public string ZoneQueryParam { get; set; } = null!;

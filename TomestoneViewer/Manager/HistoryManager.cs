@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TomestoneViewer.Model;
+
 using Newtonsoft.Json;
+using TomestoneViewer.Character;
+using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Manager;
 
@@ -17,18 +19,18 @@ public class HistoryManager
         this.LoadHistory();
     }
 
-    public void AddHistoryEntry(CharData charData)
+    public void AddHistoryEntry(CharacterId characterId)
     {
         lock (this.historyLock)
         {
-            var historyEntry = this.History.FirstOrDefault(entry => entry.CharId == charData.CharId);
+            var historyEntry = this.History.FirstOrDefault(entry => entry.CharId == characterId);
             if (historyEntry != null)
             {
                 historyEntry.LastSeen = DateTime.Now;
             }
             else
             {
-                this.History.Add(HistoryEntry.From(charData.CharId));
+                this.History.Add(HistoryEntry.From(characterId));
             }
 
             this.History.Sort((x, y) => DateTime.Compare(y.LastSeen, x.LastSeen));

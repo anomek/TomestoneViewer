@@ -3,7 +3,7 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
-using TomestoneViewer.Manager;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer.GUI.Main;
 

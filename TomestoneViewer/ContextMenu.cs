@@ -1,10 +1,10 @@
 using System.Linq;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Memory;
-using TomestoneViewer.Manager;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
 

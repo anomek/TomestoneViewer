@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using TomestoneViewer.Manager;
-using TomestoneViewer.Model;
 using ImGuiNET;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
 
@@ -105,33 +105,33 @@ public class Util
         ImGui.PopStyleColor();
     }
 
-    public static void CenterError(CharacterError error)
+    public static void CenterError(IRenderableError error)
     {
-        CenterText(GetErrorMessage(error), GetErrorColor(error));
+        CenterText(error.Message, error.Color);
     }
 
-    public static void CenterTextWithError(string text, CharData charData)
+    public static void CenterTextWithError(string text, IRenderableError? error)
     {
-        CenterText(text, charData.CharError != null ? GetErrorColor(charData.CharError.Value) : null);
+        CenterText(text, error?.Color);
 
-        if (charData.CharError != null)
+        if (error != null)
         {
-            SetHoverTooltip(GetErrorMessage(charData.CharError.Value));
+            SetHoverTooltip(error.Message);
         }
     }
 
-    public static void CenterSelectableError(CharacterError error, string hover)
+    public static void CenterSelectableError(IRenderableError error, string hover)
     {
-        CenterSelectable(GetErrorMessage(error), GetErrorColor(error));
+        CenterSelectable(error.Message, error.Color);
         SetHoverTooltip(hover);
     }
 
-    public static void CenterSelectableWithError(string text, CharData charData)
+    public static void CenterSelectableWithError(string text, IRenderableError? error)
     {
-        CenterSelectable(text, charData.CharError != null ? GetErrorColor(charData.CharError.Value) : null);
-        if (charData.CharError != null)
+        CenterSelectable(text, error?.Color);
+        if (error != null)
         {
-            SetHoverTooltip(GetErrorMessage(charData.CharError.Value));
+            SetHoverTooltip(error.Message);
         }
     }
 
@@ -147,17 +147,15 @@ public class Util
         return ret;
     }
 
-    public static void SelectableWithError(string text, CharData charData)
+    public static void SelectableWithError(string text, IRenderableError? error)
     {
-        var color = charData.CharError != null
-                        ? GetErrorColor(charData.CharError.Value)
-                        : ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
+        var color = error?.Color ?? ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
         ImGui.PushStyleColor(ImGuiCol.Text, color);
         ImGui.Selectable(text);
         ImGui.PopStyleColor();
-        if (charData.CharError != null)
+        if (error != null)
         {
-            SetHoverTooltip(GetErrorMessage(charData.CharError.Value));
+            SetHoverTooltip(error.Message);
         }
     }
 
@@ -241,50 +239,6 @@ public class Util
             stopwatch.Start();
             function();
         }
-    }
-
-    public static string GetErrorMessage(CharacterError error)
-    {
-        return error switch
-        {
-            CharacterError.CharacterNotFoundTomestone => "Character not found on Tomestone.gg",
-            CharacterError.CharacterNotFound => "Character not found",
-            CharacterError.ClipboardError => "Couldn't get clipboard text",
-            CharacterError.GenericError => "An error occured, please try again",
-            CharacterError.HiddenLogs => "Logs are hidden",
-            CharacterError.InvalidTarget => "Not a valid target",
-            CharacterError.InvalidWorld => "World not supported or invalid",
-            CharacterError.MalformedQuery => "Malformed GraphQL query.",
-            CharacterError.MissingInputs => "Please fill first name, last name, and world",
-            CharacterError.NetworkError => "Network error",
-            CharacterError.OutOfPoints => "Ran out of API points, see Layout tab in config for more info.",
-            CharacterError.Unauthenticated => "API Client not valid, check config",
-            CharacterError.Unreachable => "Could not reach FF Logs servers",
-            CharacterError.WorldNotFound => "World not found",
-            _ => "If you see this, something went wrong",
-        };
-    }
-
-    public static bool ShouldErrorBeClickable(CharData charData)
-    {
-        return charData.CharError is
-                   CharacterError.CharacterNotFoundTomestone
-                   or CharacterError.GenericError
-                   or CharacterError.HiddenLogs
-                   or CharacterError.MalformedQuery
-                   or CharacterError.NetworkError
-                   or CharacterError.OutOfPoints
-                   or CharacterError.Unreachable;
-    }
-
-    public static Vector4 GetErrorColor(CharacterError error)
-    {
-        if (error is CharacterError.HiddenLogs)
-        {
-            return ImGuiColors.DalamudYellow;
-        }
-
-        return ImGuiColors.DalamudRed;
     }
 
     public static int MathMod(int a, int b)

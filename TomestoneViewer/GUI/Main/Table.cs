@@ -5,6 +5,8 @@ using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
+using TomestoneViewer.Character;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.GUI.Main;
@@ -17,12 +19,11 @@ public class Table
         {
             this.DrawPartyView();
         }
-        else if (Service.CharDataManager.DisplayedChar != null && Service.CharDataManager.CharacterError == null && Service.CharDataManager.DisplayedChar.CharError == null)
+        else
         {
             this.DrawSingleView();
         }
     }
-
 
     private static void DrawPartyViewWarning()
     {
@@ -101,6 +102,11 @@ public class Table
 
     private void DrawSingleView()
     {
+        if (Service.CharDataManager.CharacterError != null)
+        {
+            return;
+        }
+
         if (ImGui.BeginTable(
                     "##MainWindowTableSingleView",
                     2,
@@ -111,7 +117,6 @@ public class Table
 
             var minRowHeight = 21;
             var character = Service.CharDataManager.DisplayedChar;
-            var data = character.EncounterData;
 
             var firstRow = true;
             foreach (var category in EncounterLocation.LOCATIONS)
@@ -191,17 +196,14 @@ public class Table
         }
 
         var encounterData = character.EncounterData[locationDisplayName];
+        var characterError = character.EncounterData[locationDisplayName].Status.Error ?? character.CharError;
 
-        CharacterError? characterError = encounterData.Status.Error;
-        characterError ??= character.CharError;
-        characterError ??= Service.CharDataManager.CharacterError;
-
-        if (characterError.HasValue)
+        if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
-            Util.CenterText(FontAwesomeIcon.ExclamationCircle.ToIconString(), new Vector4(1, 1, 0, 1));
+            Util.CenterText(characterError.Symbol.ToIconString(), characterError.Color);
             ImGui.PopFont();
-            Util.SetHoverTooltip(Util.GetErrorMessage(characterError.Value));
+            Util.SetHoverTooltip(characterError.Message);
         }
         else if (encounterData.Status.Loading)
         {
@@ -209,17 +211,17 @@ public class Table
             Util.CenterText(FontAwesomeIcon.Spinner.ToIconString(), new Vector4(.8f, .8f, .8f, 1));
             ImGui.PopFont();
         }
-        else if (encounterData.Status.Loaded)
+        else if (encounterData.EncouterProgress != null)
         {
-            if (encounterData.Data.Cleared)
+            if (encounterData.EncouterProgress.Cleared)
             {
                 ImGui.PushFont(UiBuilder.IconFont);
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
                 ImGui.PopFont();
             }
-            else if (encounterData.Data.BestPercent != null)
+            else if (encounterData.EncouterProgress.Progress != null)
             {
-                Util.CenterText(encounterData.Data.BestPercent, new Vector4(1, .7f, .1f, 1));
+                Util.CenterText(encounterData.EncouterProgress.Progress, new Vector4(1, .7f, .1f, 1));
             }
             else
             {
@@ -228,22 +230,11 @@ public class Table
                 ImGui.PopFont();
             }
         }
+        // TODO: else 
     }
 
     private static float MaxStatusWidth()
     {
         return ImGui.CalcTextSize("99.99%% P9").X + (ImGui.GetStyle().ItemSpacing.X * 2);
-    }
-
-    private static float GetButtonsWidth()
-    {
-        ImGui.PushFont(UiBuilder.IconFont);
-        var buttonsWidth =
-            ImGui.CalcTextSize(FontAwesomeIcon.Redo.ToIconString()).X +
-            ImGui.CalcTextSize(FontAwesomeIcon.Star.ToIconString()).X +
-            (ImGui.GetStyle().ItemSpacing.X * 2) + // between items
-            (ImGui.GetStyle().FramePadding.X * 2); // around buttons, 2 per
-        ImGui.PopFont();
-        return buttonsWidth;
     }
 }

@@ -1,37 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using TomestoneViewer.Model;
 using ImGuiNET;
+using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Model;
 
-namespace TomestoneViewer.Manager;
+namespace TomestoneViewer.Character;
 
 public class CharSelector
 {
-    public CharacterId? CharId { get; private set; }
+    private readonly CharacterId? characterId;
+    private readonly CharacterSelectorError? error;
 
-    public CharacterError? CharError { get; private set; }
+    internal CharacterId? CharId { get => this.characterId; }
 
-    internal CharSelector(CharacterId charId)
+    internal CharacterSelectorError? Error { get => this.error; }
+
+    private CharSelector(CharacterId charId)
     {
-        this.CharId = charId;
+        this.characterId = charId;
     }
 
-    internal CharSelector(string firstName, string lastName, string world)
+    private CharSelector(string firstName, string lastName, string world)
     {
-        this.CharId = new CharacterId(firstName, lastName, world);
+        this.characterId = new CharacterId(firstName, lastName, world);
     }
 
-    internal CharSelector(CharacterError charError)
+    private CharSelector(CharacterSelectorError charError)
     {
-        this.CharError = charError;
+        this.error = charError;
+    }
+
+    public override string ToString()
+    {
+        return this.characterId?.ToString() ?? this.error.Message;
     }
 
     public static CharSelector SelectCurrentTarget()
@@ -39,11 +40,11 @@ public class CharSelector
         var target = Service.TargetManager.Target;
         if (target is PlayerCharacter targetCharacter && target.ObjectKind != ObjectKind.Companion)
         {
-            return CharSelector.FromPlayerCharacter(targetCharacter);
+            return FromPlayerCharacter(targetCharacter);
         }
         else
         {
-            return new CharSelector(CharacterError.InvalidTarget);
+            return new(CharacterSelectorError.InvalidTarget);
         }
     }
 
@@ -55,15 +56,15 @@ public class CharSelector
             clipboardRawText = ImGui.GetClipboardText();
             if (clipboardRawText == null)
             {
-                return new CharSelector(CharacterError.ClipboardError);
+                return new(CharacterSelectorError.ClipboardError);
             }
         }
         catch
         {
-            return new CharSelector(CharacterError.ClipboardError);
+            return new(CharacterSelectorError.ClipboardError);
         }
 
-        return CharSelector.SelectByName(clipboardRawText);
+        return SelectByName(clipboardRawText);
     }
 
     public static CharSelector SelectFromSearch(SearchCharacterId id)
@@ -73,7 +74,7 @@ public class CharSelector
 
     public static CharSelector SelectByName(string rawText)
     {
-        return new CharSelector(CharacterError.Unimplemented);
+        return new CharSelector(CharacterSelectorError.Unimplemented);
     }
 
     public static CharSelector SelectByName(string fullName, string world)
@@ -93,7 +94,7 @@ public class CharSelector
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {
             Service.PluginLog.Error("SetInfo character world was null");
-            return new CharSelector(CharacterError.GenericError);
+            return new CharSelector(CharacterSelectorError.EmptyHomeWorld);
         }
 
         var firstName = playerCharacter.Name.TextValue.Split(' ')[0];

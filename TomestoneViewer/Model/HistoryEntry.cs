@@ -1,5 +1,7 @@
 using System;
 
+using TomestoneViewer.Character;
+
 namespace TomestoneViewer.Model;
 
 public class HistoryEntry
