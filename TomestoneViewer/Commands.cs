@@ -54,7 +54,7 @@ public class Commands
                 if (trimmedArgs.Equals("p", StringComparison.OrdinalIgnoreCase)
                     || trimmedArgs.Equals("party", StringComparison.OrdinalIgnoreCase))
                 {
-                    Service.MainWindow.IsPartyView = true;
+                    Service.MainWindow.SetPartyView(true);
                     Service.CharDataManager.UpdatePartyMembers();
                     break;
                 }

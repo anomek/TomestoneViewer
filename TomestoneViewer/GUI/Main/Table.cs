@@ -7,15 +7,14 @@ using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Model;
 
 namespace TomestoneViewer.GUI.Main;
 
 public class Table
 {
-    public void Draw()
+    public void Draw(bool partyView)
     {
-        if (Service.MainWindow.IsPartyView)
+        if (partyView)
         {
             this.DrawPartyView();
         }

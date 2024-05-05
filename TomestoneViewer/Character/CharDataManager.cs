@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;
@@ -83,13 +84,35 @@ public class CharDataManager
         }
 
         this.partyMembers.RemoveAll(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y)));
-
-        //      FIXME: sort party member
-        //       this.partyMembers.Sort(  = [.. PartyMembers.OrderBy(
-        //            charData => currPartyMembers.FindIndex(
-        //                member => charData.CharId == CharacterId.From(member)))];
+        this.partyMembers.Sort(this.CompareByIndex(currPartyMembers));
 
         this.FetchPartyLogs();
+    }
+
+    private Comparer<CharData> CompareByIndex(List<TeamMember> teamMembers)
+    {
+        Dictionary<CharacterId, int> dict = [];
+        for (var i = 0; i < teamMembers.Count; i++)
+        {
+            dict[CharacterId.From(teamMembers[i])] = i;
+        }
+
+        return Comparer<CharData>.Create((CharData left, CharData right) => dict[left.CharId].CompareTo(dict[right.CharId]));
+    }
+
+    public void SetEncounter(uint? teritorryId)
+    {
+        if (teritorryId == null)
+        {
+            return;
+        }
+
+        Service.PluginLog.Info($"Set encounter {teritorryId}");
+        var encounter = EncounterLocation.AllLocations().Find(location => location.TerritoryId == teritorryId.Value);
+        if (encounter != null)
+        {
+            this.currentEncounterDisplayName = encounter.DisplayName;
+        }
     }
 
     public void SetCharacter(CharSelector selector)
@@ -135,4 +158,6 @@ public class CharDataManager
             }
         }
     }
+
+
 }

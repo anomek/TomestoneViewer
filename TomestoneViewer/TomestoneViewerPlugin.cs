@@ -28,6 +28,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.HistoryManager = new HistoryManager();
         Service.TeamManager = new TeamManager();
         Service.TomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
+        Service.PartyFinderDetector = new GameSystems.PartyFinderDetector();
 
         Service.MainWindow = new MainWindow();
         Service.ConfigWindow = new ConfigWindow();
@@ -46,6 +47,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     {
         Commands.Dispose();
         Service.OpenWithManager.Dispose();
+        Service.PartyFinderDetector.Dispose();
 
         ContextMenu.Disable();
 

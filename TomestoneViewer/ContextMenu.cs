@@ -61,7 +61,7 @@ public class ContextMenu
 
         if (IsPartyAddon(menuArgs.AddonName))
         {
-            Service.MainWindow.IsPartyView = true;
+            Service.MainWindow.SetPartyView(true);
             Service.CharDataManager.UpdatePartyMembers();
         }
         else
@@ -81,7 +81,7 @@ public class ContextMenu
                 Service.CharDataManager.SetCharacter(CharSelector.SelectByName(menuTargetDefault.TargetName, world.Name));
             }
 
-            Service.MainWindow.IsPartyView = false;
+            Service.MainWindow.SetPartyView(false);
         }
 
         Service.MainWindow.Open();

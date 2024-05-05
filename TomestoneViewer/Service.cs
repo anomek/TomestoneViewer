@@ -5,6 +5,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.TomestoneClient;
+using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -25,7 +26,7 @@ internal class Service
     internal static OpenWithManager OpenWithManager { get; set; } = null!;
     internal static TeamManager TeamManager { get; set; } = null!;
     internal static ITomestoneClient TomestoneClient { get; set; } = null!;
-
+    internal static PartyFinderDetector PartyFinderDetector { get; set; } = null!;
     [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
@@ -44,4 +45,6 @@ internal class Service
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
     [PluginService] internal static INotificationManager NotificationManager { get; private set; } = null!;
     [PluginService] internal static IContextMenu ContextMenu { get; private set; } = null!;
+    [PluginService] internal static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
+    [PluginService] internal static IAddonEventManager AddonEventManager { get; private set; } = null!;
 }

@@ -9,7 +9,7 @@ namespace TomestoneViewer.GUI.Main;
 
 public class MenuBar
 {
-    public static void Draw()
+    public static void Draw(bool partyView)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6 * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y));
 
@@ -18,19 +18,16 @@ public class MenuBar
             // ------------------
             // Toogle view button
             // ------------------
-            var swapViewIcon = Service.MainWindow.IsPartyView ? FontAwesomeIcon.User : FontAwesomeIcon.Users;
+            var swapViewIcon = partyView ? FontAwesomeIcon.User : FontAwesomeIcon.Users;
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.MenuItem(swapViewIcon.ToIconString()))
             {
-                Service.MainWindow.IsPartyView = !Service.MainWindow.IsPartyView;
-                if (Service.MainWindow.IsPartyView)
-                {
-                    Service.CharDataManager.UpdatePartyMembers();
-                }
+                Service.MainWindow.TogglePartyView();
+
             }
 
             ImGui.PopFont();
-            Util.SetHoverTooltip(Service.MainWindow.IsPartyView ? "Swap to single view" : "Swap to party view");
+            Util.SetHoverTooltip(partyView ? "Swap to single view" : "Swap to party view");
 
             //---------------
             // Align to right
@@ -111,7 +108,7 @@ public class MenuBar
                     if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, 25 * ImGuiHelpers.GlobalScale)))
                     {
                         Service.CharDataManager.SetCharacter(CharSelector.SelectByName(historyEntry.FirstName, historyEntry.LastName, historyEntry.WorldName));
-                        Service.MainWindow.IsPartyView = false;
+                        Service.MainWindow.SetPartyView(false);
                         ImGui.CloseCurrentPopup();
                     }
 
