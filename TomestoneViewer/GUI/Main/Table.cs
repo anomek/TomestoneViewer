@@ -196,7 +196,6 @@ public class Table
 
         var encounterData = character.EncounterData[locationDisplayName];
         var characterError = character.EncounterData[locationDisplayName].Status.Error ?? character.CharError;
-
         if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
@@ -207,7 +206,7 @@ public class Table
         else if (encounterData.Status.Loading)
         {
             ImGui.PushFont(UiBuilder.IconFont);
-            Util.CenterText(FontAwesomeIcon.Spinner.ToIconString(), new Vector4(.8f, .8f, .8f, 1));
+            Util.Rotate(() => Util.CenterText(FontAwesomeIcon.CircleNotch.ToIconString(), new Vector4(.8f, .8f, .8f, 1)));
             ImGui.PopFont();
         }
         else if (encounterData.EncouterProgress != null)

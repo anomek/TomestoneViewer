@@ -241,8 +241,39 @@ public class Util
         }
     }
 
+    public static void Rotate(Action action)
+    {
+        var rotationStartIndex = ImGui.GetWindowDrawList().VtxBuffer.Size;
+        action.Invoke();
+        var angle = DateTime.Now.Millisecond * 3.14 * 2 / 1000f;
+        var sin = (float)Math.Sin(angle);
+        var cos = (float)Math.Cos(angle);
+
+        var buf = ImGui.GetWindowDrawList().VtxBuffer;
+        var low = buf[rotationStartIndex].pos;
+        var high = buf[rotationStartIndex].pos;
+        for (var i = rotationStartIndex + 1; i < buf.Size; i++)
+        {
+            low = Vector2.Min(low, buf[i].pos);
+            high = Vector2.Max(high, buf[i].pos);
+        }
+
+        var center = new Vector2((low.X + high.X) / 2, (low.Y + high.Y) / 2);
+        center = ImRotate(center, sin, cos) - center;
+        for (var i = rotationStartIndex; i < buf.Size; i++)
+        {
+            buf[i].pos = ImRotate(buf[i].pos, sin, cos) - center;
+        }
+    }
+
+    private static Vector2 ImRotate(Vector2 vector, float sin, float cos)
+    {
+        return new Vector2((vector.X * cos) - (vector.Y * sin), (vector.X * sin) + (vector.Y * cos));
+    }
+
     public static int MathMod(int a, int b)
     {
         return (Math.Abs(a * b) + a) % b;
     }
 }
+;
