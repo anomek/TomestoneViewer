@@ -119,6 +119,21 @@ public record EncounterLocation
         return ret;
     }
 
+    public static Category CategoryFromLocationName(string locationName)
+    {
+        foreach (var category in LOCATIONS)
+        {
+            foreach (var location in category.Locations)
+            {
+                if (location.DisplayName == locationName)
+                {
+                    return category;
+                }
+            }
+        }
+        return null;
+    }
+
     public string DisplayName { get; set; } = null!;
     public string EncounterQueryParam { get; set; } = null!;
     public string ExpansionQueryParam { get; set; } = null!;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -47,14 +48,21 @@ internal class WebTomestoneClient : ITomestoneClient
         }
 
         var ultimates = response?.props.headerEncounters?.latestExpansion?.ultimate;
-        List<EncounterId> summary = [];
+        Dictionary<EncounterId, EncounterClear> summary = [];
         if (ultimates != null)
         {
             foreach (var ultimate in ultimates)
             {
-                if (ultimate.achievement != null || (ultimate.activity != null && (bool)ultimate.activity))
+                var id = new EncounterId((int)ultimate.id);
+                if (ultimate.achievement != null)
                 {
-                    summary.Add(new EncounterId((int)ultimate.id));
+                    summary[id] = new EncounterClear(
+                        ParseDateTime(ultimate.achievement.completedAt),
+                        ultimate.achievement.completionWeek.ToString());
+                }
+                else if (ultimate.activity != null && (bool)ultimate.activity)
+                {
+                    summary[id] = new EncounterClear(null, null);
                 }
             }
         }
@@ -87,7 +95,9 @@ internal class WebTomestoneClient : ITomestoneClient
         {
             if (activity.killsCount > 0)
             {
-                return new(EncounterProgress.EncounterCleared());
+                return new(EncounterProgress.EncounterCleared(new EncounterClear(
+                    ParseDateTime(activity.endTime),
+                    null)));
             }
             else
             {
@@ -153,5 +163,10 @@ internal class WebTomestoneClient : ITomestoneClient
                 message.Dispose();
             }
         };
+    }
+
+    private static DateTime ParseDateTime(object value)
+    {
+        return DateTime.ParseExact(value.ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
     }
 }

@@ -1,29 +1,33 @@
+using TomestoneViewer.Character.Encounter;
+
 namespace TomestoneViewer.Character.TomestoneClient;
 
 public record EncounterProgress
 {
-    public bool Cleared { get; }
+    public EncounterClear? EncounterClear { get; }
 
     public string? Progress { get; }
 
-    private EncounterProgress(bool cleared, string? progress)
+    public bool Cleared => this.EncounterClear != null;
+
+    private EncounterProgress(EncounterClear? encounterClear, string? progress)
     {
-        this.Cleared = cleared;
+        this.EncounterClear = encounterClear;
         this.Progress = progress;
     }
 
-    public static EncounterProgress EncounterCleared()
+    public static EncounterProgress EncounterCleared(EncounterClear encounterClear)
     {
-        return new EncounterProgress(true, null);
+        return new EncounterProgress(encounterClear, null);
     }
 
     public static EncounterProgress EncounterInProgress(string progress)
     {
-        return new EncounterProgress(false, progress);
+        return new EncounterProgress(null, progress);
     }
 
     public static EncounterProgress EncounterNotStarted()
     {
-        return new EncounterProgress(false, null);
+        return new EncounterProgress(null, null);
     }
 }

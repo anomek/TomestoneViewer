@@ -73,7 +73,7 @@ internal class CharDataLoader
             {
                 if (location.Id != null && summary.Contains(location.Id))
                 {
-                    this.encounterData[location.DisplayName].Load(EncounterProgress.EncounterCleared());
+                    this.encounterData[location.DisplayName].Load(EncounterProgress.EncounterCleared(summary.ClearedEncounters[location.Id]));
                 }
                 else if (encounterDisplayName == null || encounterDisplayName.Equals(location.DisplayName))
                 {

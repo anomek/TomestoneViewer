@@ -12,6 +12,8 @@ namespace TomestoneViewer.GUI.Main;
 
 public class Table
 {
+    private static readonly DateTime AnabeisosRelaseDate = new(2023, 5, 30);
+
     public void Draw(bool partyView)
     {
         if (partyView)
@@ -91,7 +93,11 @@ public class Table
                 ImGui.SameLine();
                 ImGui.Text(charData.CharId.FullName);
                 ImGui.TableNextColumn();
-                this.DrawEncounterStatus(charData, Service.CharDataManager.CurrentEncounterDisplayName);
+
+                this.DrawEncounterStatus(
+                    charData,
+                    Service.CharDataManager.CurrentEncounterDisplayName,
+                    EncounterLocation.CategoryFromLocationName(Service.CharDataManager.CurrentEncounterDisplayName));
                 ImGui.TableNextColumn();
             }
 
@@ -140,7 +146,7 @@ public class Table
                     ImGui.TextUnformatted(location.DisplayName);
                     ImGui.TableNextColumn();
                     if (counter == 0) ImGui.Separator();
-                    this.DrawEncounterStatus(character, location.DisplayName);
+                    this.DrawEncounterStatus(character, location.DisplayName, category);
 
                     counter++;
                 }
@@ -187,7 +193,7 @@ public class Table
         }
     }
 
-    private void DrawEncounterStatus(CharData character, string? locationDisplayName)
+    private void DrawEncounterStatus(CharData character, string? locationDisplayName, EncounterLocation.Category category)
     {
         if (locationDisplayName == null)
         {
@@ -211,11 +217,41 @@ public class Table
         }
         else if (encounterData.EncouterProgress != null)
         {
-            if (encounterData.EncouterProgress.Cleared)
+            if (encounterData.EncouterProgress.EncounterClear != null)
             {
                 ImGui.PushFont(UiBuilder.IconFont);
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
                 ImGui.PopFont();
+
+                if (ImGui.IsItemHovered() && encounterData.EncouterProgress.EncounterClear.HasInfo)
+                {
+                    var clear = encounterData.EncouterProgress.EncounterClear;
+                    ImGui.BeginTooltip();
+                    ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, ImGui.GetStyle().ItemSpacing.Y));
+                    if (clear.DateTime != null)
+                    {
+                        ImGui.Text("Cleared on ");
+                        ImGui.SameLine();
+                        ImGui.Text(clear.DateTime.Value.ToString("yyyy-MM-dd"));
+                        ImGui.SetWindowFontScale(.95f);
+                        ImGui.Text(FormatTimeRelative(clear.DateTime.Value));
+                        ImGui.SetWindowFontScale(1);
+                    }
+
+                    var completionWeek = clear.CompletionWeek;
+                    completionWeek ??= category.DisplayName == "Savage" ? clear.CalculateCompletionWeek(AnabeisosRelaseDate) : null;
+
+                    if (completionWeek != null)
+                    {
+                        ImGui.SameLine();
+                        ImGui.SetWindowFontScale(.95f);
+                        ImGui.Text($" ({completionWeek})");
+                        ImGui.SetWindowFontScale(1);
+                    }
+
+                    ImGui.PopStyleVar();
+                    ImGui.EndTooltip();
+                }
             }
             else if (encounterData.EncouterProgress.Progress != null)
             {
@@ -229,6 +265,41 @@ public class Table
             }
         }
         // TODO: else 
+    }
+
+    private static string FormatTimeRelative(DateTime timestamp)
+    {
+        var diff = DateTime.UtcNow - timestamp;
+        var number = 0;
+        var unit = string.Empty;
+        if (diff.TotalMinutes < 120)
+        {
+            number = (int)diff.TotalMinutes;
+            unit = "minute";
+        }
+        else if (diff.TotalHours < 48)
+        {
+            number = (int)diff.TotalHours;
+            unit = "hour";
+        }
+        else if (diff.TotalDays < 65)
+        {
+            number = (int)diff.TotalDays;
+            unit = "day";
+        }
+        else if (diff.TotalDays < 366)
+        {
+            number = (int)(diff.TotalDays / 30.43);
+            unit = "month";
+        }
+        else
+        {
+            number = (int)(diff.TotalDays / 365.25);
+            unit = "year";
+        }
+
+        var plular = number == 1 ? string.Empty : "s";
+        return $"{number} {unit}{plular} ago";
     }
 
     private static float MaxStatusWidth()

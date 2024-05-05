@@ -4,20 +4,16 @@ using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
-public class CharacterSummary(List<EncounterId> clearedEncounters)
+public record CharacterSummary(IReadOnlyDictionary<EncounterId, EncounterClear> ClearedEncounters)
 {
-    private readonly List<EncounterId> clearedEncounters = clearedEncounters;
-
-    public IEnumerable<EncounterId> ClearedEncounters => this.clearedEncounters;
-
     public static CharacterSummary Empty()
     {
-        return new([]);
+        return new(new Dictionary<EncounterId, EncounterClear>().AsReadOnly());
     }
 
     public bool Contains(EncounterId id)
     {
-        return this.clearedEncounters.Contains(id);
+        return this.ClearedEncounters.ContainsKey(id);
     }
 
 }
