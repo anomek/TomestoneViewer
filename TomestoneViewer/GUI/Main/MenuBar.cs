@@ -23,7 +23,6 @@ public class MenuBar
             if (ImGui.MenuItem(swapViewIcon.ToIconString()))
             {
                 Service.MainWindow.TogglePartyView();
-
             }
 
             ImGui.PopFont();

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 using TomestoneViewer.Character.Encounter;
@@ -10,25 +10,22 @@ namespace TomestoneViewer.Character;
 internal class CharDataLoader
 {
     private readonly CharacterId characterId;
-    private readonly ReadOnlyDictionary<string, EncounterData> encounterData;
+    private readonly IReadOnlyDictionary<Location, EncounterData> encounterData;
     private readonly CancelableTomestoneClient client;
+
     private LodestoneId? lodestoneId;
     private TomestoneClientError? loadError;
 
     internal TomestoneClientError? LoadError => this.loadError;
 
-    internal ReadOnlyDictionary<string, EncounterData> EncounterData => this.encounterData;
+    internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
 
     internal CharDataLoader(CharacterId characterId)
     {
         this.characterId = characterId;
-        var encounterData = new Dictionary<string, EncounterData>();
-        foreach (var location in EncounterLocation.AllLocations())
-        {
-            encounterData[location.DisplayName] = new();
-        }
-
-        this.encounterData = encounterData.AsReadOnly();
+        this.encounterData = Location.All()
+            .ToDictionary(location => location, _ => new EncounterData())
+            .AsReadOnly();
         this.client = new(Service.TomestoneClient);
     }
 
@@ -37,65 +34,71 @@ internal class CharDataLoader
         this.client.Cancel();
     }
 
-
-    internal async Task Load(string? encounterDisplayName)
+    internal async Task Load(Location? selectedLocation)
     {
         // TODO: move it out of client?
         Service.HistoryManager.AddHistoryEntry(this.characterId);
 
+        // Fetch lodestoneId
         if (this.lodestoneId == null)
         {
-            var lodestoneIdResponse = await Service.TomestoneClient.FetchLodestoneId(this.characterId);
-            if (lodestoneIdResponse.TryGetValue(out var lodestoneId))
-            {
-                this.lodestoneId = lodestoneId;
-            }
-            else
-            {
-                this.loadError = lodestoneIdResponse.Error;
-                return;
-            }
+            (await Service.TomestoneClient.FetchLodestoneId(this.characterId))
+                .IfSuccessOrElse(
+                lodestoneId => this.lodestoneId = lodestoneId,
+                error => this.loadError = error);
         }
 
-        var summaryResponse = await Service.TomestoneClient.FetchCharacterSummary(this.lodestoneId);
-        if (!summaryResponse.TryGetValue(out var summary) && !summaryResponse.Error.CanIgnore)
+        if (this.lodestoneId == null)
         {
-            this.loadError = summaryResponse.Error;
             return;
         }
 
-        summary ??= CharacterSummary.Empty();
-
-        List<Task> tasks = [];
-        foreach (var category in EncounterLocation.LOCATIONS)
-        {
-            foreach (var location in category.Locations)
+        // Fetch summary
+        var summary = (await Service.TomestoneClient.FetchCharacterSummary(this.lodestoneId))
+            .Fold(
+            summaryResponse => summaryResponse,
+            error =>
             {
-                if (location.Id != null && summary.Contains(location.Id))
+                if (error.CanIgnore)
                 {
-                    this.encounterData[location.DisplayName].Load(EncounterProgress.EncounterCleared(summary.ClearedEncounters[location.Id]));
+                    return CharacterSummary.Empty();
                 }
-                else if (encounterDisplayName == null || encounterDisplayName.Equals(location.DisplayName))
+                else
                 {
-                    var loopEncountrDisplayName = location.DisplayName;
-                    tasks.Add(Service.TomestoneClient.FetchEncounter(this.lodestoneId, category, location)
-                        .ContinueWith(t => this.Apply(t.Result, loopEncountrDisplayName)));
+                    this.loadError = error;
+                    return null;
                 }
-            }
+            });
+
+        if (summary == null)
+        {
+            return;
         }
 
-        await Task.WhenAll(tasks);
+        // Fetch locations
+        await Task.WhenAll(
+            (selectedLocation == null ? Location.All() : [selectedLocation])
+            .Select(location =>
+            {
+                if (summary.TryGet(location.UltimateId, out var encounterClear))
+                {
+                    this.encounterData[location].Load(EncounterProgress.EncounterCleared(encounterClear));
+                    return null;
+                }
+                else
+                {
+                    return Service.TomestoneClient
+                        .FetchEncounter(this.lodestoneId, location)
+                        .ContinueWith(t => this.Apply(t.Result, location));
+                }
+            })
+            .OfType<Task>());
     }
 
-    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, string encounterDisplayName)
+    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, Location location)
     {
-        if (encounterProgressResponse.TryGetValue(out var encounterProgress))
-        {
-            this.encounterData[encounterDisplayName].Load(encounterProgress);
-        }
-        else
-        {
-            this.encounterData[encounterDisplayName].Load(encounterProgressResponse.Error);
-        }
+        encounterProgressResponse.IfSuccessOrElse(
+            encounterProgress => this.encounterData[location].Load(encounterProgress),
+            error => this.encounterData[location].Load(error));
     }
 }

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Dalamud.Interface.Internal;
 
 namespace TomestoneViewer.Manager;
@@ -37,7 +38,7 @@ public class JobIconsManager
             return;
         }
 
-        this.jobIcons = new List<IDalamudTextureWrap>();
+        this.jobIcons = [];
         this.isLoading = true;
         var hasFailed = false;
 

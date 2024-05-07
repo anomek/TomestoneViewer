@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.TomestoneClient;
@@ -21,8 +22,8 @@ internal class CachedTomestoneClient(ITomestoneClient client) : ITomestoneClient
         return await this.characterSummaryCache.Get(lodestoneId, () => this.client.FetchCharacterSummary(lodestoneId));
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, EncounterLocation.Category category, EncounterLocation location)
+    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
-        return await this.encounterProgressCache.Get((lodestoneId, location.DisplayName), () => this.client.FetchEncounter(lodestoneId, category, location));
+        return await this.encounterProgressCache.Get((lodestoneId, location.DisplayName), () => this.client.FetchEncounter(lodestoneId, location));
     }
 }

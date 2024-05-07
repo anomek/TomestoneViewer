@@ -4,28 +4,29 @@ using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
-internal class Cache<K, V>
+internal class Cache<TKey, TValue>
+    where TKey : notnull
 {
-    private readonly ConcurrentDictionary<K, Entry<ClientResponse<V>>> cache = [];
+    private readonly ConcurrentDictionary<TKey, Entry<ClientResponse<TValue>>> cache = [];
     private readonly TimeSpan validity = TimeSpan.FromMinutes(30);
 
-    internal async Task<ClientResponse<V>> Get(K key, Func<Task<ClientResponse<V>>> supplier)
+    internal async Task<ClientResponse<TValue>> Get(TKey key, Func<Task<ClientResponse<TValue>>> supplier)
     {
         if (this.cache.TryGetValue(key, out var entry) && entry.IsUpToDate(this.validity))
         {
-           return entry.Value;
+            return entry.Value;
         }
 
         var value = await supplier.Invoke();
         if (value.Cachable)
         {
-            this.cache[key] = new Entry<ClientResponse<V>>(value);
+            this.cache[key] = new Entry<ClientResponse<TValue>>(value);
         }
 
         return value;
     }
 
-    internal record Entry<V>(V Value)
+    internal record Entry<T>(T Value)
     {
         private readonly DateTime timestamp = DateTime.Now;
 

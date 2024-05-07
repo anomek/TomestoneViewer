@@ -1,4 +1,5 @@
 using System.Linq;
+
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
@@ -20,6 +21,7 @@ public class ContextMenu
         Service.ContextMenu.OnMenuOpened -= OnOpenContextMenu;
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "switch looks better")]
     private static bool IsMenuValid(MenuArgs menuOpenedArgs)
     {
         if (menuOpenedArgs.Target is not MenuTargetDefault menuTargetDefault)
@@ -47,9 +49,9 @@ public class ContextMenu
 
             case "BlackList":
                 return menuTargetDefault.TargetName != string.Empty;
+            default:
+                return false;
         }
-
-        return false;
     }
 
     private static void SearchPlayerFromMenu(MenuArgs menuArgs)

@@ -9,10 +9,9 @@ using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
-internal class WebTomestoneClient : ITomestoneClient
+internal partial class WebTomestoneClient : ITomestoneClient
 {
     private readonly LowLevelTomestoneClient client = new();
-    private readonly Regex locationRegex = new("https://tomestone.gg/character/([0-9]+)/");
 
     public async Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
@@ -21,11 +20,11 @@ internal class WebTomestoneClient : ITomestoneClient
             .FlatMap(this.ParseCharacterSummary);
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, EncounterLocation.Category category, EncounterLocation location)
+    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchEncounter {lodestoneId} {location.DisplayName}");
         var url = $"https://tomestone.gg/character/{lodestoneId}/dummy/activity?"
-            + $"expansion={location.ExpansionQueryParam}&category={category.CategoryQueryParam}&zone={category.ZoneQueryParam}"
+            + $"expansion={location.ExpansionQueryParam}&category={location.Category.CategoryQueryParam}&zone={location.Category.ZoneQueryParam}"
             + $"&encounter={location.EncounterQueryParam}&sortType=firstKillTime";
 
         return (await this.client.GetDynamic(url, "characterPageContent", TomestoneClientError.CharacterActivityStreamDisabled))
@@ -48,12 +47,12 @@ internal class WebTomestoneClient : ITomestoneClient
         }
 
         var ultimates = response?.props.headerEncounters?.latestExpansion?.ultimate;
-        Dictionary<EncounterId, EncounterClear> summary = [];
+        Dictionary<UltimateId, EncounterClear> summary = [];
         if (ultimates != null)
         {
             foreach (var ultimate in ultimates)
             {
-                var id = new EncounterId((int)ultimate.id);
+                var id = new UltimateId((int)ultimate.id);
                 if (ultimate.achievement != null)
                 {
                     summary[id] = new EncounterClear(
@@ -119,7 +118,7 @@ internal class WebTomestoneClient : ITomestoneClient
                 return new(TomestoneClientError.ServerResponseError);
             }
 
-            var match = this.locationRegex.Match(location);
+            var match = LocationRegex().Match(location);
             if (match.Success)
             {
                 var groupOne = match.Groups[1].Value;
@@ -167,6 +166,9 @@ internal class WebTomestoneClient : ITomestoneClient
 
     private static DateTime ParseDateTime(object value)
     {
-        return DateTime.ParseExact(value.ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        return DateTime.ParseExact(value?.ToString() ?? string.Empty, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
     }
+
+    [GeneratedRegex("https://tomestone.gg/character/([0-9]+)/")]
+    private static partial Regex LocationRegex();
 }

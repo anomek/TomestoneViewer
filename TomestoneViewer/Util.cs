@@ -14,6 +14,14 @@ namespace TomestoneViewer;
 
 public class Util
 {
+    public static void ConditionalSeparator(bool shouldDraw)
+    {
+        if (shouldDraw)
+        {
+            ImGui.Separator();
+        }
+    }
+
     public static bool DrawButtonIcon(FontAwesomeIcon icon, Vector2? size = null)
     {
         ImGui.PushFont(UiBuilder.IconFont);
@@ -266,14 +274,13 @@ public class Util
         }
     }
 
-    private static Vector2 ImRotate(Vector2 vector, float sin, float cos)
-    {
-        return new Vector2((vector.X * cos) - (vector.Y * sin), (vector.X * sin) + (vector.Y * cos));
-    }
-
     public static int MathMod(int a, int b)
     {
         return (Math.Abs(a * b) + a) % b;
     }
+
+    private static Vector2 ImRotate(Vector2 vector, float sin, float cos)
+    {
+        return new Vector2((vector.X * cos) - (vector.Y * sin), (vector.X * sin) + (vector.Y * cos));
+    }
 }
-;

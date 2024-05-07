@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
@@ -29,12 +30,14 @@ public unsafe class PartyFinderDetector
         if (IsInParty())
         {
             Service.PluginLog.Info("In party, ignoring addon close");
+
             // Already in party, looking at party finder doesn't really matter
             // TODO: actualy this could be "Recruitment Criteria" addon in which case we might want to update regionId
             return;
         }
 
         var dutyName = addon->DutyNameTextNode->NodeText.ToString();
+
         // cut sprout from duty name
         if (dutyName.Length > 5 && dutyName[0] == 2)
         {
@@ -45,8 +48,8 @@ public unsafe class PartyFinderDetector
              .FirstOrDefault(entry => string.Equals(
                  entry.Name.ToString(),
                  dutyName,
-                 StringComparison.OrdinalIgnoreCase
-                 ))?.TerritoryType.Row;
+                 StringComparison.OrdinalIgnoreCase))?
+                 .TerritoryType.Row;
 
         if (targetTerritoryId != null)
         {

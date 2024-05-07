@@ -1,4 +1,5 @@
 using System;
+
 using Dalamud.Game.Command;
 using TomestoneViewer.Character;
 
@@ -11,15 +12,11 @@ public class Commands
 
     public Commands()
     {
-
-        
         Service.CommandManager.AddHandler(SettingsCommandName, new CommandInfo(OnCommand)
         {
             HelpMessage = "Toggle the config window.",
             ShowInHelp = true,
         });
-
-        
 
         Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {

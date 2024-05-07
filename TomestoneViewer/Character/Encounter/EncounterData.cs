@@ -2,7 +2,6 @@ using TomestoneViewer.Character.TomestoneClient;
 
 namespace TomestoneViewer.Character.Encounter;
 
-
 public class EncounterData
 {
     public CStatus Status { get; private set; } = new();

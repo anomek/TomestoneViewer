@@ -12,8 +12,6 @@ namespace TomestoneViewer.GUI.Main;
 
 public class HeaderBar
 {
-    public uint ResetSizeCount;
-
     private readonly Stopwatch partyListStopwatch = new();
 
     public void Draw()
@@ -99,6 +97,11 @@ public class HeaderBar
         }
     }
 
+    public static float GetMinWindowSize()
+    {
+        return ((GetMinInputWidth() + (ImGui.GetStyle().ItemSpacing.X * 2)) * 3) + GetButtonsWidth();
+    }
+
     private static float GetButtonsWidth()
     {
         ImGui.PushFont(UiBuilder.IconFont);
@@ -121,11 +124,6 @@ public class HeaderBar
             ImGui.CalcTextSize("Last Name").X,
             ImGui.CalcTextSize("World").X,
         }.Max() + (ImGui.GetStyle().FramePadding.X * 2);
-    }
-
-    public static float GetMinWindowSize()
-    {
-        return ((GetMinInputWidth() + (ImGui.GetStyle().ItemSpacing.X * 2)) * 3) + GetButtonsWidth();
     }
 
     private void DrawPartyMembersPopup()

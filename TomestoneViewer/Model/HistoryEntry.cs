@@ -4,12 +4,12 @@ using TomestoneViewer.Character;
 
 namespace TomestoneViewer.Model;
 
-public class HistoryEntry
+public record HistoryEntry(
+    string FirstName,
+    string LastName,
+    string WorldName)
 {
-    public string FirstName = null!;
-    public string LastName = null!;
-    public string WorldName = null!;
-    public DateTime LastSeen = DateTime.Now;
+    public DateTime LastSeen { get; set; } = DateTime.Now;
 
     public CharacterId CharId
     {
@@ -21,11 +21,6 @@ public class HistoryEntry
 
     public static HistoryEntry From(CharacterId characterId)
     {
-        return new HistoryEntry()
-        {
-            FirstName = characterId.FirstName,
-            LastName = characterId.LastName,
-            WorldName = characterId.World,
-        };
+        return new HistoryEntry(characterId.FirstName, characterId.LastName, characterId.World);
     }
 }

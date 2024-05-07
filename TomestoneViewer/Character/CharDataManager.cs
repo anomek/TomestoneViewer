@@ -13,7 +13,7 @@ public class CharDataManager
     private readonly SearchCharacterId searchCharacterId = new();
     private readonly List<CharData> partyMembers = [];
 
-    private string? currentEncounterDisplayName;
+    private Location currentEncounter = Location.All()[0];
     private CharData? displayedChar;
     private CharacterSelectorError? characterSelectorError = CharacterSelectorError.NoCharacterSelected;
 
@@ -23,13 +23,12 @@ public class CharDataManager
 
     public IReadOnlyList<CharData> PartyMembers => this.partyMembers;
 
-
-    public string? CurrentEncounterDisplayName
+    public Location CurrentEncounter
     {
-        get => this.currentEncounterDisplayName;
+        get => this.currentEncounter;
         set
         {
-            this.currentEncounterDisplayName = value;
+            this.currentEncounter = value;
             this.FetchPartyLogs();
         }
     }
@@ -37,19 +36,6 @@ public class CharDataManager
     public IRenderableError? CharacterError
     {
         get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.CharError;
-    }
-
-    public string[] ValidWorlds { get; private set; }
-
-    public CharDataManager()
-    {
-        var worlds = Service.DataManager.GetExcelSheet<World>()?.Where(world => world.IsPublic && world.DataCenter?.Value?.Region != 0);
-        if (worlds == null)
-        {
-            throw new InvalidOperationException("Sheets weren't ready.");
-        }
-
-        this.ValidWorlds = worlds.Select(world => world.Name.RawString).ToArray();
     }
 
     public void UpdatePartyMembers()
@@ -78,26 +64,15 @@ public class CharDataManager
         }
 
         // remove members that are no longer in party
-        foreach (var charData in PartyMembers.Where(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y))))
+        foreach (var charData in this.PartyMembers.Where(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y))))
         {
             charData.Disable();
         }
 
         this.partyMembers.RemoveAll(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y)));
-        this.partyMembers.Sort(this.CompareByIndex(currPartyMembers));
+        this.partyMembers.Sort(CompareByIndex(currPartyMembers));
 
         this.FetchPartyLogs();
-    }
-
-    private Comparer<CharData> CompareByIndex(List<TeamMember> teamMembers)
-    {
-        Dictionary<CharacterId, int> dict = [];
-        for (var i = 0; i < teamMembers.Count; i++)
-        {
-            dict[CharacterId.From(teamMembers[i])] = i;
-        }
-
-        return Comparer<CharData>.Create((CharData left, CharData right) => dict[left.CharId].CompareTo(dict[right.CharId]));
     }
 
     public void SetEncounter(uint? teritorryId)
@@ -108,10 +83,10 @@ public class CharDataManager
         }
 
         Service.PluginLog.Info($"Set encounter {teritorryId}");
-        var encounter = EncounterLocation.AllLocations().Find(location => location.TerritoryId == teritorryId.Value);
+        var encounter = Location.Find(new TerritoryId(teritorryId.Value));
         if (encounter != null)
         {
-            this.currentEncounterDisplayName = encounter.DisplayName;
+            this.currentEncounter = encounter;
         }
     }
 
@@ -147,17 +122,23 @@ public class CharDataManager
         this.SearchCharacterId.Reset();
     }
 
+    private static Comparer<CharData> CompareByIndex(List<TeamMember> teamMembers)
+    {
+        Dictionary<CharacterId, int> dict = [];
+        for (var i = 0; i < teamMembers.Count; i++)
+        {
+            dict[CharacterId.From(teamMembers[i])] = i;
+        }
+
+        return Comparer<CharData>.Create((CharData left, CharData right) => dict[left.CharId].CompareTo(dict[right.CharId]));
+    }
+
     private void FetchPartyLogs()
     {
         Service.PluginLog.Debug("CharDataManger.FetchPartyLogs");
-        if (this.CurrentEncounterDisplayName != null)
+        foreach (var charData in this.PartyMembers)
         {
-            foreach (var charData in this.PartyMembers)
-            {
-                charData.FetchLogs(this.CurrentEncounterDisplayName);
-            }
+            charData.FetchLogs(this.currentEncounter);
         }
     }
-
-
 }

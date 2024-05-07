@@ -6,8 +6,8 @@ using TomestoneViewer.Character.Encounter;
 namespace TomestoneViewer.Character.TomestoneClient;
 
 /// <summary>
-/// Tricky name, methods are still async, but this client prevents calling same methods with same params more then once at the time
-/// See SyncQuery class
+/// Tricky name, methods are still async, but this client prevents calling same methods with same params more then once at the time.
+/// See SyncQuery class.
 /// </summary>
 internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
 {
@@ -15,9 +15,7 @@ internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
 
     private readonly ConcurrentDictionary<CharacterId, SyncQuery<ClientResponse<LodestoneId>>> lodestoneId = [];
     private readonly ConcurrentDictionary<LodestoneId, SyncQuery<ClientResponse<CharacterSummary>>> characterSummary = [];
-    // TODO: change string type when refactoring encounter
-    private readonly ConcurrentDictionary<(LodestoneId, string), SyncQuery<ClientResponse<EncounterProgress>>> encounter = [];
-
+    private readonly ConcurrentDictionary<(LodestoneId, Location), SyncQuery<ClientResponse<EncounterProgress>>> encounter = [];
 
     public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
@@ -31,9 +29,9 @@ internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
             .Run();
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, EncounterLocation.Category category, EncounterLocation location)
+    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
-        return await this.encounter.GetOrAdd((lodestoneId, location.DisplayName), arg => new SyncQuery<ClientResponse<EncounterProgress>>(() => this.client.FetchEncounter(lodestoneId, category, location)))
+        return await this.encounter.GetOrAdd((lodestoneId, location), arg => new SyncQuery<ClientResponse<EncounterProgress>>(() => this.client.FetchEncounter(lodestoneId, location)))
             .Run();
     }
 }

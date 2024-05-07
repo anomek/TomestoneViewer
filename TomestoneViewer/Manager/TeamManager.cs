@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using TomestoneViewer.Model;
+
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Manager;
 
 public class TeamManager
 {
-    public List<TeamMember> TeamList = [];
+    public List<TeamMember> TeamList { get; private set; } = [];
 
     public unsafe void UpdateTeamList()
     {

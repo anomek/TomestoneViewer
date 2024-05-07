@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer.Model;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1401:Fields should be private", Justification = "Need public fields for UI code to work properly")]
 public class SearchCharacterId
 {
     public string FirstName = string.Empty;

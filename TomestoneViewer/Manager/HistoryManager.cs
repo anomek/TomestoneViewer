@@ -11,8 +11,9 @@ namespace TomestoneViewer.Manager;
 
 public class HistoryManager
 {
-    public List<HistoryEntry> History { get; set; } = [];
     private readonly object historyLock = new();
+
+    public List<HistoryEntry> History { get; set; } = [];
 
     public HistoryManager()
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -12,35 +13,19 @@ namespace TomestoneViewer.GUI.Main;
 
 public class Table
 {
-    private static readonly DateTime AnabeisosRelaseDate = new(2023, 5, 30);
-
-    public void Draw(bool partyView)
+    public static void Draw(bool partyView)
     {
         if (partyView)
         {
-            this.DrawPartyView();
+            DrawPartyView();
         }
         else
         {
-            this.DrawSingleView();
+            DrawSingleView();
         }
     }
 
-    private static void DrawPartyViewWarning()
-    {
-        if (Service.CharDataManager.PartyMembers.Count == 0)
-        {
-            ImGui.Text("Use");
-            ImGui.PushFont(UiBuilder.IconFont);
-            ImGui.SameLine();
-            ImGui.Text(FontAwesomeIcon.Redo.ToIconString());
-            ImGui.PopFont();
-            ImGui.SameLine();
-            ImGui.Text("to refresh the party state.");
-        }
-    }
-
-    private void DrawPartyView()
+    private static void DrawPartyView()
     {
         //--------------------
         // Refresh party state
@@ -56,12 +41,12 @@ public class Table
         //------------------------------
         // Encounter combo and favourite
         //------------------------------
-        this.DrawEncounterComboMenu();
+        DrawEncounterComboMenu();
 
-        this.DrawPartyLayout();
+        DrawPartyLayout();
     }
 
-    private void DrawPartyLayout()
+    private static void DrawPartyLayout()
     {
         var currentParty = Service.CharDataManager.PartyMembers;
         if (ImGui.BeginTable(
@@ -80,7 +65,7 @@ public class Table
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.AlignTextToFramePadding();
-                var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData?.JobId ?? 0);
+                var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData.JobId);
                 if (icon != null)
                 {
                     ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
@@ -94,10 +79,9 @@ public class Table
                 ImGui.Text(charData.CharId.FullName);
                 ImGui.TableNextColumn();
 
-                this.DrawEncounterStatus(
+                DrawEncounterStatus(
                     charData,
-                    Service.CharDataManager.CurrentEncounterDisplayName,
-                    EncounterLocation.CategoryFromLocationName(Service.CharDataManager.CurrentEncounterDisplayName));
+                    Service.CharDataManager.CurrentEncounter);
                 ImGui.TableNextColumn();
             }
 
@@ -105,9 +89,9 @@ public class Table
         }
     }
 
-    private void DrawSingleView()
+    private static void DrawSingleView()
     {
-        if (Service.CharDataManager.CharacterError != null)
+        if (Service.CharDataManager.DisplayedChar == null || Service.CharDataManager.CharacterError != null)
         {
             return;
         }
@@ -124,29 +108,28 @@ public class Table
             var character = Service.CharDataManager.DisplayedChar;
 
             var firstRow = true;
-            foreach (var category in EncounterLocation.LOCATIONS)
+            foreach (var category in Category.All())
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                if (!firstRow) ImGui.Separator();
+                Util.ConditionalSeparator(!firstRow);
                 ImGui.AlignTextToFramePadding();
                 ImGui.TextUnformatted(category.DisplayName);
                 ImGui.TableNextColumn();
-                if (!firstRow) ImGui.Separator();
+                Util.ConditionalSeparator(!firstRow);
 
-                if (firstRow) firstRow = false;
-
-                int counter = 0;
+                firstRow = false;
+                var counter = 0;
                 foreach (var location in category.Locations)
                 {
                     ImGui.TableNextRow(ImGuiTableRowFlags.None, minRowHeight);
                     ImGui.TableNextColumn();
-                    if (counter == 0) ImGui.Separator();
+                    Util.ConditionalSeparator(counter == 0);
                     ImGui.AlignTextToFramePadding();
                     ImGui.TextUnformatted(location.DisplayName);
                     ImGui.TableNextColumn();
-                    if (counter == 0) ImGui.Separator();
-                    this.DrawEncounterStatus(character, location.DisplayName, category);
+                    Util.ConditionalSeparator(counter == 0);
+                    DrawEncounterStatus(character, location);
 
                     counter++;
                 }
@@ -156,25 +139,20 @@ public class Table
         }
     }
 
-    private void DrawEncounterComboMenu()
+    private static void DrawEncounterComboMenu()
     {
-        var allLocations = EncounterLocation.AllLocations();
-
         ImGui.SameLine();
 
-        var minWidth = allLocations.Select(location => ImGui.CalcTextSize(location.DisplayName).X).Max()
+        var minWidth = Location.All().Select(location => ImGui.CalcTextSize(location.DisplayName).X).Max()
                                + (30 * ImGuiHelpers.GlobalScale);
 
         var widthFromWindowSize = ImGui.GetContentRegionAvail().X;
         ImGui.SetNextItemWidth(Math.Max(minWidth, widthFromWindowSize));
 
-        Service.CharDataManager.CurrentEncounterDisplayName ??= allLocations[0].DisplayName;
-        var comboPreview = Service.CharDataManager.CurrentEncounterDisplayName;
-
-        if (ImGui.BeginCombo("##EncounterLayoutCombo", comboPreview, ImGuiComboFlags.HeightLargest))
+        if (ImGui.BeginCombo("##EncounterLayoutCombo", Service.CharDataManager.CurrentEncounter.DisplayName, ImGuiComboFlags.HeightLargest))
         {
             ImGui.Separator();
-            foreach (var category in EncounterLocation.LOCATIONS)
+            foreach (var category in Category.All())
             {
                 foreach (var encounter in category.Locations)
                 {
@@ -182,7 +160,7 @@ public class Table
 
                     if (ImGui.Selectable(name))
                     {
-                        Service.CharDataManager.CurrentEncounterDisplayName = encounter.DisplayName;
+                        Service.CharDataManager.CurrentEncounter = encounter;
                     }
                 }
 
@@ -193,15 +171,10 @@ public class Table
         }
     }
 
-    private void DrawEncounterStatus(CharData character, string? locationDisplayName, EncounterLocation.Category category)
+    private static void DrawEncounterStatus(CharData character, Location location)
     {
-        if (locationDisplayName == null)
-        {
-            return;
-        }
-
-        var encounterData = character.EncounterData[locationDisplayName];
-        var characterError = character.EncounterData[locationDisplayName].Status.Error ?? character.CharError;
+        var encounterData = character.EncounterData[location];
+        var characterError = character.EncounterData[location].Status.Error ?? character.CharError;
         if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
@@ -239,7 +212,7 @@ public class Table
                     }
 
                     var completionWeek = clear.CompletionWeek;
-                    completionWeek ??= category.DisplayName == "Savage" ? clear.CalculateCompletionWeek(AnabeisosRelaseDate) : null;
+                    completionWeek ??= clear.CalculateCompletionWeek(location.Category.ReleaseDate);
 
                     if (completionWeek != null)
                     {
@@ -264,14 +237,15 @@ public class Table
                 ImGui.PopFont();
             }
         }
-        // TODO: else 
+
+        // TODO: else
     }
 
     private static string FormatTimeRelative(DateTime timestamp)
     {
         var diff = DateTime.UtcNow - timestamp;
-        var number = 0;
-        var unit = string.Empty;
+        int number;
+        string unit;
         if (diff.TotalMinutes < 120)
         {
             number = (int)diff.TotalMinutes;

@@ -11,22 +11,22 @@ internal class SafeTomestoneClient(ITomestoneClient client) : ITomestoneClient
     public Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
         return this.client.FetchCharacterSummary(lodestoneId)
-            .ContinueWith(this.HandleTaskErrors);
+            .ContinueWith(HandleTaskErrors);
     }
 
-    public Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, EncounterLocation.Category category, EncounterLocation location)
+    public Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
-        return this.client.FetchEncounter(lodestoneId, category, location)
-            .ContinueWith(this.HandleTaskErrors);
+        return this.client.FetchEncounter(lodestoneId, location)
+            .ContinueWith(HandleTaskErrors);
     }
 
     public Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
         return this.client.FetchLodestoneId(characterId)
-            .ContinueWith(this.HandleTaskErrors);
+            .ContinueWith(HandleTaskErrors);
     }
 
-    private ClientResponse<T> HandleTaskErrors<T>(Task<ClientResponse<T>> responseTask)
+    private static ClientResponse<T> HandleTaskErrors<T>(Task<ClientResponse<T>> responseTask)
     {
         if (responseTask.IsFaulted)
         {

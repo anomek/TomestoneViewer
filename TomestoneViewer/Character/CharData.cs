@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.Linq;
 
 using Dalamud.Game.ClientState.Objects.SubKinds;
@@ -11,8 +11,7 @@ public class CharData(CharacterId characterId)
     private readonly CharacterId characterId = characterId;
     private readonly CharDataLoader loader = new(characterId);
 
-
-    public ReadOnlyDictionary<string, EncounterData> EncounterData => this.loader.EncounterData;
+    public IReadOnlyDictionary<Location, EncounterData> EncounterData => this.loader.EncounterData;
 
     public IEncounterDataError? CharError => this.loader.LoadError;
 
@@ -20,12 +19,10 @@ public class CharData(CharacterId characterId)
 
     public uint JobId { get; set; } = 0;
 
-
-    public void FetchLogs(string? encounterDisplayName = null)
+    public void FetchLogs(Location? encounterDisplayName = null)
     {
         this.SetJobId();
-        // no await
-        this.loader.Load(encounterDisplayName);
+        _ = this.loader.Load(encounterDisplayName);
     }
 
     public void Disable()
@@ -42,10 +39,10 @@ public class CharData(CharacterId characterId)
             if (obj != null)
             {
                 if (obj is PlayerCharacter playerCharacter
-                    && playerCharacter.Name.TextValue == CharId.FullName
-                    && playerCharacter.HomeWorld.GameData?.Name.RawString == CharId.World)
+                    && playerCharacter.Name.TextValue == this.CharId.FullName
+                    && playerCharacter.HomeWorld.GameData?.Name.RawString == this.CharId.World)
                 {
-                    JobId = playerCharacter.ClassJob.Id;
+                    this.JobId = playerCharacter.ClassJob.Id;
                     return;
                 }
             }
@@ -53,14 +50,14 @@ public class CharData(CharacterId characterId)
 
         // if not in object table, search in the team list (can give 0 if normal party member in another zone)
         Service.TeamManager.UpdateTeamList();
-        var member = Service.TeamManager.TeamList.FirstOrDefault(member => CharacterId.From(member) == CharId);
+        var member = Service.TeamManager.TeamList.FirstOrDefault(member => CharacterId.From(member) == this.CharId);
 
         if (member != null)
         {
-            JobId = member.JobId;
+            this.JobId = member.JobId;
             return;
         }
 
-        JobId = 0; // avoid stale job id if the current one is not retrievable
+        this.JobId = 0; // avoid stale job id if the current one is not retrievable
     }
 }

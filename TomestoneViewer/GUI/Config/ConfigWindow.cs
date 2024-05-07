@@ -5,7 +5,6 @@ namespace TomestoneViewer.GUI.Config;
 
 public class ConfigWindow : Window
 {
-
     public ConfigWindow()
         : base("Tomestone Viewer Configuration##TomestoneViewerConfigWindow")
     {

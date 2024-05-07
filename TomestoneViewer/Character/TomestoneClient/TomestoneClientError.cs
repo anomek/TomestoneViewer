@@ -10,12 +10,11 @@ public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIco
 {
     /// <summary>
     /// seperate property to know if we can ignore error returned by FetchSummary
-    /// in practice this is === !cachable, but it's seperate property in case logic changes in future
+    /// in practice this is === !cachable, but it's seperate property in case logic changes in future.
     /// </summary>
     public bool CanIgnore => !this.Cachable;
 
     public bool IsClickable => false;
-
 
     public static readonly TomestoneClientError CharacterDoesNotExist = new(
         "Character does not exist", ImGuiColors.DalamudRed, FontAwesomeIcon.ExclamationCircle, true);

@@ -1,23 +1,26 @@
 using System;
 using System.Collections.Generic;
+
 using Dalamud.Game.Addon.Events;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Plugin.Services;
 
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 namespace TomestoneViewer.GameSystems;
 
-public unsafe class AddonInterface<T> : IDisposable
+public unsafe class AddonInterface<TAddon> : IDisposable
 {
     private readonly IAddonLifecycle.AddonEventDelegate onAddonStartListener;
     private readonly IAddonLifecycle.AddonEventDelegate onAddonEndListener;
     private readonly List<IAddonEventHandle> internalRegisteredEventHandlers = [];
-    private readonly List<EventRegistration<T>> eventRegistrations = [];
+    private readonly List<EventRegistration<TAddon>> eventRegistrations = [];
 
-    private readonly List<Callback<T>> onStartListeners = [];
-    private readonly List<Callback<T>> onEndListeners = [];
+    private readonly List<Callback<TAddon>> onStartListeners = [];
+    private readonly List<Callback<TAddon>> onEndListeners = [];
 
     public delegate void Callback<T>(T* addon);
+
     public delegate nint ComponentSelector<T>(T* addon);
 
     private record EventRegistration<T>(ComponentSelector<T> Component, AddonEventType EventType, Callback<T> Callback)
@@ -42,29 +45,29 @@ public unsafe class AddonInterface<T> : IDisposable
         this.internalRegisteredEventHandlers.ForEach(Service.AddonEventManager.RemoveEvent);
     }
 
-    public void AddOnStartHandler(Callback<T> onStart)
+    public void AddOnStartHandler(Callback<TAddon> onStart)
     {
         this.onStartListeners.Add(onStart);
     }
 
-    public void AddOnEndHandler(Callback<T> onStart)
+    public void AddOnEndHandler(Callback<TAddon> onStart)
     {
         this.onEndListeners.Add(onStart);
     }
 
-    public void AddEventHandler(ComponentSelector<T> Component, AddonEventType EventType, Callback<T> Callback)
+    public void AddEventHandler(ComponentSelector<TAddon> component, AddonEventType eventType, Callback<TAddon> callback)
     {
-        this.eventRegistrations.Add(new(Component, EventType, Callback));
+        this.eventRegistrations.Add(new(component, eventType, callback));
     }
 
     private void OnAddonStart(AddonEvent type, AddonArgs args)
     {
-        T* addon = (T*)args.Addon;
+        var addon = (TAddon*)args.Addon;
         this.internalRegisteredEventHandlers.ForEach(Service.AddonEventManager.RemoveEvent);
         this.internalRegisteredEventHandlers.Clear();
         this.eventRegistrations.ForEach(registration =>
         {
-            var handle = Service.AddonEventManager.AddEvent(args.Addon, registration.GetComponent(addon), registration.EventType, (_, addonPtr, _) => registration.Callback.Invoke((T*)addonPtr));
+            var handle = Service.AddonEventManager.AddEvent(args.Addon, registration.GetComponent(addon), registration.EventType, (_, addonPtr, _) => registration.Callback.Invoke((TAddon*)addonPtr));
             if (handle != null)
             {
                 this.internalRegisteredEventHandlers.Add(handle);
@@ -78,12 +81,11 @@ public unsafe class AddonInterface<T> : IDisposable
         this.onStartListeners.ForEach(listener => listener.Invoke(addon));
     }
 
-
     private void OnAddonEnd(AddonEvent type, AddonArgs args)
     {
         this.internalRegisteredEventHandlers.ForEach(Service.AddonEventManager.RemoveEvent);
         this.internalRegisteredEventHandlers.Clear();
 
-        this.onEndListeners.ForEach(listener => listener.Invoke((T*)args.Addon));
+        this.onEndListeners.ForEach(listener => listener.Invoke((TAddon*)args.Addon));
     }
 }

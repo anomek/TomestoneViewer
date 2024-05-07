@@ -1,10 +1,14 @@
-﻿namespace TomestoneViewer.Model;
+namespace TomestoneViewer.Model;
 
 public class TeamMember
 {
-    public string FirstName = null!;
-    public string LastName = null!;
-    public string World = null!;
-    public uint JobId;
-    public bool IsInParty;
+    public string FirstName { get; init; } = null!;
+
+    public string LastName { get; init; } = null!;
+
+    public string World { get; init; } = null!;
+
+    public uint JobId { get; init; }
+
+    public bool IsInParty { get; init; }
 }

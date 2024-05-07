@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
@@ -9,41 +8,37 @@ public class ClientResponse<T>
     private readonly T? value;
     private readonly TomestoneClientError? error;
 
-    public bool HasValue => this.value != null;
-
     internal bool Cachable => this.error == null || this.error.Cachable;
 
-    public TomestoneClientError Error => (TomestoneClient.TomestoneClientError)this.error;
-
-    public bool TryGetValue([MaybeNullWhen(false)] out T value)
+    public TResult Fold<TResult>(Func<T, TResult> onSuccess, Func<TomestoneClientError, TResult> onError)
     {
-        if (this.value == null)
+        if (this.value != null)
         {
-            value = default;
-            return false;
+            return onSuccess.Invoke(this.value);
+        }
+        else if (this.error != null)
+        {
+            return onError.Invoke(this.error);
         }
         else
         {
-            value = this.value;
-            return true;
+            throw new System.InvalidOperationException("Improperly initialized object");
         }
+    }
+
+    public bool IfSuccessOrElse(Action<T> onSuccess, Action<TomestoneClientError> onError)
+    {
+        return this.Fold(ToFunc(onSuccess, true), ToFunc(onError, false));
     }
 
     public bool HasError(Predicate<TomestoneClientError> predicate)
     {
-        return this.error != null && predicate.Invoke(this.Error);
+        return this.error != null && predicate.Invoke(this.error);
     }
 
-    public ClientResponse<R> FlatMap<R>(Func<T, ClientResponse<R>> transform)
+    public ClientResponse<TResult> FlatMap<TResult>(Func<T, ClientResponse<TResult>> transform)
     {
-        if (this.TryGetValue(out var value))
-        {
-            return transform.Invoke(value);
-        }
-        else
-        {
-            return new(this.Error);
-        }
+        return this.Fold(value => transform(value), error => new(error));
     }
 
     internal ClientResponse(T value)
@@ -54,5 +49,14 @@ public class ClientResponse<T>
     internal ClientResponse(TomestoneClientError error)
     {
         this.error = error;
+    }
+
+    private static Func<TIn, TOut> ToFunc<TIn, TOut>(Action<TIn> action, TOut value)
+    {
+        return input =>
+        {
+            action(input);
+            return value;
+        };
     }
 }

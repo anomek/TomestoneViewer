@@ -1,5 +1,5 @@
-using System;
 using System.Numerics;
+
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
@@ -8,7 +8,6 @@ namespace TomestoneViewer.GUI.Main;
 public class MainWindow : Window
 {
     private readonly HeaderBar headerBar = new();
-    private readonly Table table = new();
 
     private bool partyView;
 
@@ -50,7 +49,7 @@ public class MainWindow : Window
             this.headerBar.Draw();
         }
 
-        this.table.Draw(this.partyView);
+        Table.Draw(this.partyView);
     }
 
     public void SetPartyView(bool v)

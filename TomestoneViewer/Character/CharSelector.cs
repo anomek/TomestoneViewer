@@ -29,7 +29,7 @@ public class CharSelector
 
     public override string ToString()
     {
-        return this.CharId?.ToString() ?? this.Error.Message;
+        return this.CharId?.ToString() ?? this.Error?.Message ?? "CharSelector inconsistent state";
     }
 
     public static CharSelector SelectCurrentTarget()

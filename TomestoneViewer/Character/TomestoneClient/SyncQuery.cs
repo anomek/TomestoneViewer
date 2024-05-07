@@ -29,6 +29,7 @@ internal class SyncQuery<T>(Func<Task<T>> query)
                     this.runningTask = this.query.Invoke();
                     createdNewTask = true;
                 }
+
                 taskLocalCopy = this.runningTask;
             }
         }

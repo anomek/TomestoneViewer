@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
+
 using Dalamud.Configuration;
-using TomestoneViewer.Model;
 using Newtonsoft.Json;
 
 namespace TomestoneViewer;

@@ -7,11 +7,10 @@ using Newtonsoft.Json;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
-internal class LowLevelTomestoneClient
+internal partial class LowLevelTomestoneClient
 {
-    private const int RETRY_COUNT = 3;
+    private const int RetryCount = 3;
 
-    private readonly Regex inertiaRegex = new Regex("version&quot;:&quot;([a-z0-9]+)&quot;}\"");
     private readonly HttpClient httpClient;
     private readonly SyncQuery<ClientResponse<string>> getInertiaVersionQuery;
 
@@ -41,10 +40,10 @@ internal class LowLevelTomestoneClient
         }
     }
 
-    internal async Task<ClientResponse<dynamic>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
+    internal async Task<ClientResponse<dynamic?>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
     {
         TomestoneClientError? lastError = null;
-        for (var i = 0; i < RETRY_COUNT; i++)
+        for (var i = 0; i < RetryCount; i++)
         {
             if (this.inertiaVersion == null)
             {
@@ -103,7 +102,7 @@ internal class LowLevelTomestoneClient
             }
         }
 
-        return new(lastError);
+        return new(lastError ?? TomestoneClientError.NetworkError);
     }
 
     private async Task<TomestoneClientError?> RefreshIntertia(string? invalidInertia)
@@ -114,18 +113,15 @@ internal class LowLevelTomestoneClient
             return null;
         }
 
-        var res = await this.getInertiaVersionQuery.Run();
-        if (res.TryGetValue(out var inertiaVersion))
-        {
-            this.inertiaVersion = inertiaVersion;
-            return null;
-        }
-        else
-        {
-            return res.Error;
-        }
+        return (await this.getInertiaVersionQuery.Run())
+            .Fold<TomestoneClientError?>(
+            inertiaVersion =>
+            {
+                this.inertiaVersion = inertiaVersion;
+                return null;
+            },
+            error => error);
     }
-
 
     private async Task<ClientResponse<string>> FetchInertiaVersion()
     {
@@ -134,7 +130,7 @@ internal class LowLevelTomestoneClient
         {
             response = await this.httpClient.GetAsync("https://tomestone.gg/");
             var content = await response.Content.ReadAsStringAsync();
-            var match = this.inertiaRegex.Match(content);
+            var match = InertiaRegex().Match(content);
             if (match.Success)
             {
                 var version = match.Groups[1].Value;
@@ -156,4 +152,7 @@ internal class LowLevelTomestoneClient
             response?.Dispose();
         }
     }
+
+    [GeneratedRegex("version&quot;:&quot;([a-z0-9]+)&quot;}\"")]
+    private static partial Regex InertiaRegex();
 }
