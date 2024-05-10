@@ -4,15 +4,17 @@ using System.Linq;
 
 using Lumina.Excel.GeneratedSheets;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.GameSystems;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;
 
-public class CharDataManager
+public class CharDataManager(CharDataFactory charDataFactory)
 {
     private readonly SearchCharacterId searchCharacterId = new();
     private readonly List<CharData> partyMembers = [];
+    private readonly CharDataFactory charDataFactory = charDataFactory;
 
     private Location currentEncounter = Location.All()[0];
     private CharData? displayedChar;
@@ -35,13 +37,29 @@ public class CharDataManager
         get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.CharError;
     }
 
-    public void UpdatePartyMemebers(List<CharData> partyMembers)
+    public void UpdatePartyMemebers(List<(CharacterId Id, JobId JobId)> partyMembers)
     {
+        var newPartyList = partyMembers
+            .Select(character =>
+            {
+                var charData = this.partyMembers.FirstOrDefault(x => x.CharId == character.Id) ?? this.charDataFactory.Create(character.Id);
+                charData.JobId = character.JobId;
+                return charData;
+            })
+            .ToList();
+
+        var characterIds = newPartyList.Select(charData => charData.CharId).ToHashSet();
+        foreach (var charData in this.partyMembers
+            .Where(previousCharData => !characterIds.Contains(previousCharData.CharId)))
+        {
+            charData.Disable();
+        }
+
         this.partyMembers.Clear();
-        this.partyMembers.AddRange(partyMembers);
+        this.partyMembers.AddRange(newPartyList);
     }
 
-    public void SetTerritoryId(uint? teritorryId)
+    public void SetTerritoryId(TerritoryId? teritorryId)
     {
         if (teritorryId == null)
         {
@@ -49,7 +67,7 @@ public class CharDataManager
         }
 
         Service.PluginLog.Info($"Set encounter {teritorryId}");
-        var encounter = Location.Find(new TerritoryId(teritorryId.Value));
+        var encounter = Location.Find(teritorryId);
         if (encounter != null)
         {
             this.CurrentEncounter = encounter;
@@ -67,7 +85,7 @@ public class CharDataManager
         }
         else if (selector.CharId != null)
         {
-            this.displayedChar = new CharData(selector.CharId);
+            this.displayedChar = this.charDataFactory.Create(selector.CharId);
             this.displayedChar.FetchLogs();
             this.characterSelectorError = null;
             this.searchCharacterId.Copy(this.displayedChar.CharId);

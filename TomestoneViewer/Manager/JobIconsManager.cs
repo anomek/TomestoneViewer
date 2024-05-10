@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Dalamud.Interface.Internal;
+using TomestoneViewer.Character;
 
 namespace TomestoneViewer.Manager;
 
@@ -11,7 +12,7 @@ public class JobIconsManager
     private volatile bool isLoading;
     private int iconLoadAttemptsLeft = 4;
 
-    public IDalamudTextureWrap? GetJobIcon(uint jobId)
+    public IDalamudTextureWrap? GetJobIcon(JobId jobId)
     {
         if (this.isLoading)
         {
@@ -23,9 +24,10 @@ public class JobIconsManager
             this.LoadJobIcons();
         }
 
-        if (this.jobIcons is { Count: 41 } && jobId <= 40)
+        var jobIndex = (int)jobId.Id;
+        if (this.jobIcons is { Count: 41 } && jobIndex <= 40)
         {
-            return this.jobIcons[(int)jobId];
+            return this.jobIcons[jobIndex];
         }
 
         return null;

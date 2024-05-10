@@ -23,7 +23,7 @@ public record Location(
         new("p10s", "pand%C3%A6monium", Category.SAVAGE, ExpansionQueryParam.EW, new(1150), null),
         new("p11s",  "themis", Category.SAVAGE, ExpansionQueryParam.EW, new(1152), null),
         new("p12sp1", "athena", Category.SAVAGE, ExpansionQueryParam.EW, new(1154), null),
-        new("p12sp2", "pallas-athena", Category.SAVAGE, ExpansionQueryParam.EW, TerritoryId.EMPTY, null)
+        new("p12sp2", "pallas-athena", Category.SAVAGE, ExpansionQueryParam.EW, TerritoryId.Empty, null)
     ];
 
     public static IReadOnlyList<Location> All()
@@ -36,5 +36,12 @@ public record Location(
         return All()
             .Where(location => location.TerritoryId == territoryId)
             .FirstOrDefault();
+    }
+
+    internal static IReadOnlySet<TerritoryId> AllTerritories()
+    {
+        return All()
+            .Select(location => location.TerritoryId)
+            .ToHashSet();
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Dalamud.Plugin.Services;
@@ -7,29 +8,42 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
+using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.GameSystems;
 
-public unsafe class PartyFinderDetector
+public unsafe class TerritoryOfInterestDetector
 {
+    private readonly IReadOnlySet<TerritoryId> validTerritories;
+
     private readonly AddonInterface<AddonLookingForGroupDetail> partyFinderDetailsAddon;
     private readonly AddonInterface<AddonLookingForGroupCondition> createPartyFinderAddon;
 
-    public uint TerritoryId { get; private set; }
+    public TerritoryId? TerritoryId { get; private set; }
 
-    public PartyFinderDetector()
+    public TerritoryOfInterestDetector(IReadOnlySet<TerritoryId> validTerritories)
     {
+        this.validTerritories = validTerritories;
+
         this.partyFinderDetailsAddon = new("LookingForGroupDetail");
         this.partyFinderDetailsAddon.AddOnEndHandler(this.OnLookingForGroupDetailClose);
 
         this.createPartyFinderAddon = new("LookingForGroupCondition");
         this.createPartyFinderAddon.AddOnEndHandler(this.OnLookingForGroupConditionClose);
+
+        Service.ClientState.TerritoryChanged += this.OnTerritoryChanged;
     }
 
     public void Dispose()
     {
         this.partyFinderDetailsAddon.Dispose();
         this.createPartyFinderAddon.Dispose();
+        Service.ClientState.TerritoryChanged -= this.OnTerritoryChanged;
+    }
+
+    private void OnTerritoryChanged(ushort territoryId)
+    {
+        this.UpdateTerritoryId(territoryId);
     }
 
     private void OnLookingForGroupConditionClose(AddonLookingForGroupCondition* addon)
@@ -58,13 +72,20 @@ public unsafe class PartyFinderDetector
         this.UpdateTerritoryId(FindTerritoryId(dutyName));
     }
 
-    private void UpdateTerritoryId(uint? territoryId)
+    private void UpdateTerritoryId(uint? territoryIdInt)
     {
-        if (territoryId != null)
+        if (territoryIdInt == null)
         {
-            // Left commented log as a useful tool for detecting territoryId in future
-            // Service.PluginLog.Info($"Closed dialog for territoryId={targetTerritoryId}");
-            this.TerritoryId = territoryId.Value;
+            return;
+        }
+
+        var territoryId = new TerritoryId(territoryIdInt.Value);
+
+        // Left commented log as a useful tool for detecting territoryId in future
+        // Service.PluginLog.Info($"Selecting territoryId territoryId={territoryId}");
+        if (this.validTerritories.Contains(territoryId))
+        {
+            this.TerritoryId = territoryId;
         }
     }
 

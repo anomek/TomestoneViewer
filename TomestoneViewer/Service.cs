@@ -29,10 +29,6 @@ internal class Service
 
     internal static HistoryManager HistoryManager { get; set; } = null!;
 
-    internal static ITomestoneClient TomestoneClient { get; set; } = null!;
-
-    internal static PartyFinderDetector PartyFinderDetector { get; set; } = null!;
-
     [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
 
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;

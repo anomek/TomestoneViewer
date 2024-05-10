@@ -20,13 +20,13 @@ internal class CharDataLoader
 
     internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
 
-    internal CharDataLoader(CharacterId characterId)
+    internal CharDataLoader(CharacterId characterId, ITomestoneClient client)
     {
         this.characterId = characterId;
         this.encounterData = Location.All()
             .ToDictionary(location => location, _ => new EncounterData())
             .AsReadOnly();
-        this.client = new(Service.TomestoneClient);
+        this.client = new CancelableTomestoneClient(client);
     }
 
     internal void Cancel()
@@ -42,7 +42,7 @@ internal class CharDataLoader
         // Fetch lodestoneId
         if (this.lodestoneId == null)
         {
-            (await Service.TomestoneClient.FetchLodestoneId(this.characterId))
+            (await this.client.FetchLodestoneId(this.characterId))
                 .IfSuccessOrElse(
                 lodestoneId => this.lodestoneId = lodestoneId,
                 error => this.loadError = error);
@@ -54,7 +54,7 @@ internal class CharDataLoader
         }
 
         // Fetch summary
-        var summary = (await Service.TomestoneClient.FetchCharacterSummary(this.lodestoneId))
+        var summary = (await this.client.FetchCharacterSummary(this.lodestoneId))
             .Fold(
             summaryResponse => summaryResponse,
             error =>
@@ -87,7 +87,7 @@ internal class CharDataLoader
                 }
                 else
                 {
-                    return Service.TomestoneClient
+                    return this.client
                         .FetchEncounter(this.lodestoneId, location)
                         .ContinueWith(t => this.Apply(t.Result, location));
                 }

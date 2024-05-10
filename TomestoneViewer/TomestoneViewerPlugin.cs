@@ -2,8 +2,10 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.Controller;
+using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -16,25 +18,28 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     private readonly WindowSystem windowSystem;
 
     private readonly ContextMenu contextMenu;
+    private readonly TerritoryOfInterestDetector territorryOfInterestDetector;
 
     public TomestoneViewerPlugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface)
     {
         pluginInterface.Create<Service>();
 
+        this.territorryOfInterestDetector = new TerritoryOfInterestDetector(Location.AllTerritories());
+
+        var tomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
+
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        Service.CharDataManager = new CharDataManager();
+        Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient));
 
-        var characterSelectorController = new CharacterSelectorController(Service.CharDataManager);
+        var characterSelectorController = new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector);
         var mainWindowController = new MainWindowController(characterSelectorController);
 
         Service.Commands = new Commands(mainWindowController);
 
         Service.GameDataManager = new GameDataManager();
         Service.HistoryManager = new HistoryManager();
-        Service.TomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
-        Service.PartyFinderDetector = new GameSystems.PartyFinderDetector();
 
         Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, characterSelectorController, mainWindowController);
         mainWindowController.RegisterMainWindow(Service.MainWindow);
@@ -55,9 +60,9 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     public void Dispose()
     {
         Service.Commands.Dispose();
-        Service.PartyFinderDetector.Dispose();
 
         this.contextMenu.Disable();
+        this.territorryOfInterestDetector.Dispose();
 
         Service.Interface.UiBuilder.OpenMainUi -= OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi -= OpenConfigUi;

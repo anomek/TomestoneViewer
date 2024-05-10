@@ -127,6 +127,6 @@ public class TeamList
             return;
         }
 
-        this.Members.Add(new TeamMember(new CharacterId(splitName[0], splitName[1], world.Name), jobId, isInParty, isLeader));
+        this.Members.Add(new TeamMember(new CharacterId(splitName[0], splitName[1], world.Name), new JobId(jobId), isInParty, isLeader));
     }
 }

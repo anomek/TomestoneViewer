@@ -1,16 +1,13 @@
 using System.Collections.Generic;
-using System.Linq;
 
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.GameSystems;
 
 namespace TomestoneViewer.Character;
 
-public class CharData(CharacterId characterId)
+public class CharData
 {
-    private readonly CharacterId characterId = characterId;
-    private readonly CharDataLoader loader = new(characterId);
+    private readonly CharacterId characterId;
+    private readonly CharDataLoader loader;
 
     public IReadOnlyDictionary<Location, EncounterData> EncounterData => this.loader.EncounterData;
 
@@ -18,7 +15,13 @@ public class CharData(CharacterId characterId)
 
     public CharacterId CharId => this.characterId;
 
-    public uint JobId { get; set; } = 0;
+    public JobId JobId { get; set; } = JobId.Empty;
+
+    internal CharData(CharacterId characterId, CharDataLoader loader)
+    {
+        this.characterId = characterId;
+        this.loader = loader;
+    }
 
     public void FetchLogs(Location? encounterDisplayName = null)
     {
