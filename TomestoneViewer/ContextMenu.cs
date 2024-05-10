@@ -6,19 +6,22 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using TomestoneViewer.Character;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer;
 
-public class ContextMenu
+public class ContextMenu(MainWindowController mainWindowController)
 {
-    public static void Enable()
+    private readonly MainWindowController mainWindowController = mainWindowController;
+
+    public void Enable()
     {
-        Service.ContextMenu.OnMenuOpened += OnOpenContextMenu;
+        Service.ContextMenu.OnMenuOpened += this.OnOpenContextMenu;
     }
 
-    public static void Disable()
+    public void Disable()
     {
-        Service.ContextMenu.OnMenuOpened -= OnOpenContextMenu;
+        Service.ContextMenu.OnMenuOpened -= this.OnOpenContextMenu;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "switch looks better")]
@@ -54,7 +57,7 @@ public class ContextMenu
         }
     }
 
-    private static void SearchPlayerFromMenu(MenuArgs menuArgs)
+    private void SearchPlayerFromMenu(MenuArgs menuArgs)
     {
         if (menuArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
@@ -63,14 +66,13 @@ public class ContextMenu
 
         if (IsPartyAddon(menuArgs.AddonName))
         {
-            Service.MainWindow.SetPartyView(true);
-            Service.CharDataManager.UpdatePartyMembers();
+            this.mainWindowController.OpenParty();
         }
         else
         {
             if (menuArgs.AddonName == "BlackList")
             {
-                Service.CharDataManager.SetCharacter(CharSelector.SelectByName(GetBlacklistSelectFullName()));
+                this.mainWindowController.OpenCharacter(CharSelector.SelectByName(GetBlacklistSelectFullName()));
             }
             else
             {
@@ -80,16 +82,12 @@ public class ContextMenu
                     return;
                 }
 
-                Service.CharDataManager.SetCharacter(CharSelector.SelectByName(menuTargetDefault.TargetName, world.Name));
+                this.mainWindowController.OpenCharacter(CharSelector.SelectByName(menuTargetDefault.TargetName, world.Name));
             }
-
-            Service.MainWindow.SetPartyView(false);
         }
-
-        Service.MainWindow.Open();
     }
 
-    private static void OnOpenContextMenu(MenuOpenedArgs menuOpenedArgs)
+    private void OnOpenContextMenu(MenuOpenedArgs menuOpenedArgs)
     {
         if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(menuOpenedArgs))
         {
@@ -103,18 +101,18 @@ public class ContextMenu
             Name = menuOpenedArgs.AddonName == "_PartyList"
                     ? "Party Tomestone Summary"
                     : "Search Tomestone",
-            OnClicked = Search,
+            OnClicked = this.Search,
         });
     }
 
-    private static void Search(MenuItemClickedArgs menuItemClickedArgs)
+    private void Search(MenuItemClickedArgs menuItemClickedArgs)
     {
         if (!IsMenuValid(menuItemClickedArgs))
         {
             return;
         }
 
-        SearchPlayerFromMenu(menuItemClickedArgs);
+        this.SearchPlayerFromMenu(menuItemClickedArgs);
     }
 
     private static unsafe string GetBlacklistSelectFullName()

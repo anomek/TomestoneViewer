@@ -74,6 +74,11 @@ public class CharSelector
         return new CharSelector(CharacterSelectorError.Unimplemented);
     }
 
+    public static CharSelector SelectById(CharacterId characterId)
+    {
+        return new CharSelector(characterId);
+    }
+
     public static CharSelector SelectByName(string fullName, string world)
     {
         var firstName = fullName.Split(' ')[0];

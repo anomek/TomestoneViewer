@@ -3,6 +3,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.TomestoneClient;
+using TomestoneViewer.Controller;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -14,6 +15,8 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 {
     private readonly WindowSystem windowSystem;
 
+    private readonly ContextMenu contextMenu;
+
     public TomestoneViewerPlugin(
         [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface)
     {
@@ -21,21 +24,28 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        Service.Commands = new Commands();
         Service.CharDataManager = new CharDataManager();
+
+        var characterSelectorController = new CharacterSelectorController(Service.CharDataManager);
+        var mainWindowController = new MainWindowController(characterSelectorController);
+
+        Service.Commands = new Commands(mainWindowController);
+
         Service.GameDataManager = new GameDataManager();
         Service.HistoryManager = new HistoryManager();
-        Service.TeamManager = new TeamManager();
         Service.TomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
         Service.PartyFinderDetector = new GameSystems.PartyFinderDetector();
 
-        Service.MainWindow = new MainWindow();
+        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, characterSelectorController, mainWindowController);
+        mainWindowController.RegisterMainWindow(Service.MainWindow);
         Service.ConfigWindow = new ConfigWindow();
+
         this.windowSystem = new WindowSystem("Tomestone Viewer");
         this.windowSystem.AddWindow(Service.ConfigWindow);
         this.windowSystem.AddWindow(Service.MainWindow);
 
-        ContextMenu.Enable();
+        this.contextMenu = new ContextMenu(mainWindowController);
+        this.contextMenu.Enable();
 
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
@@ -44,10 +54,10 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
     public void Dispose()
     {
-        Commands.Dispose();
+        Service.Commands.Dispose();
         Service.PartyFinderDetector.Dispose();
 
-        ContextMenu.Disable();
+        this.contextMenu.Disable();
 
         Service.Interface.UiBuilder.OpenMainUi -= OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi -= OpenConfigUi;

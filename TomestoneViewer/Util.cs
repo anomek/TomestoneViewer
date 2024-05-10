@@ -234,21 +234,6 @@ public class Util
         return SeString.Parse(bytes);
     }
 
-    public static void UpdateDelayed(Stopwatch stopwatch, TimeSpan delayTime, Action function)
-    {
-        if (stopwatch.IsRunning && stopwatch.Elapsed >= delayTime)
-        {
-            stopwatch.Stop();
-            stopwatch.Reset();
-        }
-
-        if (!stopwatch.IsRunning)
-        {
-            stopwatch.Start();
-            function();
-        }
-    }
-
     public static void Rotate(Action action)
     {
         var rotationStartIndex = ImGui.GetWindowDrawList().VtxBuffer.Size;

@@ -8,16 +8,19 @@ using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class Table
+public class Table(CharacterSelectorController characterSelectorController)
 {
-    public static void Draw(bool partyView)
+    private readonly CharacterSelectorController characterSelectorController = characterSelectorController;
+
+    public void Draw(bool partyView)
     {
         if (partyView)
         {
-            DrawPartyView();
+            this.DrawPartyView();
         }
         else
         {
@@ -25,14 +28,14 @@ public class Table
         }
     }
 
-    private static void DrawPartyView()
+    private void DrawPartyView()
     {
         //--------------------
         // Refresh party state
         //--------------------
         if (Util.DrawButtonIcon(FontAwesomeIcon.Redo))
         {
-            Service.CharDataManager.UpdatePartyMembers();
+            this.characterSelectorController.RefreshPartyList();
         }
 
         Util.SetHoverTooltip("Refresh party state");

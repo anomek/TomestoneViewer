@@ -5,18 +5,20 @@ using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
 using Lumina.Excel.GeneratedSheets;
-using TomestoneViewer.Model;
+using TomestoneViewer.Character;
 
-namespace TomestoneViewer.Manager;
+namespace TomestoneViewer.GameSystems;
 
-public class TeamManager
+public class TeamList
 {
-    public List<TeamMember> TeamList { get; private set; } = [];
+    public List<TeamMember> Members { get; } = [];
 
-    public unsafe void UpdateTeamList()
+    public bool NonEmpty => this.Members.Count > 0;
+
+    public TeamMember? Leader => this.Members.Where(member => member.IsLeader).FirstOrDefault();
+
+    public unsafe TeamList()
     {
-        this.TeamList = [];
-
         var groupManager = GroupManager.Instance();
         if (groupManager->MemberCount > 0)
         {
@@ -43,12 +45,12 @@ public class TeamManager
         }
 
         // Add self if not in party
-        if (this.TeamList.Count == 0 && Service.ClientState.LocalPlayer != null)
+        if (this.Members.Count == 0 && Service.ClientState.LocalPlayer != null)
         {
             var selfName = Service.ClientState.LocalPlayer.Name.TextValue;
             var selfWorldId = Service.ClientState.LocalPlayer.HomeWorld.Id;
             var selfJobId = Service.ClientState.LocalPlayer.ClassJob.Id;
-            this.AddTeamMember(selfName, (ushort)selfWorldId, selfJobId, true);
+            this.AddTeamMember(selfName, (ushort)selfWorldId, selfJobId, true, false);
         }
     }
 
@@ -57,7 +59,7 @@ public class TeamManager
         for (var i = 0; i < crossRealmGroup.GroupMemberCount; i++)
         {
             var groupMember = crossRealmGroup.GroupMembersSpan[i];
-            this.AddTeamMember(Util.ReadSeString(groupMember.Name).TextValue, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup);
+            this.AddTeamMember(Util.ReadSeString(groupMember.Name).TextValue, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup, groupMember.IsPartyLeader > 0);
         }
     }
 
@@ -87,7 +89,7 @@ public class TeamManager
                         var partyMemberName = Util.ReadSeString(partyMember->Name).TextValue;
                         if (hudPartyMemberName.Equals(partyMemberName))
                         {
-                            this.AddTeamMember(partyMemberName, partyMember->HomeWorld, partyMember->ClassJob, true);
+                            this.AddTeamMember(partyMemberName, partyMember->HomeWorld, partyMember->ClassJob, true, false);
                             groupManagerIndexLeft.Remove(j);
                             break;
                         }
@@ -101,12 +103,12 @@ public class TeamManager
             var allianceMember = groupManager->GetAllianceMemberByIndex(i);
             if (allianceMember != null)
             {
-                this.AddTeamMember(Util.ReadSeString(allianceMember->Name).TextValue, allianceMember->HomeWorld, allianceMember->ClassJob, false);
+                this.AddTeamMember(Util.ReadSeString(allianceMember->Name).TextValue, allianceMember->HomeWorld, allianceMember->ClassJob, false, false);
             }
         }
     }
 
-    private void AddTeamMember(string fullName, ushort worldId, uint jobId, bool isInParty)
+    private void AddTeamMember(string fullName, ushort worldId, uint jobId, bool isInParty, bool isLeader)
     {
         var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
         if (world is not { IsPublic: true })
@@ -125,6 +127,6 @@ public class TeamManager
             return;
         }
 
-        this.TeamList.Add(new TeamMember { FirstName = splitName[0], LastName = splitName[1], World = world.Name, JobId = jobId, IsInParty = isInParty });
+        this.Members.Add(new TeamMember(new CharacterId(splitName[0], splitName[1], world.Name), jobId, isInParty, isLeader));
     }
 }

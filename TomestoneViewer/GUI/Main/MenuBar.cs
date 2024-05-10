@@ -4,12 +4,15 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class MenuBar
+public class MenuBar(MainWindowController mainWindowController)
 {
-    public static void Draw(bool partyView)
+    private readonly MainWindowController mainWindowController = mainWindowController;
+
+    public void Draw(bool partyView)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6 * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y));
 
@@ -22,7 +25,7 @@ public class MenuBar
             ImGui.PushFont(UiBuilder.IconFont);
             if (ImGui.MenuItem(swapViewIcon.ToIconString()))
             {
-                Service.MainWindow.TogglePartyView();
+                this.mainWindowController.TogglePartyView();
             }
 
             ImGui.PopFont();
@@ -56,7 +59,7 @@ public class MenuBar
             ImGui.PopFont();
             Util.SetHoverTooltip("History");
 
-            DrawHistoryPopup();
+            this.DrawHistoryPopup();
 
             //---------------------
             // Configuration button
@@ -76,7 +79,7 @@ public class MenuBar
         ImGui.PopStyleVar();
     }
 
-    public static void DrawHistoryPopup()
+    public void DrawHistoryPopup()
     {
         if (!ImGui.BeginPopup("##History", ImGuiWindowFlags.NoMove | ImGuiWindowFlags.AlwaysAutoResize))
         {
@@ -106,8 +109,7 @@ public class MenuBar
                     var historyEntry = history[i];
                     if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, 25 * ImGuiHelpers.GlobalScale)))
                     {
-                        Service.CharDataManager.SetCharacter(CharSelector.SelectByName(historyEntry.FirstName, historyEntry.LastName, historyEntry.WorldName));
-                        Service.MainWindow.SetPartyView(false);
+                        this.mainWindowController.OpenCharacter(CharSelector.SelectById(historyEntry.CharId));
                         ImGui.CloseCurrentPopup();
                     }
 

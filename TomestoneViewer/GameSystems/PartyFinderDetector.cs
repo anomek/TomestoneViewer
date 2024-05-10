@@ -29,20 +29,20 @@ public unsafe class PartyFinderDetector
     {
         if (IsInParty())
         {
-            Service.PluginLog.Info("In party, ignoring addon close");
-
-            // Already in party, looking at party finder doesn't really matter
-            // TODO: actualy this could be "Recruitment Criteria" addon in which case we might want to update regionId
-            return;
+            var partyLeaderAddon = StripNonAsci(addon->PartyLeaderTextNode->NodeText.ToString());
+            var partyLeaderReal = new TeamList().Leader?.CharacterId?.FullName;
+            if (partyLeaderAddon != partyLeaderReal)
+            {
+                Service.PluginLog.Info("In party, ignoring addon close");
+                return;
+            }
+            else
+            {
+                Service.PluginLog.Info("Looking at your own party, update territory");
+            }
         }
 
-        var dutyName = addon->DutyNameTextNode->NodeText.ToString();
-
-        // cut sprout from duty name
-        if (dutyName.Length > 5 && dutyName[0] == 2)
-        {
-            dutyName = dutyName[5..];
-        }
+        var dutyName = StripNonAsci(addon->DutyNameTextNode->NodeText.ToString());
 
         var targetTerritoryId = Service.DataManager.GetExcelSheet<ContentFinderCondition>()!
              .FirstOrDefault(entry => string.Equals(
@@ -58,6 +58,16 @@ public unsafe class PartyFinderDetector
             // Can't be sure that party was joined, but this is a best effort
             this.TerritoryId = targetTerritoryId.Value;
         }
+    }
+
+    private static string StripNonAsci(string input)
+    {
+        while (input.Length > 5 && input[0] == 2)
+        {
+            input = input[5..];
+        }
+
+        return input;
     }
 
     private static bool IsInParty()

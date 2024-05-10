@@ -1,5 +1,5 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -7,12 +7,13 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class HeaderBar
+public class HeaderBar(IReadOnlyList<CharData> partyList)
 {
-    private readonly Stopwatch partyListStopwatch = new();
+    private readonly IReadOnlyList<CharData> partyList = partyList;
 
     public void Draw()
     {
@@ -133,14 +134,11 @@ public class HeaderBar
             return;
         }
 
-        Util.UpdateDelayed(this.partyListStopwatch, TimeSpan.FromSeconds(1), Service.TeamManager.UpdateTeamList);
-
-        var partyList = Service.TeamManager.TeamList;
-        if (partyList.Count != 0)
+        if (this.partyList.Count > 0)
         {
             if (ImGui.BeginTable("##PartyListTable", 3, ImGuiTableFlags.RowBg))
             {
-                for (var i = 0; i < partyList.Count; i++)
+                for (var i = 0; i < this.partyList.Count; i++)
                 {
                     if (i != 0)
                     {
@@ -149,13 +147,13 @@ public class HeaderBar
 
                     ImGui.TableNextColumn();
 
-                    var partyMember = partyList[i];
+                    var partyMember = this.partyList[i];
                     var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
                     var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
 
                     if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
                     {
-                        Service.CharDataManager.SetCharacter(CharSelector.SelectByName(partyMember.FirstName, partyMember.LastName, partyMember.World));
+                        Service.CharDataManager.SetCharacter(CharSelector.SelectById(partyMember.CharId));
                     }
 
                     var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
@@ -173,12 +171,12 @@ public class HeaderBar
                     ImGui.TableNextColumn();
 
                     ImGui.SetCursorPosY(middleCursorPosY);
-                    ImGui.Text($"{partyMember.FirstName} {partyMember.LastName}");
+                    ImGui.Text(partyMember.CharId.FullName);
 
                     ImGui.TableNextColumn();
 
                     ImGui.SetCursorPosY(middleCursorPosY);
-                    ImGui.Text(partyMember.World + " ");
+                    ImGui.Text(partyMember.CharId.World + " ");
                 }
 
                 ImGui.EndTable();

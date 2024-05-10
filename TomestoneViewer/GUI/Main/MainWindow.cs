@@ -1,19 +1,31 @@
+using System.Collections.Generic;
 using System.Numerics;
 
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
+using TomestoneViewer.Character;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
 public class MainWindow : Window
 {
-    private readonly HeaderBar headerBar = new();
+    private readonly MenuBar menuBar;
+    private readonly HeaderBar headerBar;
+    private readonly Table table;
 
-    private bool partyView;
+    public bool PartyView { get; set; } = true;
 
-    public MainWindow()
+    public MainWindow(
+        IReadOnlyList<CharData> partyList,
+        CharacterSelectorController characterSelectorController,
+        MainWindowController mainWindowController)
         : base("Tomestone Viewer##TomestoneViewerMainWindow10")
     {
+        this.menuBar = new MenuBar(mainWindowController);
+        this.headerBar = new HeaderBar(partyList);
+        this.table = new Table(characterSelectorController);
+
         this.RespectCloseHotkey = true;
         this.Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar;
     }
@@ -32,7 +44,6 @@ public class MainWindow : Window
         }
 
         this.IsOpen = true;
-        Service.CharDataManager.SetEncounter(Service.PartyFinderDetector.TerritoryId);
     }
 
     public override void OnClose()
@@ -42,31 +53,13 @@ public class MainWindow : Window
 
     public override void Draw()
     {
-        MenuBar.Draw(this.partyView);
+        this.menuBar.Draw(this.PartyView);
 
-        if (!this.partyView)
+        if (!this.PartyView)
         {
             this.headerBar.Draw();
         }
 
-        Table.Draw(this.partyView);
-    }
-
-    public void SetPartyView(bool v)
-    {
-        if (this.partyView != v)
-        {
-            this.TogglePartyView();
-        }
-    }
-
-    public void TogglePartyView()
-    {
-        this.partyView = !this.partyView;
-        if (this.partyView)
-        {
-            Service.CharDataManager.SetEncounter(Service.PartyFinderDetector.TerritoryId);
-            Service.CharDataManager.UpdatePartyMembers();
-        }
+        this.table.Draw(this.PartyView);
     }
 }

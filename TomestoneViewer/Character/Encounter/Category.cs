@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace TomestoneViewer.Character.Encounter;
@@ -16,20 +17,26 @@ public record Category(
     public static readonly Category ULTIMATE = new("Ultimates", "5", "ultimates", null);
     public static readonly Category SAVAGE = new("Savage", "3", "anabaseios-savage", new(2023, 5, 30));
 
-    private static readonly IReadOnlyDictionary<Category, IReadOnlyList<Location>> CategoryLocations;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "I have to break at least one rule")]
+    private static IReadOnlyDictionary<Category, IReadOnlyList<Location>>? CategoryLocations;
 
-    public IReadOnlyList<Location> Locations => CategoryLocations[this];
+    public IReadOnlyList<Location> Locations => CategoryLocationsDict()[this];
 
-    static Category()
+    private static ReadOnlyDictionary<Category, IReadOnlyList<Location>> LoadCategoriesDict()
     {
-        CategoryLocations = Location.All()
+        return Location.All()
            .GroupBy(location => location.Category)
            .ToDictionary(group => group.Key, group => (IReadOnlyList<Location>)group.ToList().AsReadOnly())
            .AsReadOnly();
     }
 
+    private static IReadOnlyDictionary<Category, IReadOnlyList<Location>> CategoryLocationsDict()
+    {
+        return CategoryLocations ??= LoadCategoriesDict();
+    }
+
     public static IEnumerable<Category> All()
     {
-        return CategoryLocations.Keys;
+        return CategoryLocationsDict().Keys;
     }
 }

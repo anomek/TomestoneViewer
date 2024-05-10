@@ -2,23 +2,28 @@ using System;
 
 using Dalamud.Game.Command;
 using TomestoneViewer.Character;
+using TomestoneViewer.Controller;
 
 namespace TomestoneViewer;
 
-public class Commands
+public class Commands : IDisposable
 {
     private const string CommandName = "/ts";
     private const string SettingsCommandName = "/tsconfig";
 
-    public Commands()
+    private readonly MainWindowController mainWindowController;
+
+    public Commands(MainWindowController mainWindowController)
     {
-        Service.CommandManager.AddHandler(SettingsCommandName, new CommandInfo(OnCommand)
+        this.mainWindowController = mainWindowController;
+
+        Service.CommandManager.AddHandler(SettingsCommandName, new CommandInfo(this.OnCommand)
         {
             HelpMessage = "Toggle the config window.",
             ShowInHelp = true,
         });
 
-        Service.CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+        Service.CommandManager.AddHandler(CommandName, new CommandInfo(this.OnCommand)
         {
             HelpMessage = "Toggle the main window.\n" +
                   "         If given \"party\" or \"p\" as argument, open the party view and refresh the party state.\n" +
@@ -28,13 +33,13 @@ public class Commands
         });
     }
 
-    public static void Dispose()
+    public void Dispose()
     {
         Service.CommandManager.RemoveHandler(CommandName);
         Service.CommandManager.RemoveHandler(SettingsCommandName);
     }
 
-    private static void OnCommand(string command, string args)
+    private void OnCommand(string command, string args)
     {
         var trimmedArgs = args.Trim();
         switch (command)
@@ -44,19 +49,19 @@ public class Commands
                 Service.ConfigWindow.Toggle();
                 break;
             case CommandName when string.IsNullOrEmpty(trimmedArgs):
-                Service.MainWindow.Toggle();
+                this.mainWindowController.TogglePartyView();
                 break;
             case CommandName:
-                Service.MainWindow.Open();
                 if (trimmedArgs.Equals("p", StringComparison.OrdinalIgnoreCase)
                     || trimmedArgs.Equals("party", StringComparison.OrdinalIgnoreCase))
                 {
-                    Service.MainWindow.SetPartyView(true);
-                    Service.CharDataManager.UpdatePartyMembers();
-                    break;
+                    this.mainWindowController.OpenParty();
+                }
+                else
+                {
+                    this.mainWindowController.OpenCharacter(CharSelector.SelectByName(trimmedArgs));
                 }
 
-                Service.CharDataManager.SetCharacter(CharSelector.SelectByName(trimmedArgs));
                 break;
         }
     }

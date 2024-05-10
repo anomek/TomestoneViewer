@@ -4,6 +4,7 @@ using System.Linq;
 
 using Lumina.Excel.GeneratedSheets;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.GameSystems;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;
@@ -26,11 +27,7 @@ public class CharDataManager
     public Location CurrentEncounter
     {
         get => this.currentEncounter;
-        set
-        {
-            this.currentEncounter = value;
-            this.FetchPartyLogs();
-        }
+        set => this.currentEncounter = value;
     }
 
     public IRenderableError? CharacterError
@@ -38,44 +35,13 @@ public class CharDataManager
         get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.CharError;
     }
 
-    public void UpdatePartyMembers()
+    public void UpdatePartyMemebers(List<CharData> partyMembers)
     {
-        Service.TeamManager.UpdateTeamList();
-        var currPartyMembers = Service.TeamManager.TeamList.Where(teamMember => teamMember.IsInParty).ToList();
-
-        foreach (var partyMember in currPartyMembers)
-        {
-            var partyMemberId = CharacterId.From(partyMember);
-            var member = this.PartyMembers.FirstOrDefault(x => x.CharId == partyMemberId);
-
-            if (member == null)
-            {
-                // add new member
-                var charData = new CharData(partyMemberId);
-
-                charData.JobId = partyMember.JobId;
-                this.partyMembers.Add(charData);
-            }
-            else
-            {
-                // update existing member
-                member.JobId = partyMember.JobId;
-            }
-        }
-
-        // remove members that are no longer in party
-        foreach (var charData in this.PartyMembers.Where(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y))))
-        {
-            charData.Disable();
-        }
-
-        this.partyMembers.RemoveAll(x => !currPartyMembers.Any(y => x.CharId == CharacterId.From(y)));
-        this.partyMembers.Sort(CompareByIndex(currPartyMembers));
-
-        this.FetchPartyLogs();
+        this.partyMembers.Clear();
+        this.partyMembers.AddRange(partyMembers);
     }
 
-    public void SetEncounter(uint? teritorryId)
+    public void SetTerritoryId(uint? teritorryId)
     {
         if (teritorryId == null)
         {
@@ -86,13 +52,14 @@ public class CharDataManager
         var encounter = Location.Find(new TerritoryId(teritorryId.Value));
         if (encounter != null)
         {
-            this.currentEncounter = encounter;
+            this.CurrentEncounter = encounter;
         }
     }
 
     public void SetCharacter(CharSelector selector)
     {
         Service.PluginLog.Debug($"CharDataManger.SetCharacter {selector}");
+        var previousDisplayedChar = this.DisplayedChar;
         if (selector.Error != null)
         {
             this.characterSelectorError = selector.Error;
@@ -100,40 +67,16 @@ public class CharDataManager
         }
         else if (selector.CharId != null)
         {
-            var previousDisplayedChar = this.DisplayedChar;
             this.displayedChar = new CharData(selector.CharId);
-            if (previousDisplayedChar != null)
-            {
-                previousDisplayedChar?.Disable();
-            }
-
             this.displayedChar.FetchLogs();
             this.characterSelectorError = null;
             this.searchCharacterId.Copy(this.displayedChar.CharId);
         }
+
+        previousDisplayedChar?.Disable();
     }
 
-    public void Reset()
-    {
-        Service.PluginLog.Debug("CharDataManger.Reset");
-        this.partyMembers.Clear();
-        this.displayedChar = null;
-        this.characterSelectorError = CharacterSelectorError.NoCharacterSelected;
-        this.SearchCharacterId.Reset();
-    }
-
-    private static Comparer<CharData> CompareByIndex(List<TeamMember> teamMembers)
-    {
-        Dictionary<CharacterId, int> dict = [];
-        for (var i = 0; i < teamMembers.Count; i++)
-        {
-            dict[CharacterId.From(teamMembers[i])] = i;
-        }
-
-        return Comparer<CharData>.Create((CharData left, CharData right) => dict[left.CharId].CompareTo(dict[right.CharId]));
-    }
-
-    private void FetchPartyLogs()
+    public void FetchPartyLogs()
     {
         Service.PluginLog.Debug("CharDataManger.FetchPartyLogs");
         foreach (var charData in this.PartyMembers)
