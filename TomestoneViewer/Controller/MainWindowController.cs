@@ -1,4 +1,5 @@
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.GUI.Main;
 
 namespace TomestoneViewer.Controller;
@@ -30,11 +31,11 @@ public class MainWindowController(CharacterSelectorController characterSelectorC
         this.characterSelectorController.Select(selector);
     }
 
-    public void OpenParty()
+    public void OpenParty(Location? location = null)
     {
         this.mainWindow.Open();
         this.mainWindow.PartyView = true;
-        this.characterSelectorController.RefreshPartyData();
+        this.characterSelectorController.RefreshPartyData(location);
     }
 
     public void TogglePartyView()

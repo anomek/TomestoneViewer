@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.GameSystems;
 
 namespace TomestoneViewer.Controller;
@@ -17,10 +18,10 @@ public class CharacterSelectorController(CharDataManager charDataManager, Territ
         this.charDataManager.FetchPartyLogs();
     }
 
-    public void RefreshPartyData()
+    public void RefreshPartyData(Location? location = null)
     {
         this.UpdatePartyMembers();
-        this.charDataManager.SetTerritoryId(this.territoryOfInterestDetector.TerritoryId);
+        this.charDataManager.SetTerritoryId(location?.TerritoryId ?? this.territoryOfInterestDetector.TerritoryId);
         this.charDataManager.FetchPartyLogs();
     }
 

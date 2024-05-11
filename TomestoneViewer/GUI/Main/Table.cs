@@ -12,9 +12,9 @@ using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class Table(CharacterSelectorController characterSelectorController)
+public class Table(MainWindowController mainWindowController)
 {
-    private readonly CharacterSelectorController characterSelectorController = characterSelectorController;
+    private readonly MainWindowController mainWindowController = mainWindowController;
 
     public void Draw(bool partyView)
     {
@@ -24,7 +24,7 @@ public class Table(CharacterSelectorController characterSelectorController)
         }
         else
         {
-            DrawSingleView();
+            this.DrawSingleView();
         }
     }
 
@@ -35,7 +35,7 @@ public class Table(CharacterSelectorController characterSelectorController)
         //--------------------
         if (Util.DrawButtonIcon(FontAwesomeIcon.Redo))
         {
-            this.characterSelectorController.RefreshPartyList();
+            this.mainWindowController.OpenParty();
         }
 
         Util.SetHoverTooltip("Refresh party state");
@@ -46,10 +46,10 @@ public class Table(CharacterSelectorController characterSelectorController)
         //------------------------------
         DrawEncounterComboMenu();
 
-        DrawPartyLayout();
+        this.DrawPartyLayout();
     }
 
-    private static void DrawPartyLayout()
+    private void DrawPartyLayout()
     {
         var currentParty = Service.CharDataManager.PartyMembers;
         if (ImGui.BeginTable(
@@ -63,6 +63,7 @@ public class Table(CharacterSelectorController characterSelectorController)
             ImGui.TableNextRow();
             ImGui.TableNextRow();
             var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
+            var i = 0;
             foreach (var charData in currentParty)
             {
                 ImGui.TableNextRow();
@@ -79,20 +80,25 @@ public class Table(CharacterSelectorController characterSelectorController)
                 }
 
                 ImGui.SameLine();
-                ImGui.Text(charData.CharId.FullName);
-                ImGui.TableNextColumn();
+                if (ImGui.Selectable($"{charData.CharId.FullName}##PartyListCharacterSelectable{i}"))
+                {
+                    this.mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
+                }
 
+                ImGui.TableNextColumn();
                 DrawEncounterStatus(
                     charData,
                     Service.CharDataManager.CurrentEncounter);
                 ImGui.TableNextColumn();
+
+                i++;
             }
 
             ImGui.EndTable();
         }
     }
 
-    private static void DrawSingleView()
+    private void DrawSingleView()
     {
         if (Service.CharDataManager.DisplayedChar == null || Service.CharDataManager.CharacterError != null)
         {
@@ -129,7 +135,11 @@ public class Table(CharacterSelectorController characterSelectorController)
                     ImGui.TableNextColumn();
                     Util.ConditionalSeparator(counter == 0);
                     ImGui.AlignTextToFramePadding();
-                    ImGui.TextUnformatted(location.DisplayName);
+                    if (ImGui.Selectable($"{location.DisplayName}##EncounterListSelectable{location.DisplayName}"))
+                    {
+                        this.mainWindowController.OpenParty(location);
+                    }
+
                     ImGui.TableNextColumn();
                     Util.ConditionalSeparator(counter == 0);
                     DrawEncounterStatus(character, location);

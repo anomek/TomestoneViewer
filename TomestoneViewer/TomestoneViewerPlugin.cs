@@ -33,15 +33,14 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
         Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient));
 
-        var characterSelectorController = new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector);
-        var mainWindowController = new MainWindowController(characterSelectorController);
+        var mainWindowController = new MainWindowController(new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector));
 
         Service.Commands = new Commands(mainWindowController);
 
         Service.GameDataManager = new GameDataManager();
         Service.HistoryManager = new HistoryManager();
 
-        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, characterSelectorController, mainWindowController);
+        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, mainWindowController);
         mainWindowController.RegisterMainWindow(Service.MainWindow);
         Service.ConfigWindow = new ConfigWindow();
 
