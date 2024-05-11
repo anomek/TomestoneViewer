@@ -7,7 +7,9 @@ using TomestoneViewer.GameSystems;
 
 namespace TomestoneViewer.Controller;
 
-public class CharacterSelectorController(CharDataManager charDataManager, TerritoryOfInterestDetector territoryOfInterestDetector)
+public class CharacterSelectorController(
+    CharDataManager charDataManager,
+    TerritoryOfInterestDetector territoryOfInterestDetector)
 {
     private readonly CharDataManager charDataManager = charDataManager;
     private readonly TerritoryOfInterestDetector territoryOfInterestDetector = territoryOfInterestDetector;

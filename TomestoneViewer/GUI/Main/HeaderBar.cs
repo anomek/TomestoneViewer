@@ -80,7 +80,7 @@ public class HeaderBar(IReadOnlyList<CharData> partyList)
         {
             if (displayChar != null)
             {
-                Util.CenterSelectableError(characterError, $"Click to open on Tomestone.gg");
+                Util.CenterSelectableError(characterError);
                 Util.LinkOpenOrPopup(displayChar);
             }
             else
@@ -92,8 +92,6 @@ public class HeaderBar(IReadOnlyList<CharData> partyList)
         {
             Util.CenterSelectable($"{displayChar.CharId}");
             Util.LinkOpenOrPopup(displayChar);
-
-            Util.SetHoverTooltip("Click to open on Tomestone.gg");
         }
     }
 

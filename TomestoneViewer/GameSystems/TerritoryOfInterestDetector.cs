@@ -43,7 +43,7 @@ public unsafe class TerritoryOfInterestDetector
 
     private void OnTerritoryChanged(ushort territoryId)
     {
-        this.UpdateTerritoryId(territoryId);
+        this.UpdateTerritoryId(new TerritoryId(territoryId));
     }
 
     private void OnLookingForGroupConditionClose(AddonLookingForGroupCondition* addon)
@@ -51,7 +51,7 @@ public unsafe class TerritoryOfInterestDetector
         var dutyName = SelectedItem(addon->DutyNameDropDown);
 
         // can't be sure that pf was created, but this is good enough
-        this.UpdateTerritoryId(FindTerritoryId(dutyName));
+        this.UpdateTerritoryId(Service.GameData.GetTerritoryId(dutyName));
     }
 
     private void OnLookingForGroupDetailClose(AddonLookingForGroupDetail* addon)
@@ -69,17 +69,15 @@ public unsafe class TerritoryOfInterestDetector
         var dutyName = StripNonAsci(addon->DutyNameTextNode->NodeText.ToString());
 
         // Can't be sure that party was joined, but this is a best effort
-        this.UpdateTerritoryId(FindTerritoryId(dutyName));
+        this.UpdateTerritoryId(Service.GameData.GetTerritoryId(dutyName));
     }
 
-    private void UpdateTerritoryId(uint? territoryIdInt)
+    private void UpdateTerritoryId(TerritoryId? territoryId)
     {
-        if (territoryIdInt == null)
+        if (territoryId == null)
         {
             return;
         }
-
-        var territoryId = new TerritoryId(territoryIdInt.Value);
 
         // Left commented log as a useful tool for detecting territoryId in future
         // Service.PluginLog.Info($"Selecting territoryId territoryId={territoryId}");
@@ -87,16 +85,6 @@ public unsafe class TerritoryOfInterestDetector
         {
             this.TerritoryId = territoryId;
         }
-    }
-
-    private static uint? FindTerritoryId(string dutyName)
-    {
-        return Service.DataManager.GetExcelSheet<ContentFinderCondition>()!
-               .FirstOrDefault(entry => string.Equals(
-                     entry.Name.ToString(),
-                     dutyName,
-                     StringComparison.OrdinalIgnoreCase))?
-               .TerritoryType.Row;
     }
 
     private static string StripNonAsci(string input)

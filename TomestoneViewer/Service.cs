@@ -29,6 +29,8 @@ internal class Service
 
     internal static HistoryManager HistoryManager { get; set; } = null!;
 
+    internal static GameData GameData { get; set; } = null!;
+
     [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
 
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;

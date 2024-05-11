@@ -1,3 +1,4 @@
+using Lumina;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Character.TomestoneClient;
 
@@ -31,5 +32,19 @@ public class Links
         return this.TomestoneMain()
             + $"/activity?category={location.Category.CategoryQueryParam}&encounter={location.EncounterQueryParam}"
             + $"&expansion={location.ExpansionQueryParam}&zone={location.Category.ZoneQueryParam}";
+    }
+
+    public string? FFLogs()
+    {
+        var region = Service.GameData.GetRegion(this.characterId.World);
+        if (region == null)
+        {
+            return null;
+        }
+        else
+        {
+            return $"https://www.fflogs.com/character/{region.ToLower()}/{this.characterId.World.ToLower()}/"
+                + $"{this.characterId.FullName.ToLower()}";
+        }
     }
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Info;
-using Lumina.Excel.GeneratedSheets;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer.GameSystems;
@@ -110,8 +109,8 @@ public class TeamList
 
     private void AddTeamMember(string fullName, ushort worldId, uint jobId, bool isInParty, bool isLeader)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
-        if (world is not { IsPublic: true })
+        var world = Service.GameData.GetWorldName(worldId);
+        if (world == null)
         {
             return;
         }
@@ -127,6 +126,6 @@ public class TeamList
             return;
         }
 
-        this.Members.Add(new TeamMember(new CharacterId(splitName[0], splitName[1], world.Name), new JobId(jobId), isInParty, isLeader));
+        this.Members.Add(new TeamMember(new CharacterId(splitName[0], splitName[1], world), new JobId(jobId), isInParty, isLeader));
     }
 }

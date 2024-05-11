@@ -37,6 +37,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
         Service.Commands = new Commands(mainWindowController);
 
+        Service.GameData = new GameData();
         Service.GameDataManager = new GameDataManager();
         Service.HistoryManager = new HistoryManager();
 
