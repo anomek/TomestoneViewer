@@ -241,7 +241,23 @@ public class Table(MainWindowController mainWindowController)
             }
             else if (encounterData.EncouterProgress.Progress != null)
             {
-                Util.CenterText(encounterData.EncouterProgress.Progress, new Vector4(1, .7f, .1f, 1));
+                Util.CenterText(encounterData.EncouterProgress.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    var align = ImGui.GetCursorPosX() + ImGui.CalcTextSize("P8 88.88% ").X;
+                    foreach (var lockout in encounterData.EncouterProgress.Progress.Lockouts)
+                    {
+                        ImGui.TextUnformatted($"{lockout.Percent}");
+                        ImGui.SameLine();
+                        ImGui.SetCursorPosX(align);
+                        ImGui.SetWindowFontScale(.95f);
+                        ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.ToDateTime(TimeOnly.MinValue))}");
+                        ImGui.SetWindowFontScale(1);
+                    }
+
+                    ImGui.EndTooltip();
+                }
             }
             else
             {

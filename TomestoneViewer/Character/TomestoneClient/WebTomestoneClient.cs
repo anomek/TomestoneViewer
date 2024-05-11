@@ -90,6 +90,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
             return new(TomestoneClientError.ServerResponseError);
         }
 
+        List<ProgPoint.Lockout> lockouts = [];
         foreach (var activity in data)
         {
             if (activity.killsCount > 0)
@@ -100,11 +101,29 @@ internal partial class WebTomestoneClient : ITomestoneClient
             }
             else
             {
-                return new(EncounterProgress.EncounterInProgress(activity.bestPercent.ToString()));
+                var lockout = new ProgPoint.Lockout(
+                    ProgPoint.Percent.From(activity.bestPercent.ToString()),
+                    DateOnly.FromDateTime(ParseDateTime(activity.endTime)));
+                if (lockouts.Count == 0 || !lockouts[^1].Equals(lockout))
+                {
+                    lockouts.Add(lockout);
+                }
+            }
+
+            if (lockouts.Count >= 5)
+            {
+                break;
             }
         }
 
-        return new(EncounterProgress.EncounterNotStarted());
+        if (lockouts.Count > 0)
+        {
+            return new(EncounterProgress.EncounterInProgress(new ProgPoint(lockouts)));
+        }
+        else
+        {
+            return new(EncounterProgress.EncounterNotStarted());
+        }
     }
 
     private ClientResponse<LodestoneId> ParseLodestoneIdResponse(HttpResponseMessage result)

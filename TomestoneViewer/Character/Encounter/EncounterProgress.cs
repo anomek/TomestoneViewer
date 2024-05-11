@@ -6,11 +6,11 @@ public record EncounterProgress
 {
     public EncounterClear? EncounterClear { get; }
 
-    public string? Progress { get; }
+    public ProgPoint? Progress { get; }
 
     public bool Cleared => this.EncounterClear != null;
 
-    private EncounterProgress(EncounterClear? encounterClear, string? progress)
+    private EncounterProgress(EncounterClear? encounterClear, ProgPoint? progress)
     {
         this.EncounterClear = encounterClear;
         this.Progress = progress;
@@ -21,7 +21,7 @@ public record EncounterProgress
         return new EncounterProgress(encounterClear, null);
     }
 
-    public static EncounterProgress EncounterInProgress(string progress)
+    public static EncounterProgress EncounterInProgress(ProgPoint progress)
     {
         return new EncounterProgress(null, progress);
     }
