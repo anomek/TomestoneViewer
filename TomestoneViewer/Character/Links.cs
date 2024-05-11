@@ -1,6 +1,4 @@
-using Lumina;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.TomestoneClient;
 
 namespace TomestoneViewer.Character;
 

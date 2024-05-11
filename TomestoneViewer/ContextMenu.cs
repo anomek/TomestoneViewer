@@ -76,13 +76,13 @@ public class ContextMenu(MainWindowController mainWindowController)
             }
             else
             {
-                var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.Id);
-                if (world is not { IsPublic: true })
+                var world = Service.GameData.GetWorldName((ushort)menuTargetDefault.TargetHomeWorld.Id);
+                if (world == null)
                 {
                     return;
                 }
 
-                this.mainWindowController.OpenCharacter(CharSelector.SelectByName(menuTargetDefault.TargetName, world.Name));
+                this.mainWindowController.OpenCharacter(CharSelector.SelectById(CharacterId.FromFullName(menuTargetDefault.TargetName, world)));
             }
         }
     }
