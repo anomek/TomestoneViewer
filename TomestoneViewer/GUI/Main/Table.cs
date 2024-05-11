@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
@@ -209,10 +208,12 @@ public class Table(MainWindowController mainWindowController)
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
                 ImGui.PopFont();
 
-                if (ImGui.IsItemHovered() && encounterData.EncouterProgress.EncounterClear.HasInfo)
+                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.EncouterProgress.EncounterClear.HasInfo)
                 {
                     var clear = encounterData.EncouterProgress.EncounterClear;
                     ImGui.BeginTooltip();
+                    DoubleClickToOpenOnTomestoneText();
+
                     ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, ImGui.GetStyle().ItemSpacing.Y));
                     if (clear.DateTime != null)
                     {
@@ -242,10 +243,14 @@ public class Table(MainWindowController mainWindowController)
             else if (encounterData.EncouterProgress.Progress != null)
             {
                 Util.CenterText(encounterData.EncouterProgress.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
-                if (ImGui.IsItemHovered())
+
+                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
                 {
                     ImGui.BeginTooltip();
                     var align = ImGui.GetCursorPosX() + ImGui.CalcTextSize("P8 88.88% ").X;
+
+                    DoubleClickToOpenOnTomestoneText();
+
                     foreach (var lockout in encounterData.EncouterProgress.Progress.Lockouts)
                     {
                         ImGui.TextUnformatted($"{lockout.Percent}");
@@ -268,6 +273,24 @@ public class Table(MainWindowController mainWindowController)
         }
 
         // TODO: else
+    }
+
+    private static bool IsItemHoveredAndOpenLinkOnDoubleClick(CharData character, Location location)
+    {
+        var hovered = ImGui.IsItemHovered();
+        if (hovered && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+        {
+            Util.OpenLink(character.Links.EncounterActivity(location));
+        }
+
+        return hovered;
+    }
+
+    private static void DoubleClickToOpenOnTomestoneText()
+    {
+        ImGui.SetWindowFontScale(.9f);
+        ImGui.TextUnformatted("<< double click to see on tomestone.gg >>");
+        ImGui.SetWindowFontScale(1f);
     }
 
     private static string FormatTimeRelative(DateTime timestamp)

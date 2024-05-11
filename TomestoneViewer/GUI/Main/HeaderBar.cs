@@ -7,7 +7,6 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
-using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 

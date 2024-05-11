@@ -16,6 +16,8 @@ internal class CharDataLoader
     private LodestoneId? lodestoneId;
     private TomestoneClientError? loadError;
 
+    internal LodestoneId? LodestoneId => this.lodestoneId;
+
     internal TomestoneClientError? LoadError => this.loadError;
 
     internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;

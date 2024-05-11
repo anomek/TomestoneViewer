@@ -195,11 +195,6 @@ public class Util
         return (Math.Truncate(magnitude * value.Value) / magnitude).ToString("F" + nbOfDecimalDigits);
     }
 
-    public static void OpenTomestoneLink(CharData charData)
-    {
-        OpenLink($"https://tomestone.gg/character-name/{charData.CharId.World}/{charData.CharId.FullName}");
-    }
-
     public static void OpenLink(string link)
     {
         Dalamud.Utility.Util.OpenLink(link);
@@ -209,7 +204,7 @@ public class Util
     {
         if (ImGui.BeginPopupContextItem($"##LinkPopup{charData.CharId}{charData.GetHashCode()}", ImGuiPopupFlags.MouseButtonLeft))
         {
-            OpenTomestoneLink(charData);
+            OpenLink(charData.Links.TomestoneMain());
             ImGui.CloseCurrentPopup();
             return;
         }
