@@ -29,7 +29,7 @@ public class CharDataManager(CharDataFactory charDataFactory)
     public Location CurrentEncounter
     {
         get => this.currentEncounter;
-        set => this.currentEncounter = value;
+        private set => this.currentEncounter = value;
     }
 
     public IRenderableError? CharacterError

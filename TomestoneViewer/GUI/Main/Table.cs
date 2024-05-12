@@ -43,7 +43,7 @@ public class Table(MainWindowController mainWindowController)
         //------------------------------
         // Encounter combo and favourite
         //------------------------------
-        DrawEncounterComboMenu();
+        this.DrawEncounterComboMenu();
 
         this.DrawPartyLayout();
     }
@@ -151,7 +151,7 @@ public class Table(MainWindowController mainWindowController)
         }
     }
 
-    private static void DrawEncounterComboMenu()
+    private void DrawEncounterComboMenu()
     {
         ImGui.SameLine();
 
@@ -172,7 +172,7 @@ public class Table(MainWindowController mainWindowController)
 
                     if (ImGui.Selectable(name))
                     {
-                        Service.CharDataManager.CurrentEncounter = encounter;
+                        this.mainWindowController.OpenParty(encounter);
                     }
                 }
 
