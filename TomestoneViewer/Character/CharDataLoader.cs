@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -82,25 +83,40 @@ internal class CharDataLoader
             (selectedLocation == null ? Location.All() : [selectedLocation])
             .Select(location =>
             {
-                if (summary.TryGet(location.UltimateId, out var encounterClear))
+                if (summary.TryGet(location.UltimateId, out var encounterProgress))
                 {
-                    this.encounterData[location].Load(EncounterProgress.EncounterCleared(encounterClear));
-                    return null;
+                    this.encounterData[location].Load(encounterProgress);
+                    if (encounterProgress.Cleared)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return this.client
+                            .FetchEncounter(this.lodestoneId, location)
+                            .ContinueWith(t => this.Apply(t.Result, location, false));
+                    }
                 }
                 else
                 {
                     return this.client
                         .FetchEncounter(this.lodestoneId, location)
-                        .ContinueWith(t => this.Apply(t.Result, location));
+                        .ContinueWith(t => this.Apply(t.Result, location, true));
                 }
             })
             .OfType<Task>());
     }
 
-    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, Location location)
+    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, Location location, bool applyErrors)
     {
         encounterProgressResponse.IfSuccessOrElse(
             encounterProgress => this.encounterData[location].Load(encounterProgress),
-            error => this.encounterData[location].Load(error));
+            error =>
+            {
+                if (applyErrors)
+                {
+                    this.encounterData[location].Load(error);
+                }
+            });
     }
 }

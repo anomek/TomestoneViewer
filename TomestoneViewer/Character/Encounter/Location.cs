@@ -15,7 +15,7 @@ public record Location(
     private static readonly IReadOnlyList<Location> ALL =
     [
         new("TOP", "the-omega-protocol-ultimate", Category.ULTIMATE, ExpansionQueryParam.EW, new(1122), new(4652)),
-        new("DSR", "dragonsongs-reprise-ultimate", Category.ULTIMATE, ExpansionQueryParam.EW, new(968), new(4551)),
+        new("DSR", "dragonsongs-reprise-ultimate", Category.ULTIMATE, ExpansionQueryParam.EW, new(968), new(4651)),
         new("TEA", "the-epic-of-alexander-ultimate", Category.ULTIMATE, ExpansionQueryParam.SHB, new(887),  new(3651)),
         new("UWU", "the-weapons-refrain-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(777),  new(2652)),
         new("UCOB", "the-unending-coil-of-bahamut-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(733), new(2651)),

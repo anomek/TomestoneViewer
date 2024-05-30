@@ -254,11 +254,14 @@ public class Table(MainWindowController mainWindowController)
                     foreach (var lockout in encounterData.EncouterProgress.Progress.Lockouts)
                     {
                         ImGui.TextUnformatted($"{lockout.Percent}");
-                        ImGui.SameLine();
-                        ImGui.SetCursorPosX(align);
-                        ImGui.SetWindowFontScale(.95f);
-                        ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.ToDateTime(TimeOnly.MinValue))}");
-                        ImGui.SetWindowFontScale(1);
+                        if (lockout.Timestamp.HasValue)
+                        {
+                            ImGui.SameLine();
+                            ImGui.SetCursorPosX(align);
+                            ImGui.SetWindowFontScale(.95f);
+                            ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
+                            ImGui.SetWindowFontScale(1);
+                        }
                     }
 
                     ImGui.EndTooltip();

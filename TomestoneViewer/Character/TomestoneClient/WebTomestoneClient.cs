@@ -46,8 +46,9 @@ internal partial class WebTomestoneClient : ITomestoneClient
             return new(TomestoneClientError.ServerResponseError);
         }
 
-        var ultimates = response?.props.headerEncounters?.latestExpansion?.ultimate;
-        Dictionary<UltimateId, EncounterClear> summary = [];
+        var headerEncounters = response?.props.headerEncounters;
+        var ultimates = headerEncounters?.latestExpansion?.ultimate;
+        Dictionary<UltimateId, EncounterProgress> summary = [];
         if (ultimates != null)
         {
             foreach (var ultimate in ultimates)
@@ -55,13 +56,43 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 var id = new UltimateId((int)ultimate.id);
                 if (ultimate.achievement != null)
                 {
-                    summary[id] = new EncounterClear(
+                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(
                         ParseDateTime(ultimate.achievement.completedAt),
-                        ultimate.achievement.completionWeek.ToString());
+                        ultimate.achievement.completionWeek.ToString()));
                 }
                 else if (ultimate.activity != null && (bool)ultimate.activity)
                 {
-                    summary[id] = new EncounterClear(null, null);
+                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(null, null));
+                }
+            }
+        }
+
+        var allUltimateProgressionTargets = headerEncounters?.allUltimateProgressionTargets;
+        if (allUltimateProgressionTargets != null)
+        {
+            Service.PluginLog.Info($"targets: {allUltimateProgressionTargets}");
+            foreach (var ultimateContainer in allUltimateProgressionTargets)
+            {
+                dynamic? ultimate = null;
+                foreach (var child in ultimateContainer.Children())
+                {
+                    ultimate = child;
+                }
+
+                if (ultimate == null)
+                {
+                    continue;
+                }
+
+                Service.PluginLog.Info($"ultimate: {ultimate}");
+                var id = new UltimateId((int)ultimate.encounter.id);
+                if (!summary.ContainsKey(id))
+                {
+                    Service.PluginLog.Info($"prog point: {ultimate.percent.ToString()}");
+
+                    summary[id] = EncounterProgress.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
+                        ProgPoint.Percent.From(ultimate.percent.ToString()),
+                        null)]));
                 }
             }
         }

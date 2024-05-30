@@ -10,7 +10,7 @@ public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
         return this.Lockouts[0].Percent.ToString();
     }
 
-    public record Lockout(Percent Percent, DateOnly Timestamp)
+    public record Lockout(Percent Percent, DateOnly? Timestamp)
     {
     }
 
@@ -28,7 +28,7 @@ public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
 
         public static Percent From(string value)
         {
-            var number = int.Parse(value.Split('.')[0]);
+            var number = int.Parse(value.Split('%')[0].Split('.')[0]);
             var phases = value.Split('P');
             return new()
             {

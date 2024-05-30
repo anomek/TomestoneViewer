@@ -14,8 +14,6 @@ public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIco
     /// </summary>
     public bool CanIgnore => !this.Cachable;
 
-    public bool IsClickable => false;
-
     public static readonly TomestoneClientError CharacterDoesNotExist = new(
         "Character does not exist", ImGuiColors.DalamudRed, FontAwesomeIcon.ExclamationCircle, true);
 
