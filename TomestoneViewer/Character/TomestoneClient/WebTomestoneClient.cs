@@ -60,7 +60,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
                         ParseDateTime(ultimate.achievement.completedAt),
                         ultimate.achievement.completionWeek.ToString()));
                 }
-                else if (ultimate.activity != null && (bool)ultimate.activity)
+                else if (ultimate.activity != null)
                 {
                     summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(null, null));
                 }
