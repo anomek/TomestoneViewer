@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace TomestoneViewer.Character.Encounter;
+namespace TomestoneViewer.Character.Encounter.Data.Tomestone;
 
 public record EncounterClear(DateTime? DateTime, string? CompletionWeek)
 {
@@ -18,7 +14,7 @@ public record EncounterClear(DateTime? DateTime, string? CompletionWeek)
         }
 
         var diff = (this.DateTime - releaseDate).Value;
-        var weeks = ((int)diff.TotalDays / 7) + 1;
+        var weeks = (int)(diff.TotalDays / 7) + 1;
         return $"Week {weeks}";
     }
 }

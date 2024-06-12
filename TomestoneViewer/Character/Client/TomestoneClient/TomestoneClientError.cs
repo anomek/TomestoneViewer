@@ -2,11 +2,11 @@ using System.Numerics;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Encounter.Data;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
-public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IEncounterDataError
+public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IEncounterDataError, IClientError
 {
     /// <summary>
     /// seperate property to know if we can ignore error returned by FetchSummary

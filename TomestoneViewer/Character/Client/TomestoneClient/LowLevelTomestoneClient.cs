@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using TomestoneViewer.Character.Client;
+using TomestoneViewer.Character.Client.TomestoneClient;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
@@ -12,7 +14,7 @@ internal partial class LowLevelTomestoneClient
     private const int RetryCount = 3;
 
     private readonly HttpClient httpClient;
-    private readonly SyncQuery<ClientResponse<string>> getInertiaVersionQuery;
+    private readonly SyncQuery<ClientResponse<string, TomestoneClientError>> getInertiaVersionQuery;
 
     private string? inertiaVersion;
 
@@ -27,7 +29,7 @@ internal partial class LowLevelTomestoneClient
         this.getInertiaVersionQuery = new(this.FetchInertiaVersion);
     }
 
-    internal async Task<ClientResponse<HttpResponseMessage>> GetDirect(string uri)
+    internal async Task<ClientResponse<HttpResponseMessage, TomestoneClientError>> GetDirect(string uri)
     {
         try
         {
@@ -40,7 +42,7 @@ internal partial class LowLevelTomestoneClient
         }
     }
 
-    internal async Task<ClientResponse<dynamic?>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
+    internal async Task<ClientResponse<dynamic?, TomestoneClientError>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
     {
         TomestoneClientError? lastError = null;
         for (var i = 0; i < RetryCount; i++)
@@ -123,7 +125,7 @@ internal partial class LowLevelTomestoneClient
             error => error);
     }
 
-    private async Task<ClientResponse<string>> FetchInertiaVersion()
+    private async Task<ClientResponse<string, TomestoneClientError>> FetchInertiaVersion()
     {
         HttpResponseMessage? response = null;
         try

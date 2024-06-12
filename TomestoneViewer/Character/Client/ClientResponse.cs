@@ -1,16 +1,17 @@
 using System;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client;
 
 // Kind of either class, I don't want to play with exceptions
-public class ClientResponse<T>
+public class ClientResponse<T, TError>
+    where TError : IClientError
 {
     private readonly T? value;
-    private readonly TomestoneClientError? error;
+    private readonly TError? error;
 
     internal bool Cachable => this.error == null || this.error.Cachable;
 
-    public TResult Fold<TResult>(Func<T, TResult> onSuccess, Func<TomestoneClientError, TResult> onError)
+    public TResult Fold<TResult>(Func<T, TResult> onSuccess, Func<TError, TResult> onError)
     {
         if (this.value != null)
         {
@@ -22,21 +23,21 @@ public class ClientResponse<T>
         }
         else
         {
-            throw new System.InvalidOperationException("Improperly initialized object");
+            throw new InvalidOperationException("Improperly initialized object");
         }
     }
 
-    public bool IfSuccessOrElse(Action<T> onSuccess, Action<TomestoneClientError> onError)
+    public bool IfSuccessOrElse(Action<T> onSuccess, Action<TError> onError)
     {
         return this.Fold(ToFunc(onSuccess, true), ToFunc(onError, false));
     }
 
-    public bool HasError(Predicate<TomestoneClientError> predicate)
+    public bool HasError(Predicate<TError> predicate)
     {
         return this.error != null && predicate.Invoke(this.error);
     }
 
-    public ClientResponse<TResult> FlatMap<TResult>(Func<T, ClientResponse<TResult>> transform)
+    public ClientResponse<TResult, TError> FlatMap<TResult>(Func<T, ClientResponse<TResult, TError>> transform)
     {
         return this.Fold(value => transform(value), error => new(error));
     }
@@ -46,7 +47,7 @@ public class ClientResponse<T>
         this.value = value;
     }
 
-    internal ClientResponse(TomestoneClientError error)
+    internal ClientResponse(TError error)
     {
         this.error = error;
     }

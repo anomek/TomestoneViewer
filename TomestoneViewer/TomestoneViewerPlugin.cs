@@ -2,6 +2,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.Controller;

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Encounter.Data;
 
 namespace TomestoneViewer.Character;
 

@@ -5,7 +5,11 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using TomestoneViewer.Character.Client;
+using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Encounter.Data;
+using TomestoneViewer.Character.Encounter.Data.Tomestone;
 
 namespace TomestoneViewer.Character.TomestoneClient;
 
@@ -13,14 +17,14 @@ internal partial class WebTomestoneClient : ITomestoneClient
 {
     private readonly LowLevelTomestoneClient client = new();
 
-    public async Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
+    public async Task<ClientResponse<CharacterSummary, TomestoneClientError>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchCharacterSummary {lodestoneId}");
         return (await this.client.GetDynamic($"https://tomestone.gg/character/{lodestoneId}/dummy", "headerEncounters", TomestoneClientError.CharacterTomestoneDisabled))
             .FlatMap(this.ParseCharacterSummary);
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneData, TomestoneClientError>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchEncounter {lodestoneId} {location.DisplayName}");
         var url = $"https://tomestone.gg/character/{lodestoneId}/dummy/activity?"
@@ -31,14 +35,14 @@ internal partial class WebTomestoneClient : ITomestoneClient
             .FlatMap(this.ParseEncounter);
     }
 
-    public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
+    public async Task<ClientResponse<LodestoneId, TomestoneClientError>> FetchLodestoneId(CharacterId characterId)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchLodestoneId {characterId}");
         return (await this.client.GetDirect($"https://tomestone.gg/character-name/{characterId.World}/{characterId.FullName}"))
             .FlatMap(Dispose(this.ParseLodestoneIdResponse));
     }
 
-    private ClientResponse<CharacterSummary> ParseCharacterSummary(dynamic? response)
+    private ClientResponse<CharacterSummary, TomestoneClientError> ParseCharacterSummary(dynamic? response)
     {
         if (response == null)
         {
@@ -48,7 +52,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
 
         var headerEncounters = response?.props.headerEncounters;
         var ultimates = headerEncounters?.latestExpansion?.ultimate;
-        Dictionary<UltimateId, EncounterProgress> summary = [];
+        Dictionary<UltimateId, TomestoneData> summary = [];
         if (ultimates != null)
         {
             foreach (var ultimate in ultimates)
@@ -56,13 +60,13 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 var id = new UltimateId((int)ultimate.id);
                 if (ultimate.achievement != null)
                 {
-                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(
+                    summary[id] = TomestoneData.EncounterCleared(new EncounterClear(
                         ParseDateTime(ultimate.achievement.completedAt),
                         ultimate.achievement.completionWeek.ToString()));
                 }
                 else if (ultimate.activity != null)
                 {
-                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(null, null));
+                    summary[id] = TomestoneData.EncounterCleared(new EncounterClear(null, null));
                 }
             }
         }
@@ -90,7 +94,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 {
                     Service.PluginLog.Info($"prog point: {ultimate.percent.ToString()}");
 
-                    summary[id] = EncounterProgress.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
+                    summary[id] = TomestoneData.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
                         ProgPoint.Percent.From(ultimate.percent.ToString()),
                         null)]));
                 }
@@ -100,7 +104,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         return new(new CharacterSummary(summary));
     }
 
-    private ClientResponse<EncounterProgress> ParseEncounter(dynamic? response)
+    private ClientResponse<TomestoneData, TomestoneClientError> ParseEncounter(dynamic? response)
     {
         if (response == null)
         {
@@ -126,7 +130,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         {
             if (activity.killsCount > 0)
             {
-                return new(EncounterProgress.EncounterCleared(new EncounterClear(
+                return new(TomestoneData.EncounterCleared(new EncounterClear(
                     ParseDateTime(activity.endTime),
                     null)));
             }
@@ -149,15 +153,15 @@ internal partial class WebTomestoneClient : ITomestoneClient
 
         if (lockouts.Count > 0)
         {
-            return new(EncounterProgress.EncounterInProgress(new ProgPoint(lockouts)));
+            return new(TomestoneData.EncounterInProgress(new ProgPoint(lockouts)));
         }
         else
         {
-            return new(EncounterProgress.EncounterNotStarted());
+            return new(TomestoneData.EncounterNotStarted());
         }
     }
 
-    private ClientResponse<LodestoneId> ParseLodestoneIdResponse(HttpResponseMessage result)
+    private ClientResponse<LodestoneId, TomestoneClientError> ParseLodestoneIdResponse(HttpResponseMessage result)
     {
         if (result.StatusCode == System.Net.HttpStatusCode.Found)
         {

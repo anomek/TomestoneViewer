@@ -185,8 +185,9 @@ public class Table(MainWindowController mainWindowController)
 
     private static void DrawEncounterStatus(CharData character, Location location)
     {
-        var encounterData = character.EncounterData[location];
-        var characterError = character.EncounterData[location].Status.Error ?? character.CharError;
+        var encounterData = character.EncounterData[location].Tomestone;
+        var encounterProgress = encounterData.Data;
+        var characterError = encounterData.Status.Error ?? character.CharError;
         if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
@@ -200,17 +201,17 @@ public class Table(MainWindowController mainWindowController)
             Util.Rotate(() => Util.CenterText(FontAwesomeIcon.CircleNotch.ToIconString(), new Vector4(.8f, .8f, .8f, 1)));
             ImGui.PopFont();
         }
-        else if (encounterData.EncouterProgress != null)
+        else if (encounterProgress != null)
         {
-            if (encounterData.EncouterProgress.EncounterClear != null)
+            if (encounterProgress.EncounterClear != null)
             {
                 ImGui.PushFont(UiBuilder.IconFont);
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
                 ImGui.PopFont();
 
-                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.EncouterProgress.EncounterClear.HasInfo)
+                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterProgress.EncounterClear.HasInfo)
                 {
-                    var clear = encounterData.EncouterProgress.EncounterClear;
+                    var clear = encounterProgress.EncounterClear;
                     ImGui.BeginTooltip();
                     DoubleClickToOpenOnTomestoneText();
 
@@ -240,9 +241,9 @@ public class Table(MainWindowController mainWindowController)
                     ImGui.EndTooltip();
                 }
             }
-            else if (encounterData.EncouterProgress.Progress != null)
+            else if (encounterProgress.Progress != null)
             {
-                Util.CenterText(encounterData.EncouterProgress.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                Util.CenterText(encounterProgress.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
 
                 if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
                 {
@@ -251,7 +252,7 @@ public class Table(MainWindowController mainWindowController)
 
                     DoubleClickToOpenOnTomestoneText();
 
-                    foreach (var lockout in encounterData.EncouterProgress.Progress.Lockouts)
+                    foreach (var lockout in encounterProgress.Progress.Lockouts)
                     {
                         ImGui.TextUnformatted($"{lockout.Percent}");
                         if (lockout.Timestamp.HasValue)

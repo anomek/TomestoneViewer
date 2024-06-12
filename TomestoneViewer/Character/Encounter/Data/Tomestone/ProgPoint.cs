@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace TomestoneViewer.Character.Encounter;
+namespace TomestoneViewer.Character.Encounter.Data.Tomestone;
 
 public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
 {

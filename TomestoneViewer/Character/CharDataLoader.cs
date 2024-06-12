@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using TomestoneViewer.Character.Client;
+using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.TomestoneClient;
+using TomestoneViewer.Character.Encounter.Data;
+using TomestoneViewer.Character.Encounter.Data.Tomestone;
 
 namespace TomestoneViewer.Character;
 
@@ -85,7 +88,7 @@ internal class CharDataLoader
             {
                 if (summary.TryGet(location.UltimateId, out var encounterProgress))
                 {
-                    this.encounterData[location].Load(encounterProgress);
+                    this.encounterData[location].Tomestone.Load(encounterProgress);
                     if (encounterProgress.Cleared)
                     {
                         return null;
@@ -107,15 +110,15 @@ internal class CharDataLoader
             .OfType<Task>());
     }
 
-    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, Location location, bool applyErrors)
+    private void Apply(ClientResponse<TomestoneData, TomestoneClientError> encounterProgressResponse, Location location, bool applyErrors)
     {
         encounterProgressResponse.IfSuccessOrElse(
-            encounterProgress => this.encounterData[location].Load(encounterProgress),
+            encounterProgress => this.encounterData[location].Tomestone.Load(encounterProgress),
             error =>
             {
                 if (applyErrors)
                 {
-                    this.encounterData[location].Load(error);
+                    this.encounterData[location].Tomestone.Load(error);
                 }
             });
     }

@@ -1,4 +1,4 @@
-namespace TomestoneViewer.Character.Encounter;
+namespace TomestoneViewer.Character.Encounter.Data;
 
 public interface IEncounterDataError : IRenderableError
 {

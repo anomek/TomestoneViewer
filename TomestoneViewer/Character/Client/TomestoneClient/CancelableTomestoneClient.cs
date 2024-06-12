@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
 
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Encounter.Data.Tomestone;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClient
 {
@@ -14,7 +15,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         this.canceled = true;
     }
 
-    public async Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
+    public async Task<ClientResponse<CharacterSummary, TomestoneClientError>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
         if (this.canceled)
         {
@@ -26,7 +27,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         }
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneData, TomestoneClientError>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         if (this.canceled)
         {
@@ -38,7 +39,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         }
     }
 
-    public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
+    public async Task<ClientResponse<LodestoneId, TomestoneClientError>> FetchLodestoneId(CharacterId characterId)
     {
         if (this.canceled)
         {
