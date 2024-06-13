@@ -3,6 +3,7 @@ using System.Linq;
 using System.Numerics;
 
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
@@ -256,13 +257,31 @@ public class Table(MainWindowController mainWindowController)
 
                     DoubleClickToOpenOnTomestoneText();
 
+                    if (character.JobId != JobId.Empty && !encounterProgress.Progress.Jobs.Contains(character.JobId))
+                    {
+                        ImGui.PushFont(UiBuilder.IconFont);
+                        ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, .85f, .05f, 1));
+                        ImGui.TextUnformatted(FontAwesomeIcon.ExclamationTriangle.ToIconString());
+                        ImGui.PopStyleColor();
+                        ImGui.PopFont();
+                        ImGui.SameLine();
+                        ImGui.Text("Not progged on current job");
+                    }
+
+                    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 5);
+
+                    var haveLines = false;
                     foreach (var job in encounterProgress.Progress.Jobs)
                     {
                         Service.GameDataManager.JobIconsManager.GetJobIconSmall(job)?.ImGuiImage();
                         ImGui.SameLine();
+                        haveLines = true;
                     }
 
-                    ImGui.NewLine();
+                    if (haveLines)
+                    {
+                        ImGui.NewLine();
+                    }
 
                     ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(9, 2));
                     if (ImGui.BeginTable($"##TooltipTable{location.DisplayName}{character.CharId}", 3))

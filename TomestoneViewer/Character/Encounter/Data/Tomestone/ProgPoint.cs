@@ -62,7 +62,7 @@ public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
             }
             else if (this.Number != null && other.Number != null)
             {
-                return this.Number + percentThreshold >= other.Number;
+                return this.Number + percentThreshold <= other.Number;
             }
             else
             {
