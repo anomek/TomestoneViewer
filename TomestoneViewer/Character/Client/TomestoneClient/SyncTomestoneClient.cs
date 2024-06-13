@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Character.Encounter.Data.Tomestone;
 

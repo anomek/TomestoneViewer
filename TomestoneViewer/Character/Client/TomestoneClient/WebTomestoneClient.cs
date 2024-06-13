@@ -96,6 +96,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
 
                     summary[id] = TomestoneData.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
                         ProgPoint.Percent.From(ultimate.percent.ToString()),
+                        null,
                         null)]));
                 }
             }
@@ -138,16 +139,12 @@ internal partial class WebTomestoneClient : ITomestoneClient
             {
                 var lockout = new ProgPoint.Lockout(
                     ProgPoint.Percent.From(activity.bestPercent.ToString()),
-                    DateOnly.FromDateTime(ParseDateTime(activity.endTime)));
+                    DateOnly.FromDateTime(ParseDateTime(activity.endTime)),
+                    new JobId((uint)activity.displayCharacterJob.id));
                 if (lockouts.Count == 0 || !lockouts[^1].Equals(lockout))
                 {
                     lockouts.Add(lockout);
                 }
-            }
-
-            if (lockouts.Count >= 5)
-            {
-                break;
             }
         }
 

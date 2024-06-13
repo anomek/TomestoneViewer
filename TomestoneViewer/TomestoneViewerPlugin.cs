@@ -61,6 +61,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     public void Dispose()
     {
         Service.Commands.Dispose();
+        Service.GameDataManager.Dispose();
 
         this.contextMenu.Disable();
         this.territorryOfInterestDetector.Dispose();

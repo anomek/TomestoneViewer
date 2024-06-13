@@ -1,82 +1,150 @@
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Numerics;
 
-using Dalamud.Interface.Internal;
 using TomestoneViewer.Character;
+using TomestoneViewer.GUI;
+
+using static Dalamud.Plugin.Services.ITextureProvider;
 
 namespace TomestoneViewer.Manager;
 
-public class JobIconsManager
+public class JobIconsManager : IDisposable
 {
-    private List<IDalamudTextureWrap>? jobIcons;
-    private volatile bool isLoading;
+    private static readonly IconClass JobIcon = new(new Vector2(64), new Vector2(0), IconFlags.HiRes, 62143, 62101);
+    private static readonly IconClass SmallJobIcon = new(new Vector2(22), new Vector2(5), IconFlags.None, 62143, 62226);
+    private static readonly IReadOnlyList<IconClass> IconClasses = [JobIcon, SmallJobIcon];
+
+    private static readonly int JobsCount = 40;
+
+    private readonly object locker = new();
+
+    private Dictionary<IconClass, IReadOnlyList<Icon>>? jobIcons;
+
     private int iconLoadAttemptsLeft = 4;
 
-    public IDalamudTextureWrap? GetJobIcon(JobId jobId)
+    public Icon? GetJobIcon(JobId jobId)
     {
-        if (this.isLoading)
-        {
-            return null;
-        }
-
-        if (this.jobIcons == null)
-        {
-            this.LoadJobIcons();
-        }
-
-        var jobIndex = (int)jobId.Id;
-        if (this.jobIcons is { Count: 41 } && jobIndex <= 40)
-        {
-            return this.jobIcons[jobIndex];
-        }
-
-        return null;
+        return this.Get(JobIcon, jobId);
     }
 
-    private void LoadJobIcons()
+    public Icon? GetJobIconSmall(JobId jobId)
     {
-        if (this.iconLoadAttemptsLeft <= 0)
+        return this.Get(SmallJobIcon, jobId);
+    }
+
+    public void Dispose()
+    {
+        if (this.jobIcons == null)
         {
             return;
         }
 
-        this.jobIcons = [];
-        this.isLoading = true;
-        var hasFailed = false;
-
-        Task.Run(() =>
+        foreach (var iconClass in this.jobIcons)
         {
-            var defaultIcon = Service.TextureProvider.GetIcon(62143);
-            if (defaultIcon != null)
+            foreach (var icon in iconClass.Value)
             {
-                this.jobIcons.Add(defaultIcon);
+                icon.Dispose();
+            }
+        }
+    }
+
+    private Icon? Get(IconClass iconClass, JobId jobId)
+    {
+        this.EnsureIconsLoaded();
+        if (this.jobIcons == null)
+        {
+            return null;
+        }
+
+        var list = this.jobIcons[iconClass];
+        var jobIndex = (int)jobId.Id;
+        if (list == null || list.Count != JobsCount + 1 || jobIndex > JobsCount)
+        {
+            return null;
+        }
+
+        return list[jobIndex];
+    }
+
+    private bool EnsureIconsLoaded()
+    {
+        if (this.jobIcons == null)
+        {
+            lock (this.locker)
+            {
+                if (this.jobIcons == null && this.iconLoadAttemptsLeft > 0)
+                {
+                    this.iconLoadAttemptsLeft++;
+                    this.jobIcons = LoadJobIcons();
+                }
+            }
+        }
+
+        return this.jobIcons != null;
+    }
+
+    private static Dictionary<IconClass, IReadOnlyList<Icon>>? LoadJobIcons()
+    {
+        Dictionary<IconClass, IReadOnlyList<Icon>> jobIcons = [];
+        foreach (var iconClass in IconClasses)
+        {
+            var loaded = iconClass.LoadAll();
+            if (loaded == null)
+            {
+                return null;
+            }
+
+            jobIcons[iconClass] = loaded;
+        }
+
+        return jobIcons;
+    }
+
+    private class IconClass(Vector2 size, Vector2 topLeftCorner, IconFlags iconFlags, uint defaultIcon, uint firstIcon)
+    {
+        private readonly Vector2 size = size;
+        private readonly Vector2 topLeftCorner = topLeftCorner;
+        private readonly IconFlags iconFlags = iconFlags;
+        private readonly uint defaultIcon = defaultIcon;
+        private readonly uint firstIcon = firstIcon;
+
+        internal IReadOnlyList<Icon>? LoadAll()
+        {
+            List<Icon> icons = [];
+            var defaultIcon = this.Load(this.defaultIcon);
+            if (defaultIcon == null)
+            {
+                return null;
+            }
+
+            icons.Add(defaultIcon);
+
+            for (uint i = 0; i < JobsCount; i++)
+            {
+                var icon = this.Load(this.firstIcon + i);
+                if (icon == null)
+                {
+                    return null;
+                }
+
+                icons.Add(icon);
+            }
+
+            return icons;
+        }
+
+        private Icon? Load(uint iconId)
+        {
+            var icon = Service.TextureProvider.GetIcon(iconId, this.iconFlags);
+            if (icon != null)
+            {
+                return new Icon(icon, this.size, this.topLeftCorner);
             }
             else
             {
-                hasFailed = true;
+                return null;
             }
-
-            for (uint i = 62101; i <= 62140 && !hasFailed; i++)
-            {
-                var icon = Service.TextureProvider.GetIcon(i);
-                if (icon != null)
-                {
-                    this.jobIcons.Add(icon);
-                }
-                else
-                {
-                    hasFailed = true;
-                }
-            }
-
-            if (hasFailed)
-            {
-                this.jobIcons = null;
-
-                Service.PluginLog.Error($"Job icons loading failed, {--this.iconLoadAttemptsLeft} attempt(s) left.");
-            }
-
-            this.isLoading = false;
-        });
+        }
     }
 }

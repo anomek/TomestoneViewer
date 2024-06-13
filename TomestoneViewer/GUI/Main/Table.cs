@@ -71,7 +71,7 @@ public class Table(MainWindowController mainWindowController)
                 var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData.JobId);
                 if (icon != null)
                 {
-                    ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
+                    icon.ImGuiImage(new Vector2(iconSize));
                 }
                 else
                 {
@@ -247,24 +247,62 @@ public class Table(MainWindowController mainWindowController)
 
                 if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
                 {
+                    var textY = ImGui.CalcTextSize("99%").Y;
+                    var timestampScale = .95f;
+                    var yImageMargin = 2;
+                    var yTextAdj = MathF.Round(textY * (1 - timestampScale));
+
                     ImGui.BeginTooltip();
-                    var align = ImGui.GetCursorPosX() + ImGui.CalcTextSize("P8 88.88% ").X;
 
                     DoubleClickToOpenOnTomestoneText();
 
-                    foreach (var lockout in encounterProgress.Progress.Lockouts)
+                    foreach (var job in encounterProgress.Progress.Jobs)
                     {
-                        ImGui.TextUnformatted($"{lockout.Percent}");
-                        if (lockout.Timestamp.HasValue)
-                        {
-                            ImGui.SameLine();
-                            ImGui.SetCursorPosX(align);
-                            ImGui.SetWindowFontScale(.95f);
-                            ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
-                            ImGui.SetWindowFontScale(1);
-                        }
+                        Service.GameDataManager.JobIconsManager.GetJobIconSmall(job)?.ImGuiImage();
+                        ImGui.SameLine();
                     }
 
+                    ImGui.NewLine();
+
+                    ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(9, 2));
+                    if (ImGui.BeginTable($"##TooltipTable{location.DisplayName}{character.CharId}", 3))
+                    {
+                        foreach (var lockout in encounterProgress.Progress.LockoutsBrief)
+                        {
+                            ImGui.TableNextColumn();
+                            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yImageMargin);
+                            ImGui.TextUnformatted($"{lockout.Percent}");
+
+                            ImGui.TableNextColumn();
+                            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yImageMargin + yTextAdj);
+                            if (lockout.Timestamp.HasValue)
+                            {
+                                ImGui.SetWindowFontScale(timestampScale);
+                                ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
+                                ImGui.SetWindowFontScale(1);
+                            }
+
+                            ImGui.TableNextColumn();
+                            if (lockout.Job != null)
+                            {
+                                var icon = Service.GameDataManager.JobIconsManager.GetJobIconSmall(lockout.Job);
+                                if (icon != null)
+                                {
+                                    icon.ImGuiImage();
+                                }
+                                else
+                                {
+                                    ImGui.Text("(?)");
+                                }
+                            }
+
+                            ImGui.TableNextRow();
+                        }
+
+                        ImGui.EndTable();
+                    }
+
+                    ImGui.PopStyleVar();
                     ImGui.EndTooltip();
                 }
             }
