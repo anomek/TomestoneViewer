@@ -68,15 +68,7 @@ public class Table(MainWindowController mainWindowController)
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.AlignTextToFramePadding();
-                var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(charData.JobId);
-                if (icon != null)
-                {
-                    ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
-                }
-                else
-                {
-                    ImGui.Text("(?)");
-                }
+                ImGui.Image(charData.JobId.ImGuiIconHandle, new Vector2(iconSize));
 
                 ImGui.SameLine();
                 if (ImGui.Selectable($"{charData.CharId.FullName}##PartyListCharacterSelectable{i}"))

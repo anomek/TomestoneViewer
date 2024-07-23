@@ -25,7 +25,7 @@ public class ContextMenu(MainWindowController mainWindowController)
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "switch looks better")]
-    private static bool IsMenuValid(MenuArgs menuOpenedArgs)
+    private static bool IsMenuValid(IMenuArgs menuOpenedArgs)
     {
         if (menuOpenedArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
@@ -57,7 +57,7 @@ public class ContextMenu(MainWindowController mainWindowController)
         }
     }
 
-    private void SearchPlayerFromMenu(MenuArgs menuArgs)
+    private void SearchPlayerFromMenu(IMenuArgs menuArgs)
     {
         if (menuArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
@@ -87,7 +87,7 @@ public class ContextMenu(MainWindowController mainWindowController)
         }
     }
 
-    private void OnOpenContextMenu(MenuOpenedArgs menuOpenedArgs)
+    private void OnOpenContextMenu(IMenuOpenedArgs menuOpenedArgs)
     {
         if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(menuOpenedArgs))
         {
@@ -105,7 +105,7 @@ public class ContextMenu(MainWindowController mainWindowController)
         });
     }
 
-    private void Search(MenuItemClickedArgs menuItemClickedArgs)
+    private void Search(IMenuItemClickedArgs menuItemClickedArgs)
     {
         if (!IsMenuValid(menuItemClickedArgs))
         {
@@ -117,12 +117,7 @@ public class ContextMenu(MainWindowController mainWindowController)
 
     private static unsafe string GetBlacklistSelectFullName()
     {
-        var agentBlackList = (AgentBlacklist*)Framework.Instance()->GetUiModule()->GetAgentModule()->GetAgentByInternalId(AgentId.SocialBlacklist);
-        if (agentBlackList != null)
-        {
-            return MemoryHelper.ReadSeString(&agentBlackList->SelectedPlayerFullName).TextValue;
-        }
-
+        // FIXME: implement this one day
         return string.Empty;
     }
 

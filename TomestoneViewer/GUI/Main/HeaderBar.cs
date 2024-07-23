@@ -7,6 +7,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using TomestoneViewer.Character;
+using TomestoneViewer.Manager;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -153,17 +154,8 @@ public class HeaderBar(IReadOnlyList<CharData> partyList)
                         Service.CharDataManager.SetCharacter(CharSelector.SelectById(partyMember.CharId));
                     }
 
-                    var icon = Service.GameDataManager.JobIconsManager.GetJobIcon(partyMember.JobId);
-                    if (icon != null)
-                    {
-                        ImGui.SameLine();
-                        ImGui.Image(icon.ImGuiHandle, new Vector2(iconSize));
-                    }
-                    else
-                    {
-                        ImGui.SetCursorPosY(middleCursorPosY);
-                        ImGui.Text("(?)");
-                    }
+                    ImGui.SameLine();
+                    ImGui.Image(partyMember.JobId.ImGuiIconHandle, new Vector2(iconSize));
 
                     ImGui.TableNextColumn();
 

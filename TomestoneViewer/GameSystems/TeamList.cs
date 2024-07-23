@@ -18,8 +18,8 @@ public class TeamList
 
     public unsafe TeamList()
     {
-        var groupManager = GroupManager.Instance();
-        if (groupManager->MemberCount > 0)
+        var groupManager = GroupManager.Instance()->MainGroup;
+        if (groupManager.MemberCount > 0)
         {
             this.AddMembersFromGroupManager(groupManager);
         }
@@ -29,16 +29,16 @@ public class TeamList
             if (cwProxy->IsInCrossRealmParty != 0)
             {
                 var localIndex = cwProxy->LocalPlayerGroupIndex;
-                this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupArraySpan[localIndex], true);
+                this.AddMembersFromCRGroup(cwProxy->CrossRealmGroups[localIndex], true);
 
-                for (var i = 0; i < cwProxy->CrossRealmGroupArraySpan.Length; i++)
+                for (var i = 0; i < cwProxy->CrossRealmGroups.Length; i++)
                 {
                     if (i == localIndex)
                     {
                         continue;
                     }
 
-                    this.AddMembersFromCRGroup(cwProxy->CrossRealmGroupArraySpan[i]);
+                    this.AddMembersFromCRGroup(cwProxy->CrossRealmGroups[i]);
                 }
             }
         }
@@ -57,24 +57,24 @@ public class TeamList
     {
         for (var i = 0; i < crossRealmGroup.GroupMemberCount; i++)
         {
-            var groupMember = crossRealmGroup.GroupMembersSpan[i];
-            this.AddTeamMember(Util.ReadSeString(groupMember.Name).TextValue, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup, groupMember.IsPartyLeader > 0);
+            var groupMember = crossRealmGroup.GroupMembers[i];
+            this.AddTeamMember(groupMember.NameString, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup, groupMember.IsPartyLeader > 0);
         }
     }
 
-    private unsafe void AddMembersFromGroupManager(GroupManager* groupManager)
+    private unsafe void AddMembersFromGroupManager(GroupManager.Group groupManager)
     {
-        var partyMemberList = AgentModule.Instance()->GetAgentHUD()->PartyMemberListSpan;
-        var groupManagerIndexLeft = Enumerable.Range(0, groupManager->MemberCount).ToList();
+        var partyMemberList = AgentModule.Instance()->GetAgentHUD()->PartyMembers;
+        var groupManagerIndexLeft = Enumerable.Range(0, groupManager.MemberCount).ToList();
 
-        for (var i = 0; i < groupManager->MemberCount; i++)
+        for (var i = 0; i < groupManager.MemberCount; i++)
         {
             var hudPartyMember = partyMemberList[i];
             var hudPartyMemberNameRaw = hudPartyMember.Name;
             if (hudPartyMemberNameRaw != null)
             {
                 var hudPartyMemberName = Util.ReadSeString(hudPartyMemberNameRaw).TextValue;
-                for (var j = 0; j < groupManager->MemberCount; j++)
+                for (var j = 0; j < groupManager.MemberCount; j++)
                 {
                     // handle duplicate names from different worlds
                     if (!groupManagerIndexLeft.Contains(j))
@@ -82,10 +82,10 @@ public class TeamList
                         continue;
                     }
 
-                    var partyMember = groupManager->GetPartyMemberByIndex(j);
+                    var partyMember = groupManager.GetPartyMemberByIndex(j);
                     if (partyMember != null)
                     {
-                        var partyMemberName = Util.ReadSeString(partyMember->Name).TextValue;
+                        var partyMemberName = partyMember->NameString;
                         if (hudPartyMemberName.Equals(partyMemberName))
                         {
                             this.AddTeamMember(partyMemberName, partyMember->HomeWorld, partyMember->ClassJob, true, false);
@@ -99,10 +99,10 @@ public class TeamList
 
         for (var i = 0; i < 20; i++)
         {
-            var allianceMember = groupManager->GetAllianceMemberByIndex(i);
+            var allianceMember = groupManager.GetAllianceMemberByIndex(i);
             if (allianceMember != null)
             {
-                this.AddTeamMember(Util.ReadSeString(allianceMember->Name).TextValue, allianceMember->HomeWorld, allianceMember->ClassJob, false, false);
+                this.AddTeamMember(allianceMember->NameString, allianceMember->HomeWorld, allianceMember->ClassJob, false, false);
             }
         }
     }

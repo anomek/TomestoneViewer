@@ -4,7 +4,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using TomestoneViewer.Character;
-using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
@@ -25,13 +24,11 @@ internal class Service
 
     internal static CharDataManager CharDataManager { get; set; } = null!;
 
-    internal static GameDataManager GameDataManager { get; set; } = null!;
-
     internal static HistoryManager HistoryManager { get; set; } = null!;
 
     internal static GameData GameData { get; set; } = null!;
 
-    [PluginService] internal static DalamudPluginInterface Interface { get; private set; } = null!;
+    [PluginService] internal static IDalamudPluginInterface Interface { get; private set; } = null!;
 
     [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
 

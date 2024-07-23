@@ -105,7 +105,7 @@ public unsafe class TerritoryOfInterestDetector
 
     private static bool IsInParty()
     {
-        if (GroupManager.Instance()->MemberCount > 0)
+        if (GroupManager.Instance()->MainGroup.MemberCount > 0)
         {
             return true;
         }

@@ -39,7 +39,7 @@ public class CharSelector
     public static CharSelector SelectCurrentTarget()
     {
         var target = Service.TargetManager.Target;
-        if (target is PlayerCharacter targetCharacter && target.ObjectKind != ObjectKind.Companion)
+        if (target is IPlayerCharacter targetCharacter && target.ObjectKind != ObjectKind.Companion)
         {
             return FromPlayerCharacter(targetCharacter);
         }
@@ -117,7 +117,7 @@ public class CharSelector
     {
         try
         {
-            var placeholder = Framework.Instance()->GetUiModule()->GetPronounModule()->ResolvePlaceholder(text, 0, 0);
+            var placeholder = Framework.Instance()->GetUIModule()->GetPronounModule()->ResolvePlaceholder(text, 0, 0);
             if (placeholder != null && placeholder->IsCharacter())
             {
                 var character = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)placeholder;
@@ -125,7 +125,7 @@ public class CharSelector
 
                 if (world != null && placeholder->Name != null)
                 {
-                    return CharacterId.FromFullName(Util.ReadSeString(placeholder->Name).TextValue, world);
+                    return CharacterId.FromFullName(Util.ReadSeString(placeholder->GetName()).TextValue, world);
                 }
             }
         }
@@ -138,7 +138,7 @@ public class CharSelector
         return null;
     }
 
-    private static CharSelector FromPlayerCharacter(PlayerCharacter playerCharacter)
+    private static CharSelector FromPlayerCharacter(IPlayerCharacter playerCharacter)
     {
         if (playerCharacter.HomeWorld.GameData?.Name == null)
         {

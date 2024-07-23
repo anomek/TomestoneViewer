@@ -20,8 +20,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     private readonly ContextMenu contextMenu;
     private readonly TerritoryOfInterestDetector territorryOfInterestDetector;
 
-    public TomestoneViewerPlugin(
-        [RequiredVersion("1.0")] DalamudPluginInterface pluginInterface)
+    public TomestoneViewerPlugin(IDalamudPluginInterface pluginInterface)
     {
         pluginInterface.Create<Service>();
 
@@ -38,7 +37,6 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.Commands = new Commands(mainWindowController);
 
         Service.GameData = new GameData();
-        Service.GameDataManager = new GameDataManager();
         Service.HistoryManager = new HistoryManager();
 
         Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, mainWindowController);
