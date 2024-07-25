@@ -11,6 +11,7 @@ public record ExpansionQueryParam(string Value)
     public static readonly ExpansionQueryParam STB = new("stormblood");
     public static readonly ExpansionQueryParam SHB = new("shadowbringers");
     public static readonly ExpansionQueryParam EW = new("endwalker");
+    public static readonly ExpansionQueryParam DT = new("dawntrail");
 
     public override string ToString()
     {

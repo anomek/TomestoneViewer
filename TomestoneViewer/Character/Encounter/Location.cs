@@ -19,11 +19,11 @@ public record Location(
         new("TEA", "the-epic-of-alexander-ultimate", Category.ULTIMATE, ExpansionQueryParam.SHB, new(887),  new(3651)),
         new("UWU", "the-weapons-refrain-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(777),  new(2652)),
         new("UCOB", "the-unending-coil-of-bahamut-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(733), new(2651)),
-        new("p9s",  "kokytos", Category.SAVAGE, ExpansionQueryParam.EW, new(1148), null),
-        new("p10s", "pand%C3%A6monium", Category.SAVAGE, ExpansionQueryParam.EW, new(1150), null),
-        new("p11s",  "themis", Category.SAVAGE, ExpansionQueryParam.EW, new(1152), null),
-        new("p12sp1", "athena", Category.SAVAGE, ExpansionQueryParam.EW, new(1154), null),
-        new("p12sp2", "pallas-athena", Category.SAVAGE, ExpansionQueryParam.EW, TerritoryId.Empty, null)
+        new("r1s",  "black-cat", Category.SAVAGE, ExpansionQueryParam.DT, new(1226), null),
+        new("r2s", "honey-b.-lovely", Category.SAVAGE, ExpansionQueryParam.DT, new(1228), null),
+        new("r3s",  "brute-bomber", Category.SAVAGE, ExpansionQueryParam.DT, new(1230), null),
+        new("r4s", "wicked-thunder", Category.SAVAGE, ExpansionQueryParam.DT, new(1232), null),
+        // new("r4sp2", "pallas-wicked-thunder", Category.SAVAGE, ExpansionQueryParam.DT, TerritoryId.Empty, null),
     ];
 
     public static IReadOnlyList<Location> All()
