@@ -9,7 +9,7 @@ env:
   PUBLIC_NAME: TomestoneViewer
   SOLUTION_NAME: TomestoneViewer
   INTERNAL_NAME: TomestoneViewer
-  RELEASE_DIR: TomestoneViewer\bin\Release\TomestoneViewer
+  RELEASE_DIR: TomestoneViewer\bin\x64\Release\TomestoneViewer
   PERSONAL_PLUGIN_REPO: anomek/MyDalamudPlugins
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
