@@ -1,10 +1,7 @@
 using System.Linq;
 
 using Dalamud.Game.Gui.ContextMenu;
-using Dalamud.Memory;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TomestoneViewer.Character;
 using TomestoneViewer.Controller;
 
@@ -48,7 +45,7 @@ public class ContextMenu(MainWindowController mainWindowController)
             case "BeginnerChatList":
             case "_PartyList":
                 return menuTargetDefault.TargetName != string.Empty
-                     && (Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.Id)?.IsPublic ?? false);
+                     && (Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.RowId).IsPublic ?? false);
 
             case "BlackList":
                 return menuTargetDefault.TargetName != string.Empty;
@@ -76,7 +73,7 @@ public class ContextMenu(MainWindowController mainWindowController)
             }
             else
             {
-                var world = Service.GameData.GetWorldName((ushort)menuTargetDefault.TargetHomeWorld.Id);
+                var world = Service.GameData.GetWorldName((ushort)menuTargetDefault.TargetHomeWorld.RowId);
                 if (world == null)
                 {
                     return;

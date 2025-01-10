@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.GameSystems;
@@ -36,9 +36,9 @@ public class GameData
                   .FirstOrDefault(entry => string.Equals(
                          entry.Name.ToString(),
                          dutyName,
-                         StringComparison.InvariantCultureIgnoreCase))?
-                   .TerritoryType.Row;
-        return id == null ? null : new(id.Value);
+                         StringComparison.InvariantCultureIgnoreCase))
+                   .TerritoryType.RowId;
+        return new(id);
     }
 
     private string? FindRegion(string worldName)
@@ -53,7 +53,7 @@ public class GameData
             return null;
         }
 
-        return world.DataCenter?.Value?.Region switch
+        return world.Value.DataCenter.Value.Region switch
         {
             1 => "JP",
             2 => "NA",
@@ -71,6 +71,6 @@ public class GameData
             return null;
         }
 
-        return world.Name;
+        return world.HasValue ? world.Value.Name.ToString() : null;
     }
 }

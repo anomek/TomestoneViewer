@@ -76,7 +76,7 @@ public unsafe class TerritoryOfInterestDetector
         }
 
         // Left commented log as a useful tool for detecting territoryId in future
-        // Service.PluginLog.Info($"Selecting territoryId territoryId={territoryId}");
+        Service.PluginLog.Info($"Selecting territoryId territoryId={territoryId}");
         if (this.validTerritories.Contains(territoryId))
         {
             this.TerritoryId = territoryId;

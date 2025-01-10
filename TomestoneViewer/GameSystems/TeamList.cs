@@ -47,8 +47,8 @@ public class TeamList
         if (this.Members.Count == 0 && Service.ClientState.LocalPlayer != null)
         {
             var selfName = Service.ClientState.LocalPlayer.Name.TextValue;
-            var selfWorldId = Service.ClientState.LocalPlayer.HomeWorld.Id;
-            var selfJobId = Service.ClientState.LocalPlayer.ClassJob.Id;
+            var selfWorldId = Service.ClientState.LocalPlayer.HomeWorld.RowId;
+            var selfJobId = Service.ClientState.LocalPlayer.ClassJob.RowId;
             this.AddTeamMember(selfName, (ushort)selfWorldId, selfJobId, true, false);
         }
     }

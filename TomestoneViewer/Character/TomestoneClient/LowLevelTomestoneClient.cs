@@ -153,6 +153,6 @@ internal partial class LowLevelTomestoneClient
         }
     }
 
-    [GeneratedRegex("version&quot;:&quot;([a-z0-9]+)&quot;}\"")]
+    [GeneratedRegex("version&quot;:&quot;([a-z0-9]+)&quot;")]
     private static partial Regex InertiaRegex();
 }

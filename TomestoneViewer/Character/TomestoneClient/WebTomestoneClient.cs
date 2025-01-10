@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -132,9 +133,10 @@ internal partial class WebTomestoneClient : ITomestoneClient
             }
             else
             {
+                var dateTime = ParseDateTime(activity.endTime);
                 var lockout = new ProgPoint.Lockout(
                     ProgPoint.Percent.From(activity.bestPercent.ToString()),
-                    DateOnly.FromDateTime(ParseDateTime(activity.endTime)));
+                    dateTime == null ? null : DateOnly.FromDateTime(dateTime));
                 if (lockouts.Count == 0 || !lockouts[^1].Equals(lockout))
                 {
                     lockouts.Add(lockout);
@@ -214,9 +216,23 @@ internal partial class WebTomestoneClient : ITomestoneClient
         };
     }
 
-    private static DateTime ParseDateTime(object value)
+    private static DateTime? ParseDateTime(object value)
     {
-        return DateTime.ParseExact(value?.ToString() ?? string.Empty, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        var stringValue = value?.ToString();
+        if (stringValue == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return DateTime.ParseExact(stringValue, "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+        }
+        catch (FormatException ex)
+        {
+            Service.PluginLog.Error($"Failed to parse {stringValue}: {ex.Message}");
+            return null;
+        }
     }
 
     [GeneratedRegex("https://tomestone.gg/character/([0-9]+)/")]

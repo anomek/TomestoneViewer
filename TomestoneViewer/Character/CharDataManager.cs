@@ -1,11 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Lumina.Excel.GeneratedSheets;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.TomestoneClient;
-using TomestoneViewer.GameSystems;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;

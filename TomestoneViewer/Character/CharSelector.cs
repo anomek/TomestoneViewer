@@ -140,13 +140,13 @@ public class CharSelector
 
     private static CharSelector FromPlayerCharacter(IPlayerCharacter playerCharacter)
     {
-        if (playerCharacter.HomeWorld.GameData?.Name == null)
+        if (!playerCharacter.HomeWorld.ValueNullable.HasValue)
         {
             Service.PluginLog.Error("SetInfo character world was null");
             return new CharSelector(CharacterSelectorError.EmptyHomeWorld);
         }
 
-        var charId = CharacterId.FromFullName(playerCharacter.Name.TextValue, playerCharacter.HomeWorld.GameData.Name.ToString());
+        var charId = CharacterId.FromFullName(playerCharacter.Name.TextValue, playerCharacter.HomeWorld.Value.Name.ToString());
         if (charId != null)
         {
             return new CharSelector(charId);
