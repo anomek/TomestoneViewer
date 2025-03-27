@@ -20,10 +20,10 @@ public record Location(
         new("TEA", "the-epic-of-alexander-ultimate", Category.ULTIMATE, ExpansionQueryParam.SHB, new(887),  new(3651)),
         new("UWU", "the-weapons-refrain-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(777),  new(2652)),
         new("UCOB", "the-unending-coil-of-bahamut-ultimate", Category.ULTIMATE, ExpansionQueryParam.STB, new(733), new(2651)),
-        new("m1s",  "black-cat", Category.SAVAGE, ExpansionQueryParam.DT, new(1226), null),
-        new("m2s", "honey-b.-lovely", Category.SAVAGE, ExpansionQueryParam.DT, new(1228), null),
-        new("m3s",  "brute-bomber", Category.SAVAGE, ExpansionQueryParam.DT, new(1230), null),
-        new("m4s", "wicked-thunder", Category.SAVAGE, ExpansionQueryParam.DT, new(1232), null),
+        new("m5s", "dancing-green", Category.SAVAGE, ExpansionQueryParam.DT, new(1257), null),
+        new("m6s", "sugar-riot", Category.SAVAGE, ExpansionQueryParam.DT, new(1259), null),
+        new("m7s", "brute-abombinator", Category.SAVAGE, ExpansionQueryParam.DT, new(1261), null),
+        new("m8s", "howling-blade", Category.SAVAGE, ExpansionQueryParam.DT, new(1263), null),
     ];
 
     public static IReadOnlyList<Location> All()

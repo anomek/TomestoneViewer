@@ -15,7 +15,7 @@ public record Category(
     DateTime? ReleaseDate)
 {
     public static readonly Category ULTIMATE = new("Ultimates", "ultimates", "ultimates", null);
-    public static readonly Category SAVAGE = new("Savage", "raids", "aac-light-heavyweight-savage", new(2024, 7, 30));
+    public static readonly Category SAVAGE = new("Savage", "raids", "aac-cruiserweight-savage", new(2025, 4, 1));
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "I have to break at least one rule")]
     private static IReadOnlyDictionary<Category, IReadOnlyList<Location>>? CategoryLocations;

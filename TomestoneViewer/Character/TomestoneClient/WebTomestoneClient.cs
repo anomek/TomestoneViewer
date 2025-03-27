@@ -48,6 +48,11 @@ internal partial class WebTomestoneClient : ITomestoneClient
         }
 
         var headerEncounters = response?.props.headerEncounters;
+        if (headerEncounters == null)
+        {
+            return new(TomestoneClientError.CharacterTomestoneDisabled);
+        }
+
         var ultimates = headerEncounters?.latestExpansion?.ultimate;
         Dictionary<UltimateId, EncounterProgress> summary = [];
         if (ultimates != null)
@@ -226,7 +231,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
 
         try
         {
-            return DateTime.ParseExact(stringValue, "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(stringValue, ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss.fff"], CultureInfo.InvariantCulture);
         }
         catch (FormatException ex)
         {
