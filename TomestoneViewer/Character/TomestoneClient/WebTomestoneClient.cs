@@ -130,7 +130,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         List<ProgPoint.Lockout> lockouts = [];
         foreach (var activity in data)
         {
-            if (activity.killsCount > 0)
+            if (activity.activity.killsCount > 0)
             {
                 return new(EncounterProgress.EncounterCleared(new EncounterClear(
                     ParseDateTime(activity.endTime),
@@ -138,9 +138,9 @@ internal partial class WebTomestoneClient : ITomestoneClient
             }
             else
             {
-                var dateTime = ParseDateTime(activity.endTime);
+                var dateTime = ParseDateTime(activity.activity.endTime);
                 var lockout = new ProgPoint.Lockout(
-                    ProgPoint.Percent.From(activity.bestPercent.ToString()),
+                    ProgPoint.Percent.From(activity.activity.bestPercent.ToString()),
                     dateTime == null ? null : DateOnly.FromDateTime(dateTime));
                 if (lockouts.Count == 0 || !lockouts[^1].Equals(lockout))
                 {

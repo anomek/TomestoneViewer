@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <Authors>Anomek</Authors>
-    <Version>0.1.5.0</Version>
+    <Version>0.1.5.1</Version>
     <Description>Shows prog points in high end content for players from tomestone.gg</Description>
     <RootNamespace>TomestoneViewer</RootNamespace>
     <PackageProjectUrl>https://github.com/anomek/TomestoneViewer</PackageProjectUrl>
