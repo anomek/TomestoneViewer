@@ -26,7 +26,7 @@ public class TeamList
         else
         {
             var cwProxy = InfoProxyCrossRealm.Instance();
-            if (cwProxy->IsInCrossRealmParty != 0)
+            if (cwProxy->IsInCrossRealmParty)
             {
                 var localIndex = cwProxy->LocalPlayerGroupIndex;
                 this.AddMembersFromCRGroup(cwProxy->CrossRealmGroups[localIndex], true);
@@ -58,7 +58,7 @@ public class TeamList
         for (var i = 0; i < crossRealmGroup.GroupMemberCount; i++)
         {
             var groupMember = crossRealmGroup.GroupMembers[i];
-            this.AddTeamMember(groupMember.NameString, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup, groupMember.IsPartyLeader > 0);
+            this.AddTeamMember(groupMember.NameString, (ushort)groupMember.HomeWorld, groupMember.ClassJobId, isLocalPlayerGroup, groupMember.IsPartyLeader);
         }
     }
 

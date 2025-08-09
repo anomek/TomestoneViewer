@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.NET.SDK/12.0.2">
+<Project Sdk="Dalamud.NET.SDK/13.0.0">
 
   <PropertyGroup>
     <Authors>Anomek</Authors>
-    <Version>0.1.5.1</Version>
+    <Version>0.1.6.0</Version>
     <Description>Shows prog points in high end content for players from tomestone.gg</Description>
     <RootNamespace>TomestoneViewer</RootNamespace>
     <PackageProjectUrl>https://github.com/anomek/TomestoneViewer</PackageProjectUrl>

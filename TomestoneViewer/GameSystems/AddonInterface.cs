@@ -62,12 +62,12 @@ public unsafe class AddonInterface<TAddon> : IDisposable
 
     private void OnAddonStart(AddonEvent type, AddonArgs args)
     {
-        var addon = (TAddon*)args.Addon;
+        var addon = (TAddon*)args.Addon.Address;
         this.internalRegisteredEventHandlers.ForEach(Service.AddonEventManager.RemoveEvent);
         this.internalRegisteredEventHandlers.Clear();
         this.eventRegistrations.ForEach(registration =>
         {
-            var handle = Service.AddonEventManager.AddEvent(args.Addon, registration.GetComponent(addon), registration.EventType, (_, addonPtr, _) => registration.Callback.Invoke((TAddon*)addonPtr));
+            var handle = Service.AddonEventManager.AddEvent(args.Addon, registration.GetComponent(addon), registration.EventType, (eventType, eventData) => registration.Callback.Invoke((TAddon*)eventData.AddonPointer));
             if (handle != null)
             {
                 this.internalRegisteredEventHandlers.Add(handle);
@@ -86,6 +86,6 @@ public unsafe class AddonInterface<TAddon> : IDisposable
         this.internalRegisteredEventHandlers.ForEach(Service.AddonEventManager.RemoveEvent);
         this.internalRegisteredEventHandlers.Clear();
 
-        this.onEndListeners.ForEach(listener => listener.Invoke((TAddon*)args.Addon));
+        this.onEndListeners.ForEach(listener => listener.Invoke((TAddon*)args.Addon.Address));
     }
 }

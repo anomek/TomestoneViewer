@@ -109,7 +109,7 @@ public unsafe class TerritoryOfInterestDetector
         var crossRealm = InfoProxyCrossRealm.Instance();
         if (crossRealm != null)
         {
-            return crossRealm->IsInCrossRealmParty > 0;
+            return crossRealm->IsInCrossRealmParty;
         }
 
         return false;

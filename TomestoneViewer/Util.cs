@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
@@ -160,19 +160,24 @@ public class Util
         var cos = (float)Math.Cos(angle);
 
         var buf = ImGui.GetWindowDrawList().VtxBuffer;
-        var low = buf[rotationStartIndex].pos;
-        var high = buf[rotationStartIndex].pos;
+        if (buf.Size <= rotationStartIndex)
+        {
+            return;
+        }
+
+        var low = buf[rotationStartIndex].Pos;
+        var high = buf[rotationStartIndex].Pos;
         for (var i = rotationStartIndex + 1; i < buf.Size; i++)
         {
-            low = Vector2.Min(low, buf[i].pos);
-            high = Vector2.Max(high, buf[i].pos);
+            low = Vector2.Min(low, buf[i].Pos);
+            high = Vector2.Max(high, buf[i].Pos);
         }
 
         var center = new Vector2((low.X + high.X) / 2, (low.Y + high.Y) / 2);
         center = ImRotate(center, sin, cos) - center;
         for (var i = rotationStartIndex; i < buf.Size; i++)
         {
-            buf[i].pos = ImRotate(buf[i].pos, sin, cos) - center;
+            buf.Ref(i).Pos = ImRotate(buf[i].Pos, sin, cos) - center;
         }
     }
 

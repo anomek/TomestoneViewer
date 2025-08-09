@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;

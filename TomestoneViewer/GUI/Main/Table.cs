@@ -4,7 +4,7 @@ using System.Numerics;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
