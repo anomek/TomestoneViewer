@@ -18,8 +18,8 @@ public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
     {
         public override string ToString()
         {
-            var prefix = this.Phase != null ? $"P{this.Phase}" : string.Empty
-                 + this.Intermission != null ? $"I{this.Intermission}" : string.Empty;
+            var prefix = (this.Phase != null ? $"P{this.Phase}" : string.Empty)
+                 + (this.Intermission != null ? $"I{this.Intermission}" : string.Empty);
             var number = this.Number.HasValue ? $"{this.Number.Value}%" : string.Empty;
             var space = prefix != string.Empty && number != string.Empty ? " " : string.Empty;
             return $"{prefix}{space}{number}";

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.Numerics;
 
-using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.GameFonts;
+using Dalamud.Interface.Windowing;
 using TomestoneViewer.Character;
 using TomestoneViewer.Controller;
+
+using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -52,6 +55,7 @@ public class MainWindow : Window
 
     public override void Draw()
     {
+        Service.Fonts.Default.Push();
         this.menuBar.Draw(this.PartyView);
 
         if (!this.PartyView)
@@ -60,5 +64,6 @@ public class MainWindow : Window
         }
 
         this.table.Draw(this.PartyView);
+        Service.Fonts.Default.Pop();
     }
 }

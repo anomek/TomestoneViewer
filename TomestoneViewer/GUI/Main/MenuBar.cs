@@ -1,8 +1,8 @@
 using System.Numerics;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 using TomestoneViewer.Controller;
 
@@ -15,6 +15,7 @@ public class MenuBar(MainWindowController mainWindowController)
     public void Draw(bool partyView)
     {
         ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6 * ImGuiHelpers.GlobalScale, ImGui.GetStyle().ItemSpacing.Y));
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, new Vector2(ImGui.GetStyle().FramePadding.X, 4));
 
         if (ImGui.BeginMenuBar())
         {
@@ -76,6 +77,7 @@ public class MenuBar(MainWindowController mainWindowController)
             ImGui.EndMenuBar();
         }
 
+        ImGui.PopStyleVar();
         ImGui.PopStyleVar();
     }
 

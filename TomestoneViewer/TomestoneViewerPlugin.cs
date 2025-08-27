@@ -38,6 +38,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
         Service.GameData = new GameData();
         Service.HistoryManager = new HistoryManager();
+        Service.Fonts = new GUI.Fonts();
 
         Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, mainWindowController);
         mainWindowController.RegisterMainWindow(Service.MainWindow);
@@ -63,6 +64,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     public void Dispose()
     {
         Service.Commands.Dispose();
+        Service.Fonts.Dispose();
 
         this.contextMenu.Disable();
         this.territorryOfInterestDetector.Dispose();

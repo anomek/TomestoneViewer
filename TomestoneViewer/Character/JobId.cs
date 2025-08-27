@@ -11,7 +11,7 @@ public record JobId(uint Id)
 
     public Icon Icon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62100)).GetWrapOrEmpty().Handle, 25);
 
-    public Icon SmallIcon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62225)).GetWrapOrEmpty().Handle, 20);
+    public Icon SmallIcon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62225)).GetWrapOrEmpty().Handle, 18);
 
     public override string ToString()
     {

@@ -1,10 +1,12 @@
 using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
+using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using TomestoneViewer.Character;
 using TomestoneViewer.GameSystems;
+using TomestoneViewer.GUI;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
 using TomestoneViewer.Manager;
@@ -27,6 +29,8 @@ internal class Service
     internal static HistoryManager HistoryManager { get; set; } = null!;
 
     internal static GameData GameData { get; set; } = null!;
+
+    internal static Fonts Fonts { get; set; } = null!;
 
     [PluginService] internal static IDalamudPluginInterface Interface { get; private set; } = null!;
 

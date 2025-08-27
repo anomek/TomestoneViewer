@@ -2,9 +2,9 @@ using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface;
-using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
@@ -86,9 +86,11 @@ public class Util
     {
         if (ImGui.IsItemHovered())
         {
+            ImGui.PushFont(UiBuilder.DefaultFont);
             ImGui.BeginTooltip();
             ImGui.TextUnformatted(tooltip);
             ImGui.EndTooltip();
+            ImGui.PopFont();
             return true;
         }
 
