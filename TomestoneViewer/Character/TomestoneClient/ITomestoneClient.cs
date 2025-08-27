@@ -10,5 +10,5 @@ public interface ITomestoneClient
 
     Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId);
 
-    Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location);
+    Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location);
 }

@@ -21,7 +21,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
             .FlatMap(this.ParseCharacterSummary);
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchEncounter {lodestoneId} {location.DisplayName}");
         var url = $"https://tomestone.gg/character/{lodestoneId}/dummy/activity?"
@@ -54,7 +54,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         }
 
         var ultimates = headerEncounters?.latestExpansion?.ultimate;
-        Dictionary<UltimateId, EncounterProgress> summary = [];
+        Dictionary<UltimateId, TomestoneEncounterData> summary = [];
         if (ultimates != null)
         {
             foreach (var ultimate in ultimates)
@@ -62,13 +62,13 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 var id = new UltimateId((int)ultimate.id);
                 if (ultimate.achievement != null)
                 {
-                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(
+                    summary[id] = TomestoneEncounterData.EncounterCleared(new EncounterClear(
                         ParseDateTime(ultimate.achievement.completedAt),
                         ultimate.achievement.completionWeek.ToString()));
                 }
                 else if (ultimate.activity != null)
                 {
-                    summary[id] = EncounterProgress.EncounterCleared(new EncounterClear(null, null));
+                    summary[id] = TomestoneEncounterData.EncounterCleared(new EncounterClear(null, null));
                 }
             }
         }
@@ -96,9 +96,10 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 {
                     Service.PluginLog.Info($"prog point: {ultimate.percent.ToString()}");
 
-                    summary[id] = EncounterProgress.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
+                    summary[id] = TomestoneEncounterData.EncounterInProgress(new ProgPoint([new ProgPoint.Lockout(
                         ProgPoint.Percent.From(ultimate.percent.ToString()),
-                        null)]));
+                        null,
+                        JobId.Empty)]));
                 }
             }
         }
@@ -106,7 +107,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         return new(new CharacterSummary(summary));
     }
 
-    private ClientResponse<EncounterProgress> ParseEncounter(dynamic? response)
+    private ClientResponse<TomestoneEncounterData> ParseEncounter(dynamic? response)
     {
         if (response == null)
         {
@@ -132,7 +133,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         {
             if (activity.activity.killsCount > 0)
             {
-                return new(EncounterProgress.EncounterCleared(new EncounterClear(
+                return new(TomestoneEncounterData.EncounterCleared(new EncounterClear(
                     ParseDateTime(activity.endTime),
                     null)));
             }
@@ -141,7 +142,8 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 var dateTime = ParseDateTime(activity.activity.endTime);
                 var lockout = new ProgPoint.Lockout(
                     ProgPoint.Percent.From(activity.activity.bestPercent.ToString()),
-                    dateTime == null ? null : DateOnly.FromDateTime(dateTime));
+                    dateTime == null ? null : DateOnly.FromDateTime(dateTime),
+                    new JobId((uint)activity.activity.displayCharacterJobOrSpec.id));
                 if (lockouts.Count == 0 || !lockouts[^1].Equals(lockout))
                 {
                     lockouts.Add(lockout);
@@ -156,11 +158,11 @@ internal partial class WebTomestoneClient : ITomestoneClient
 
         if (lockouts.Count > 0)
         {
-            return new(EncounterProgress.EncounterInProgress(new ProgPoint(lockouts)));
+            return new(TomestoneEncounterData.EncounterInProgress(new ProgPoint(lockouts)));
         }
         else
         {
-            return new(EncounterProgress.EncounterNotStarted());
+            return new(TomestoneEncounterData.EncounterNotStarted());
         }
     }
 

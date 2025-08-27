@@ -1,5 +1,5 @@
-using Dalamud.Interface.Windowing;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
 
 namespace TomestoneViewer.GUI.Config;
 

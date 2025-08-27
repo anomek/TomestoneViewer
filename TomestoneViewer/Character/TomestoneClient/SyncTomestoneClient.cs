@@ -15,7 +15,7 @@ internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
 
     private readonly ConcurrentDictionary<CharacterId, SyncQuery<ClientResponse<LodestoneId>>> lodestoneId = [];
     private readonly ConcurrentDictionary<LodestoneId, SyncQuery<ClientResponse<CharacterSummary>>> characterSummary = [];
-    private readonly ConcurrentDictionary<(LodestoneId, Location), SyncQuery<ClientResponse<EncounterProgress>>> encounter = [];
+    private readonly ConcurrentDictionary<(LodestoneId, Location), SyncQuery<ClientResponse<TomestoneEncounterData>>> encounter = [];
 
     public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
@@ -29,9 +29,9 @@ internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
             .Run();
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
-        return await this.encounter.GetOrAdd((lodestoneId, location), arg => new SyncQuery<ClientResponse<EncounterProgress>>(() => this.client.FetchEncounter(lodestoneId, location)))
+        return await this.encounter.GetOrAdd((lodestoneId, location), arg => new SyncQuery<ClientResponse<TomestoneEncounterData>>(() => this.client.FetchEncounter(lodestoneId, location)))
             .Run();
     }
 }

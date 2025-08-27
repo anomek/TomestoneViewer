@@ -10,7 +10,7 @@ public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
         return this.Lockouts[0].Percent.ToString();
     }
 
-    public record Lockout(Percent Percent, DateOnly? Timestamp)
+    public record Lockout(Percent Percent, DateOnly? Timestamp, JobId Job)
     {
     }
 

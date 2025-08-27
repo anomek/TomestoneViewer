@@ -14,7 +14,7 @@ internal class SafeTomestoneClient(ITomestoneClient client) : ITomestoneClient
             .ContinueWith(HandleTaskErrors);
     }
 
-    public Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         return this.client.FetchEncounter(lodestoneId, location)
             .ContinueWith(HandleTaskErrors);

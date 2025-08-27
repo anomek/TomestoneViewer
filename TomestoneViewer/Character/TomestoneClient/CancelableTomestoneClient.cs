@@ -26,7 +26,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         }
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         if (this.canceled)
         {

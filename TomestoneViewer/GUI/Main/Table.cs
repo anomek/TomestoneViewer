@@ -61,14 +61,13 @@ public class Table(MainWindowController mainWindowController)
 
             ImGui.TableNextRow();
             ImGui.TableNextRow();
-            var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
             var i = 0;
             foreach (var charData in currentParty)
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.AlignTextToFramePadding();
-                ImGui.Image(charData.JobId.ImGuiIconHandle, new Vector2(iconSize));
+                charData.JobId.Icon.Draw();
 
                 ImGui.SameLine();
                 if (ImGui.Selectable($"{charData.CharId.FullName}##PartyListCharacterSelectable{i}"))
@@ -177,8 +176,8 @@ public class Table(MainWindowController mainWindowController)
 
     private static void DrawEncounterStatus(CharData character, Location location)
     {
-        var encounterData = character.EncounterData[location].TomestoneData;
-        var characterError = character.EncounterData[location].TomestoneData.Status.Error ?? character.CharError;
+        var encounterData = character.EncounterData[location].Tomestone;
+        var characterError = character.EncounterData[location].Tomestone.Status.Error ?? character.CharError;
         if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
@@ -192,17 +191,17 @@ public class Table(MainWindowController mainWindowController)
             Util.Rotate(() => Util.CenterText(FontAwesomeIcon.CircleNotch.ToIconString(), new Vector4(.8f, .8f, .8f, 1)));
             ImGui.PopFont();
         }
-        else if (encounterData.Data?.EncounterProgress != null)
+        else if (encounterData.Data != null)
         {
-            if (encounterData.Data?.EncounterProgress.EncounterClear != null)
+            if (encounterData.Data.EncounterClear != null)
             {
                 ImGui.PushFont(UiBuilder.IconFont);
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
                 ImGui.PopFont();
 
-                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.Data.EncounterProgress.EncounterClear.HasInfo)
+                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.Data.EncounterClear.HasInfo)
                 {
-                    var clear = encounterData.Data.EncounterProgress.EncounterClear;
+                    var clear = encounterData.Data.EncounterClear;
                     ImGui.BeginTooltip();
                     DoubleClickToOpenOnTomestoneText();
 
@@ -232,9 +231,9 @@ public class Table(MainWindowController mainWindowController)
                     ImGui.EndTooltip();
                 }
             }
-            else if (encounterData.Data?.EncounterProgress?.Progress != null)
+            else if (encounterData.Data?.Progress != null)
             {
-                Util.CenterText(encounterData.Data.EncounterProgress.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                Util.CenterText(encounterData.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
 
                 if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
                 {
@@ -243,13 +242,16 @@ public class Table(MainWindowController mainWindowController)
 
                     DoubleClickToOpenOnTomestoneText();
 
-                    foreach (var lockout in encounterData.Data.EncounterProgress.Progress.Lockouts)
+                    foreach (var lockout in encounterData.Data.Progress.Lockouts)
                     {
+                        var jobIcon = lockout.Job.SmallIcon;
+                        jobIcon.Draw();
+                        ImGui.SameLine();
                         ImGui.TextUnformatted($"{lockout.Percent}");
                         if (lockout.Timestamp.HasValue)
                         {
                             ImGui.SameLine();
-                            ImGui.SetCursorPosX(align);
+                            ImGui.SetCursorPosX(align + jobIcon.Size);
                             ImGui.SetWindowFontScale(.95f);
                             ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
                             ImGui.SetWindowFontScale(1);

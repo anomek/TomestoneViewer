@@ -10,7 +10,7 @@ internal class CachedTomestoneClient(ITomestoneClient client) : ITomestoneClient
 
     private readonly Cache<CharacterId, LodestoneId> lodestoneIdCache = new();
     private readonly Cache<LodestoneId, CharacterSummary> characterSummaryCache = new();
-    private readonly Cache<(LodestoneId, string), EncounterProgress> encounterProgressCache = new();
+    private readonly Cache<(LodestoneId, string), TomestoneEncounterData> encounterProgressCache = new();
 
     public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
@@ -22,7 +22,7 @@ internal class CachedTomestoneClient(ITomestoneClient client) : ITomestoneClient
         return await this.characterSummaryCache.Get(lodestoneId, () => this.client.FetchCharacterSummary(lodestoneId));
     }
 
-    public async Task<ClientResponse<EncounterProgress>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
     {
         return await this.encounterProgressCache.Get((lodestoneId, location.DisplayName), () => this.client.FetchEncounter(lodestoneId, location));
     }

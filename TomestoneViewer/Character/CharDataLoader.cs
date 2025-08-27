@@ -85,7 +85,7 @@ internal class CharDataLoader
             {
                 if (summary.TryGet(location.UltimateId, out var encounterProgress))
                 {
-                    this.encounterData[location].TomestoneData.Load(new TomestoneData(encounterProgress));
+                    this.encounterData[location].Tomestone.Load(encounterProgress);
                     if (encounterProgress.Cleared)
                     {
                         return null;
@@ -107,15 +107,15 @@ internal class CharDataLoader
             .OfType<Task>());
     }
 
-    private void Apply(ClientResponse<EncounterProgress> encounterProgressResponse, Location location, bool applyErrors)
+    private void Apply(ClientResponse<TomestoneEncounterData> encounterProgressResponse, Location location, bool applyErrors)
     {
         encounterProgressResponse.IfSuccessOrElse(
-            encounterProgress => this.encounterData[location].TomestoneData.Load(new TomestoneData(encounterProgress)),
+            encounterProgress => this.encounterData[location].Tomestone.Load(encounterProgress),
             error =>
             {
                 if (applyErrors)
                 {
-                    this.encounterData[location].TomestoneData.Load(error);
+                    this.encounterData[location].Tomestone.Load(error);
                 }
             });
     }

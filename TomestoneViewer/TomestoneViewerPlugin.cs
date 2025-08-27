@@ -53,6 +53,11 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
         Service.Interface.UiBuilder.Draw += this.windowSystem.Draw;
+
+
+#if DEBUG
+        Service.Interface.OpenDeveloperMenu();
+#endif
     }
 
     public void Dispose()

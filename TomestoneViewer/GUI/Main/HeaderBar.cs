@@ -146,16 +146,16 @@ public class HeaderBar(IReadOnlyList<CharData> partyList)
                     ImGui.TableNextColumn();
 
                     var partyMember = this.partyList[i];
-                    var iconSize = (float)Math.Round(25 * ImGuiHelpers.GlobalScale); // round because of shaking issues
-                    var middleCursorPosY = ImGui.GetCursorPosY() + (iconSize / 2) - (ImGui.GetFontSize() / 2);
+                    var jobIcon = partyMember.JobId.Icon;
+                    var middleCursorPosY = ImGui.GetCursorPosY() + (jobIcon.Size / 2) - (ImGui.GetFontSize() / 2);
 
-                    if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, iconSize)))
+                    if (ImGui.Selectable($"##PartyListSel{i}", false, ImGuiSelectableFlags.SpanAllColumns, new Vector2(0, jobIcon.Size)))
                     {
                         Service.CharDataManager.SetCharacter(CharSelector.SelectById(partyMember.CharId));
                     }
 
                     ImGui.SameLine();
-                    ImGui.Image(partyMember.JobId.ImGuiIconHandle, new Vector2(iconSize));
+                    jobIcon.Draw();
 
                     ImGui.TableNextColumn();
 

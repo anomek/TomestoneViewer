@@ -4,9 +4,9 @@ namespace TomestoneViewer.Character.Encounter;
 
 public partial class EncounterData
 {
-    public LoadableData<FFLogsData> FFLogsData { get; private init; } = new();
+    public LoadableData<FFLogsEncounterData> FFLogs { get; private init; } = new();
 
-    public LoadableData<TomestoneData> TomestoneData { get; private init; } = new();
+    public LoadableData<TomestoneEncounterData> Tomestone { get; private init; } = new();
 
     public class LoadableData<T>
         where T : class
