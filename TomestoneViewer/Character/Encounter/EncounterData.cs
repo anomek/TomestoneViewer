@@ -2,11 +2,41 @@ using TomestoneViewer.Character.TomestoneClient;
 
 namespace TomestoneViewer.Character.Encounter;
 
-public class EncounterData
+public partial class EncounterData
 {
-    public CStatus Status { get; private set; } = new();
+    public LoadableData<FFLogsData> FFLogsData { get; private init; } = new();
 
-    public EncounterProgress? EncouterProgress { get; private set; }
+    public LoadableData<TomestoneData> TomestoneData { get; private init; } = new();
+
+    public class LoadableData<T>
+        where T : class
+    {
+        public CStatus Status { get; private set; } = new();
+
+        public T? Data { get; private set; }
+
+        public void StartLoading()
+        {
+            this.Status.LoadingStarted();
+        }
+
+        public void Load(T data)
+        {
+            this.Status.LoadingDone();
+            this.Data = data;
+        }
+
+        public void Load(TomestoneClientError error)
+        {
+            this.Status.LoadingError(error);
+        }
+
+        public void Reset()
+        {
+            this.Status.LoadingStarted();
+            this.Data = null;
+        }
+    }
 
     public class CStatus
     {
@@ -31,27 +61,5 @@ public class EncounterData
             this.Loading = false;
             this.Error = error;
         }
-    }
-
-    public void StartLoading()
-    {
-        this.Status.LoadingStarted();
-    }
-
-    public void Load(EncounterProgress encounterProgress)
-    {
-        this.Status.LoadingDone();
-        this.EncouterProgress = encounterProgress;
-    }
-
-    public void Load(TomestoneClientError error)
-    {
-        this.Status.LoadingError(error);
-    }
-
-    public void Reset()
-    {
-        this.Status.LoadingStarted();
-        this.EncouterProgress = null;
     }
 }
