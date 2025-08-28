@@ -1,6 +1,6 @@
 using System;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 // Kind of either class, I don't want to play with exceptions
 public class ClientResponse<T>
@@ -22,7 +22,7 @@ public class ClientResponse<T>
         }
         else
         {
-            throw new System.InvalidOperationException("Improperly initialized object");
+            throw new InvalidOperationException("Improperly initialized object");
         }
     }
 

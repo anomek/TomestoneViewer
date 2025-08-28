@@ -1,4 +1,4 @@
-using TomestoneViewer.Character.TomestoneClient;
+using TomestoneViewer.Character.Client.TomestoneClient;
 
 namespace TomestoneViewer.Character.Encounter;
 

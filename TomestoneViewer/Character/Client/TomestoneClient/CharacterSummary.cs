@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-
 using TomestoneViewer.Character.Encounter;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 public record CharacterSummary(IReadOnlyDictionary<UltimateId, TomestoneEncounterData> UltimatesProgress)
 {

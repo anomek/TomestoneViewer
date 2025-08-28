@@ -4,7 +4,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.Colors;
 using TomestoneViewer.Character.Encounter;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IEncounterDataError
 {

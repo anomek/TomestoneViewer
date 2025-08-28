@@ -1,9 +1,8 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-
 using TomestoneViewer.Character.Encounter;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 /// <summary>
 /// Tricky name, methods are still async, but this client prevents calling same methods with same params more then once at the time.

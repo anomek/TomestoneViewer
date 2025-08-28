@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
-
 using TomestoneViewer.Character.Encounter;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 public interface ITomestoneClient
 {

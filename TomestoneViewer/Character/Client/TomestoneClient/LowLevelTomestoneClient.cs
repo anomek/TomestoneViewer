@@ -4,8 +4,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using TomestoneViewer.Character.Client;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 internal partial class LowLevelTomestoneClient
 {
@@ -129,11 +130,11 @@ internal partial class LowLevelTomestoneClient
         try
         {
             response = await this.httpClient.GetAsync("https://tomestone.gg/");
-            var content = await response.Content.ReadAsStringAsync();
-            var match = InertiaRegex().Match(content);
-            if (match.Success)
+            var content = new SimpleParser(await response.Content.ReadAsStringAsync());
+            var version = content.Find("&quot;version&quot;:&quot;", "&quot;");
+
+            if (version != null)
             {
-                var version = match.Groups[1].Value;
                 return new(version);
             }
             else
@@ -153,6 +154,4 @@ internal partial class LowLevelTomestoneClient
         }
     }
 
-    [GeneratedRegex("version&quot;:&quot;([a-z0-9]+)&quot;")]
-    private static partial Regex InertiaRegex();
 }

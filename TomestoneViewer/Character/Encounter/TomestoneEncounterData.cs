@@ -1,5 +1,3 @@
-using TomestoneViewer.Character.TomestoneClient;
-
 namespace TomestoneViewer.Character.Encounter;
 
 public record TomestoneEncounterData

@@ -2,8 +2,9 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Client.FFLogsClient;
+using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.TomestoneClient;
 using TomestoneViewer.Controller;
 using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI.Config;
@@ -27,10 +28,11 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         this.territorryOfInterestDetector = new TerritoryOfInterestDetector(Location.AllTerritories());
 
         var tomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
+        IFFLogsClient fflogsClient = null;
 
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-        Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient));
+        Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient, fflogsClient));
 
         var mainWindowController = new MainWindowController(new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector));
 

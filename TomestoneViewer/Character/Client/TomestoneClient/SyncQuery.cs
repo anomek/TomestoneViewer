@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace TomestoneViewer.Character.TomestoneClient;
+namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 /// <summary>
 /// Allows given task to be executed only once at the time
