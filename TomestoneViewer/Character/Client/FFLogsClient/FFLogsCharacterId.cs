@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
-public interface IFFLogsClient
+internal record FFLogsCharacterId(string Id, string Sig, string Token)
 {
-    public Task Fetch(CharacterId characterId);
 }

@@ -80,6 +80,9 @@ internal class CharDataLoader
         {
             return;
         }
+#if DEBUG
+        this.fflogsClient.Fetch(characterId);
+#endif
 
         // Fetch locations
         await Task.WhenAll(

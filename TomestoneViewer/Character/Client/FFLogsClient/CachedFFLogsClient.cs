@@ -1,16 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
-internal class CancelableFFLogsClient(IFFLogsClient client) : IFFLogsClient
-{
+internal class CachedFFLogsClient(IFFLogsClient client) : IFFLogsClient
+{ 
     private readonly IFFLogsClient client = client;
-    private bool canceled;
-
-    public void Cancel()
-    {
-        this.canceled = true;
-    }
 
     public async Task Fetch(CharacterId characterId)
     {

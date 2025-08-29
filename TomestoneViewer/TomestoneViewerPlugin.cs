@@ -28,7 +28,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         this.territorryOfInterestDetector = new TerritoryOfInterestDetector(Location.AllTerritories());
 
         var tomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
-        IFFLogsClient fflogsClient = null;
+        var fflogsClient = new CachedFFLogsClient(new SyncFFLogsClient(new SafeFFLogsClient(new WebFFLogsClient())));
 
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 

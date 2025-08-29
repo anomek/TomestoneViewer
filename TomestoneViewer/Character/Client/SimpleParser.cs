@@ -13,6 +13,12 @@ internal class SimpleParser(string source)
     private readonly string source = source;
     private int offset;
 
+
+    internal bool Seek(string text)
+    {
+        return this.Find(text, string.Empty) != null;
+    }
+
     internal string? Find(string begining, string terminus)
     {
         var start = this.source.IndexOf(begining, this.offset);
