@@ -303,6 +303,15 @@ public class Table(MainWindowController mainWindowController)
         }
 
         // TODO: else
+
+#if DEBUG
+        var ffLogsData = character.EncounterData[location].FFLogs;
+        if (ffLogsData != null && ffLogsData.Data != null && ffLogsData.Data.ClearsPerJob.ContainsKey(JobId.Empty))
+        {
+            ImGui.SameLine();
+            ImGui.Text($"{ffLogsData.Data.ClearsPerJob[JobId.Empty].ThisExpansion}");
+        }
+#endif
     }
 
     private static bool IsItemHoveredAndOpenLinkOnDoubleClick(CharData character, Location location)
@@ -310,7 +319,7 @@ public class Table(MainWindowController mainWindowController)
         var hovered = ImGui.IsItemHovered();
         if (hovered && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
         {
-            Util.OpenLink(character.Links.EncounterActivity(location));
+            Util.OpenLink(character.Links.EncounterActivity(location.Tomestone));
         }
 
         return hovered;

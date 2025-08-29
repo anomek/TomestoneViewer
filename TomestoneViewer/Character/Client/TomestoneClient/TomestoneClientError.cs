@@ -6,7 +6,7 @@ using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
-public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IEncounterDataError
+public record TomestoneClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IClientError
 {
     /// <summary>
     /// seperate property to know if we can ignore error returned by FetchSummary

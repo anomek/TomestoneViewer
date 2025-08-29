@@ -5,9 +5,9 @@ namespace TomestoneViewer.Character.Client.TomestoneClient;
 
 public interface ITomestoneClient
 {
-    Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId);
+    Task<ClientResponse<TomestoneClientError, LodestoneId>> FetchLodestoneId(CharacterId characterId);
 
-    Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId);
+    Task<ClientResponse<TomestoneClientError, CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId);
 
-    Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location);
+    Task<ClientResponse<TomestoneClientError, TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, TomestoneLocation location);
 }

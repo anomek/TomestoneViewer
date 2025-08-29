@@ -25,10 +25,10 @@ public class Links
         }
     }
 
-    public string EncounterActivity(Location location)
+    public string EncounterActivity(TomestoneLocation location)
     {
         return this.TomestoneMain()
-            + $"/activity?category={location.Category.CategoryQueryParam}&encounter={location.EncounterQueryParam}"
+            + $"/activity?category={location.Category.CategoryQueryParam}&encounter={location.Category}"
             + $"&expansion={location.ExpansionQueryParam}&zone={location.Category.ZoneQueryParam}";
     }
 

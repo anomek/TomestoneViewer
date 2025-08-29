@@ -1,3 +1,4 @@
+using TomestoneViewer.Character.Client;
 using TomestoneViewer.Character.Client.TomestoneClient;
 
 namespace TomestoneViewer.Character.Encounter;
@@ -26,7 +27,7 @@ public partial class EncounterData
             this.Data = data;
         }
 
-        public void Load(TomestoneClientError error)
+        public void Load(IClientError error)
         {
             this.Status.LoadingError(error);
         }

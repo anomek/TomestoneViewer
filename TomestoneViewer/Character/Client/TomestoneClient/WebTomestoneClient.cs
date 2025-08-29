@@ -14,16 +14,16 @@ internal partial class WebTomestoneClient : ITomestoneClient
 {
     private readonly LowLevelTomestoneClient client = new();
 
-    public async Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
+    public async Task<ClientResponse<TomestoneClientError, CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchCharacterSummary {lodestoneId}");
         return (await this.client.GetDynamic($"https://tomestone.gg/character/{lodestoneId}/dummy", "headerEncounters", TomestoneClientError.CharacterTomestoneDisabled))
             .FlatMap(this.ParseCharacterSummary);
     }
 
-    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneClientError, TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, TomestoneLocation location)
     {
-        Service.PluginLog.Info($"WebTomestoneClient.FetchEncounter {lodestoneId} {location.DisplayName}");
+        Service.PluginLog.Info($"WebTomestoneClient.FetchEncounter {lodestoneId} {location.EncounterQueryParam}");
         var url = $"https://tomestone.gg/character/{lodestoneId}/dummy/activity?"
             + $"expansion={location.ExpansionQueryParam}&category={location.Category.CategoryQueryParam}&zone={location.Category.ZoneQueryParam}"
             + $"&encounter={location.EncounterQueryParam}&sortType=firstKillTime";
@@ -32,14 +32,14 @@ internal partial class WebTomestoneClient : ITomestoneClient
             .FlatMap(this.ParseEncounter);
     }
 
-    public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
+    public async Task<ClientResponse<TomestoneClientError, LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
         Service.PluginLog.Info($"WebTomestoneClient.FetchLodestoneId {characterId}");
         return (await this.client.GetDirect($"https://tomestone.gg/character-name/{characterId.World}/{characterId.FullName}"))
             .FlatMap(Dispose(this.ParseLodestoneIdResponse));
     }
 
-    private ClientResponse<CharacterSummary> ParseCharacterSummary(dynamic? response)
+    private ClientResponse<TomestoneClientError, CharacterSummary> ParseCharacterSummary(dynamic? response)
     {
         if (response == null)
         {
@@ -107,7 +107,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         return new(new CharacterSummary(summary));
     }
 
-    private ClientResponse<TomestoneEncounterData> ParseEncounter(dynamic? response)
+    private ClientResponse<TomestoneClientError, TomestoneEncounterData> ParseEncounter(dynamic? response)
     {
         if (response == null)
         {
@@ -166,7 +166,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         }
     }
 
-    private ClientResponse<LodestoneId> ParseLodestoneIdResponse(HttpResponseMessage result)
+    private ClientResponse<TomestoneClientError, LodestoneId> ParseLodestoneIdResponse(HttpResponseMessage result)
     {
         if (result.StatusCode == System.Net.HttpStatusCode.Found)
         {

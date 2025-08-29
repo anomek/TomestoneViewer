@@ -80,9 +80,7 @@ internal class CharDataLoader
         {
             return;
         }
-#if DEBUG
-        this.fflogsClient.Fetch(characterId);
-#endif
+
 
         // Fetch locations
         await Task.WhenAll(
@@ -94,13 +92,16 @@ internal class CharDataLoader
 
     private async Task FetchFFLogsForLocation(Location location)
     {
-
+#if DEBUG
+        var result = await this.fflogsClient.FetchEncounter(this.characterId, location.FFLogs);
+        this.ApplyFFLogs(result, location, true);
+#endif
         return;
     }
 
     private async Task FetchTomestoneForLocation(CharacterSummary summary, Location location)
     {
-        if (summary.TryGet(location.UltimateId, out var encounterProgress))
+        if (summary.TryGet(location.Tomestone.UltimateId, out var encounterProgress))
         {
             this.encounterData[location].Tomestone.Load(encounterProgress);
             if (encounterProgress.Cleared)
@@ -110,21 +111,21 @@ internal class CharDataLoader
             else
             {
                 await this.tomestoneClient
-                    .FetchEncounter(this.lodestoneId, location)
-                    .ContinueWith(t => this.Apply(t.Result, location, false));
+                    .FetchEncounter(this.lodestoneId, location.Tomestone)
+                    .ContinueWith(t => this.ApplyTomestone(t.Result, location, false));
                 return;
             }
         }
         else
         {
             await this.tomestoneClient
-                .FetchEncounter(this.lodestoneId, location)
-                .ContinueWith(t => this.Apply(t.Result, location, true));
+                .FetchEncounter(this.lodestoneId, location.Tomestone)
+                .ContinueWith(t => this.ApplyTomestone(t.Result, location, true));
             return;
         }
     }
 
-    private void Apply(ClientResponse<TomestoneEncounterData> encounterProgressResponse, Location location, bool applyErrors)
+    private void ApplyTomestone(ClientResponse<TomestoneClientError, TomestoneEncounterData> encounterProgressResponse, Location location, bool applyErrors)
     {
         encounterProgressResponse.IfSuccessOrElse(
             encounterProgress => this.encounterData[location].Tomestone.Load(encounterProgress),
@@ -133,6 +134,19 @@ internal class CharDataLoader
                 if (applyErrors)
                 {
                     this.encounterData[location].Tomestone.Load(error);
+                }
+            });
+    }
+
+    private void ApplyFFLogs(ClientResponse<FFLogsClientError, FFLogsEncounterData> encounterProgressResponse, Location location, bool applyErrors)
+    {
+        encounterProgressResponse.IfSuccessOrElse(
+            encounterProgress => this.encounterData[location].FFLogs.Load(encounterProgress),
+            error =>
+            {
+                if (applyErrors)
+                {
+                    this.encounterData[location].FFLogs.Load(error);
                 }
             });
     }

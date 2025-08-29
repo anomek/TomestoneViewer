@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
-internal class Cache<TKey, TValue>
+internal class Cache<TKey, TValue, TError>
     where TKey : notnull
+    where TError : IClientError
 {
-    private readonly ConcurrentDictionary<TKey, Entry<ClientResponse<TValue>>> cache = [];
+    private readonly ConcurrentDictionary<TKey, Entry<ClientResponse<TError, TValue>>> cache = [];
     private readonly TimeSpan validity = TimeSpan.FromMinutes(30);
 
-    internal async Task<ClientResponse<TValue>> Get(TKey key, Func<Task<ClientResponse<TValue>>> supplier)
+    internal async Task<ClientResponse<TError, TValue>> Get(TKey key, Func<Task<ClientResponse<TError, TValue>>> supplier)
     {
         if (this.cache.TryGetValue(key, out var entry) && entry.IsUpToDate(this.validity))
         {
@@ -20,7 +21,7 @@ internal class Cache<TKey, TValue>
         var value = await supplier.Invoke();
         if (value.Cachable)
         {
-            this.cache[key] = new Entry<ClientResponse<TValue>>(value);
+            this.cache[key] = new Entry<ClientResponse<TError, TValue>>(value);
         }
 
         return value;

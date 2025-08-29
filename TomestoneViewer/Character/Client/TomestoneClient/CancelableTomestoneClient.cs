@@ -13,7 +13,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         this.canceled = true;
     }
 
-    public async Task<ClientResponse<CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
+    public async Task<ClientResponse<TomestoneClientError, CharacterSummary>> FetchCharacterSummary(LodestoneId lodestoneId)
     {
         if (this.canceled)
         {
@@ -25,7 +25,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         }
     }
 
-    public async Task<ClientResponse<TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, Location location)
+    public async Task<ClientResponse<TomestoneClientError, TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, TomestoneLocation location)
     {
         if (this.canceled)
         {
@@ -37,7 +37,7 @@ public class CancelableTomestoneClient(ITomestoneClient clinet) : ITomestoneClie
         }
     }
 
-    public async Task<ClientResponse<LodestoneId>> FetchLodestoneId(CharacterId characterId)
+    public async Task<ClientResponse<TomestoneClientError, LodestoneId>> FetchLodestoneId(CharacterId characterId)
     {
         if (this.canceled)
         {

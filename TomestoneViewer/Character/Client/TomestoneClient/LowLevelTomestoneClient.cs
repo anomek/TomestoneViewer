@@ -13,7 +13,7 @@ internal partial class LowLevelTomestoneClient
     private const int RetryCount = 3;
 
     private readonly HttpClient httpClient;
-    private readonly SyncQuery<ClientResponse<string>> getInertiaVersionQuery;
+    private readonly SyncQuery<ClientResponse<TomestoneClientError, string>> getInertiaVersionQuery;
 
     private string? inertiaVersion;
 
@@ -28,7 +28,7 @@ internal partial class LowLevelTomestoneClient
         this.getInertiaVersionQuery = new(this.FetchInertiaVersion);
     }
 
-    internal async Task<ClientResponse<HttpResponseMessage>> GetDirect(string uri)
+    internal async Task<ClientResponse<TomestoneClientError, HttpResponseMessage>> GetDirect(string uri)
     {
         try
         {
@@ -41,7 +41,7 @@ internal partial class LowLevelTomestoneClient
         }
     }
 
-    internal async Task<ClientResponse<dynamic?>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
+    internal async Task<ClientResponse<TomestoneClientError, dynamic?>> GetDynamic(string uri, string partialData, TomestoneClientError notFoundError)
     {
         TomestoneClientError? lastError = null;
         for (var i = 0; i < RetryCount; i++)
@@ -124,7 +124,7 @@ internal partial class LowLevelTomestoneClient
             error => error);
     }
 
-    private async Task<ClientResponse<string>> FetchInertiaVersion()
+    private async Task<ClientResponse<TomestoneClientError, string>> FetchInertiaVersion()
     {
         HttpResponseMessage? response = null;
         try
