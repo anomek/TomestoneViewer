@@ -1,90 +1,115 @@
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Client;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class WebFFLogsClient : IFFLogsClient
 {
+    private readonly LowLevelFFLogsClient client = new();
+    private readonly SyncQuery<ClientResponse<FFLogsClientError, string>> queryToken;
 
-    private readonly HttpClient httpClient;
+    private string token = string.Empty;
 
     internal WebFFLogsClient()
     {
-        var handler = new HttpClientHandler()
-        {
-            UseCookies = true,
-            AllowAutoRedirect = false,
-        };
-
-        this.httpClient = new HttpClient(handler);
-        this.httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36");
+        this.queryToken = new(() => this.UpdateToken());
     }
 
-    public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(CharacterId characterId, FFLogsLocation location)
+    public async Task<ClientResponse<FFLogsClientError, FFLogsCharId>> FetchCharacter(CharacterId characterId, CancellationToken cancellationToken)
     {
-        var signature = await this.FetchSignature(characterId);
-        if (signature == null)
+        Service.PluginLog.Info($"Fetching fflogs character {characterId}");
+        var region = "na"; // TODO: get region from world
+        var request = () => new HttpRequestMessage(HttpMethod.Get, $"https://www.fflogs.com/character/{region}/{characterId.World.ToLower()}/{characterId.FirstName.ToLower()}%20{characterId.LastName.ToLower()}");
+        return (await this.client.Call(request, cancellationToken))
+            .FlatMap(this.ParseFetchCharacter);
+    }
+
+
+  
+
+    public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(FFLogsCharId character, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
+    {
+        Service.PluginLog.Info($"Fetching fflogs encounter for {character} on {location}");
+        var uri = $"https://www.fflogs.com/character/rankings-zone/{character.Id}/dps/3/{location.ZoneId}/{location.BossId}/5000/0/-1/Any/rankings/0/0?dpstype=rdps&class=Any&signature={character.Sig}";
+        var request = () =>
         {
-            return new(FFLogsClientError.SignatureNotFound);
-        }
+            var r = new HttpRequestMessage(HttpMethod.Post, uri);
+            r.Headers.Add("referer", "https://www.fflogs.com/");
+            r.Content = new FormUrlEncodedContent(new Dictionary<string, string> { { "_token", this.token } });
+            return r;
+        };
+        return await this.client.Call(request, cancellationToken)
+            .RecoverAsync(error => error == FFLogsClientError.ContentExpired, () =>
+            {
+               return this.UpdateToken()
+                    .FlatMapAsync(ignored => this.client.Call(request, cancellationToken));
+            })
+            .Map(content => this.ParseFetchEncounter(content, location));
+    }
 
-        var uri = $"https://www.fflogs.com/character/rankings-zone/{signature.Id}/dps/3/{location.ZoneId}/{location.BossId}/5000/0/-1/Any/rankings/0/0?dpstype=rdps&class=Any&signature={signature.Sig}";
+    private async Task<ClientResponse<FFLogsClientError, string>> UpdateToken()
+    {
+        var request = () => new HttpRequestMessage(HttpMethod.Get, $"https://www.fflogs.com/");
 
-        var request = new HttpRequestMessage(HttpMethod.Post, uri);
-        request.Headers.Add("referer", "https://www.fflogs.com/");
-        request.Content = new FormUrlEncodedContent(new Dictionary<string, string> { { "_token", signature.Token } });
-        var response = await this.httpClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
-        if (response.StatusCode != HttpStatusCode.OK)
-        {
-            Service.PluginLog.Error($"Can't Fetch for {characterId}: {response.StatusCode} {content}");
-            return new(FFLogsClientError.ServerResponseError);
-        }
+        return (await this.client.Call(request, CancellationToken.None))
+            .FlatMap<string>(content =>
+            {
+                var parser = new SimpleParser(content);
+                var token = parser.Find("<meta name=\"csrf-token\" content=\"", "\"");
+                if (token != null)
+                {
+                    this.token = token;
+                    return new(token);
+                }
+                else
+                {
+                    return new(FFLogsClientError.ContentExpired);
+                }
+            });
+    }
 
+    private FFLogsEncounterData ParseFetchEncounter(string content, FFLogsLocation.FFLogsZone location)
+    {
         var parser = new SimpleParser(content);
         uint count = 0;
         while (parser.Seek("rank-percent boss-hist-cell"))
         {
             count++;
         }
- 
-        return new(new FFLogsEncounterData(new Dictionary<JobId, FFLogsEncounterData.CClearCount>() { { JobId.Empty, new(count, 0, DateOnly.MinValue) } }));
+
+        return new FFLogsEncounterData(new Dictionary<JobId, FFLogsEncounterData.CClearCount>() { {
+                JobId.Empty, new(location.PreviousExpansion ? 0 : count, location.PreviousExpansion ? count : 0, DateOnly.MinValue)
+            } });
     }
 
-    private async Task<FFLogsCharacterId?> FetchSignature(CharacterId characterId)
+    private ClientResponse<FFLogsClientError, FFLogsCharId> ParseFetchCharacter(string content)
     {
-        var region = "na"; // TODO: get region from world
-        var response = await this.httpClient.GetAsync($"https://www.fflogs.com/character/{region}/{characterId.World.ToLower()}/{characterId.FirstName.ToLower()}%20{characterId.LastName.ToLower()}");
-        var content = await response.Content.ReadAsStringAsync();
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            var parser = new SimpleParser(content);
-            var token = parser.Find("<meta name=\"csrf-token\" content=\"", "\"");
-            var fflogsCharId = parser.Find("var characterID = ", ";");
-            parser.Seek("'/character/rankings-zone/'");
-            var signature = parser.Find("'&signature=' + '", "'");
+        var parser = new SimpleParser(content);
+        this.token = parser.Find("<meta name=\"csrf-token\" content=\"", "\"");
+        var fflogsCharId = parser.Find("var characterID = ", ";");
+        parser.Seek("'/character/rankings-zone/'");
+        var signature = parser.Find("'&signature=' + '", "'");
 
-            if (fflogsCharId != null && signature != null && token != null)
-            {
-                return new(fflogsCharId, signature, token);
-            }
-            else
-            {
-                Service.PluginLog.Error($"Cant find signature for {characterId}");
-                return null;
-            }
+        if (fflogsCharId != null && signature != null)
+        {
+            return new(new FFLogsCharId(fflogsCharId, signature));
         }
         else
         {
-            Service.PluginLog.Error($"Can't fetch signature for {characterId}: {content}");
-            return null;
+            Service.PluginLog.Error($"Cant find signature");
+            return new(FFLogsClientError.SignatureNotFound);
         }
     }
+
+
 }

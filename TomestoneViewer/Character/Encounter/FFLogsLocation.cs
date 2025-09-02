@@ -5,9 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Encounter;
-public record FFLogsLocation(
-    FFLogsZoneId ZoneId,
-    int BossId
-)
+
+public record FFLogsLocation(params IReadOnlyList<FFLogsLocation.FFLogsZone> Zones)
 {
+    public record FFLogsZone(
+        FFLogsZoneId ZoneId,
+        int BossId,
+        bool PreviousExpansion)
+    {
+    }
 }

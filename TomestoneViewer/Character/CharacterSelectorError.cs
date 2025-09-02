@@ -7,9 +7,7 @@ namespace TomestoneViewer.Character;
 
 internal record CharacterSelectorError(string Message) : IRenderableError
 {
-    public Vector4 Color => ImGuiColors.DalamudWhite;
-
-    public FontAwesomeIcon Symbol => FontAwesomeIcon.ExclamationCircle;
+    public IRenderableError.ErrorType Type => IRenderableError.ErrorType.INFO;
 
     public static readonly CharacterSelectorError InvalidTarget = new("Invalid target");
     public static readonly CharacterSelectorError ClipboardError = new("Clipboard error");

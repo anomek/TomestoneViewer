@@ -4,6 +4,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using TomestoneViewer.Character;
@@ -52,10 +53,12 @@ public class Table(MainWindowController mainWindowController)
     private void DrawPartyLayout()
     {
         var currentParty = Service.CharDataManager.PartyMembers;
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2 * ImGuiHelpers.GlobalScale, 0));
         if (ImGui.BeginTable(
               "##MainWindowTablePartyView",
               2,
-              ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit))
+              ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerH))
         {
             ImGui.TableSetupColumn("name", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("status", ImGuiTableColumnFlags.WidthFixed, MaxStatusWidth());
@@ -67,15 +70,11 @@ public class Table(MainWindowController mainWindowController)
             {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
-                ImGui.AlignTextToFramePadding();
+                var startY = ImGui.GetCursorPosY();
 
-                int extraPixelsHeight = 4;
                 var jobIcon = charData.JobId.Icon;
-                ImGui.PushFont(UiBuilder.IconFont);
-                var statusY = ImGui.GetCursorPosY() + (jobIcon.Size - ImGui.CalcTextSize(FontAwesomeIcon.QuestionCircle.ToIconString()).Y - extraPixelsHeight) / 2;
-                ImGui.PopFont();
 
-                if (ImGui.Selectable($"##PartyListCharacterSelectable{i}", false, ImGuiSelectableFlags.None, new Vector2(0, jobIcon.Size - extraPixelsHeight)))
+                if (ImGui.Selectable($"##PartyListCharacterSelectable{i}", false, ImGuiSelectableFlags.None, new Vector2(0, jobIcon.Size)))
                 {
                     this.mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
                 }
@@ -86,24 +85,28 @@ public class Table(MainWindowController mainWindowController)
                 ImGui.PopStyleVar();
 
                 ImGui.SameLine();
-                var middleCursorPosY = ImGui.GetCursorPosY() + (jobIcon.Size / 2) - (ImGui.GetFontSize() / 2) - (extraPixelsHeight /2);
-                ImGui.SetCursorPosY(middleCursorPosY);
-
+                ImGui.SetCursorPosY(startY + (jobIcon.Size - ImGui.GetTextLineHeight()) / 2);
                 ImGui.Text($"{charData.CharId.FullName}");
-                ImGui.SameLine();
 
                 ImGui.TableNextColumn();
-                ImGui.SetCursorPosY(statusY);
+                var cellStart = ImGui.GetCursorPos();
+                ImGui.PushFont(UiBuilder.IconFont);
+                ImGui.SetCursorPosY(startY + (jobIcon.Size - ImGui.GetTextLineHeight()) / 2);
+                ImGui.PopFont();
                 DrawEncounterStatus(
                     charData,
-                    Service.CharDataManager.CurrentEncounter);
+                    Service.CharDataManager.CurrentEncounter,
+                    cellStart,
+                    cellStart + new Vector2(MaxStatusWidth(), jobIcon.Size));
                 ImGui.TableNextColumn();
-
                 i++;
             }
 
             ImGui.EndTable();
         }
+
+        ImGui.PopStyleVar();
+        ImGui.PopStyleVar();
     }
 
     private void DrawSingleView()
@@ -113,56 +116,80 @@ public class Table(MainWindowController mainWindowController)
             return;
         }
 
+
+        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(0, 0));
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2 * ImGuiHelpers.GlobalScale, 0));
+
         if (ImGui.BeginTable(
                     "##MainWindowTableSingleView",
                     2,
-                    ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.BordersOuterH | ImGuiTableFlags.RowBg))
+                    ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg)) // | ImGuiTableFlags.BordersOuterH 
         {
             ImGui.TableSetupColumn("name", ImGuiTableColumnFlags.WidthStretch);
             ImGui.TableSetupColumn("status", ImGuiTableColumnFlags.WidthFixed, MaxStatusWidth());
 
-            var minRowHeight = 21;
+            ImGui.PushFont(UiBuilder.IconFont);
+            var rowPadding = 2 * ImGuiHelpers.GlobalScale;
+            var baseRowHeight = ImGui.CalcTextSize(FontAwesomeIcon.CheckCircle.ToIconString()).Y;
+            var rowHeight = baseRowHeight + (rowPadding * 2);
+            ImGui.PopFont();
+
             var character = Service.CharDataManager.DisplayedChar;
 
             var firstRow = true;
             foreach (var category in Category.All())
             {
+                // fake row to start to ensure dark background
                 ImGui.TableNextRow();
+
+
+                // category row
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
+                ImGui.Separator();
 
                 Service.Fonts.EncounterTypeHeader.Push();
-                Util.ConditionalSeparator(!firstRow);
-                ImGui.AlignTextToFramePadding();
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + rowPadding + 1);
                 ImGui.TextUnformatted($" {category.DisplayName}");
                 Service.Fonts.EncounterTypeHeader.Pop();
 
                 ImGui.TableNextColumn();
-                Util.ConditionalSeparator(!firstRow);
+                ImGui.Separator();
 
                 firstRow = false;
                 var counter = 0;
                 foreach (var location in category.Locations)
                 {
-                    ImGui.TableNextRow(ImGuiTableRowFlags.None, minRowHeight);
+                    var rowExtraTopPadding = counter == 0 ? 1 : 0;
+                    ImGui.TableNextRow(rowHeight + rowExtraTopPadding);
                     ImGui.TableNextColumn();
                     Util.ConditionalSeparator(counter == 0);
-                    ImGui.AlignTextToFramePadding();
-                    if (ImGui.Selectable($"  {location.DisplayName}##EncounterListSelectable{location.DisplayName}"))
+                    var rowTopYPos = ImGui.GetCursorPosY();
+
+                    ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding);
+                    if (ImGui.Selectable($"  ##EncounterListSelectable{location.DisplayName}", false, ImGuiSelectableFlags.None, new Vector2(0, rowHeight)))
                     {
                         this.mainWindowController.OpenParty(location);
                     }
 
-                    ImGui.TableNextColumn();
-                    Util.ConditionalSeparator(counter == 0);
-                    DrawEncounterStatus(character, location);
+                    ImGui.SameLine();
+                    ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding + (rowHeight - ImGui.GetTextLineHeight()) / 2);
+                    ImGui.TextUnformatted(location.DisplayName);
 
+                    ImGui.TableNextColumn();
+                    var cellStart = ImGui.GetCursorPos() + new Vector2(0, rowExtraTopPadding);
+                    Util.ConditionalSeparator(counter == 0);
+                    ImGui.SetCursorPosY(rowTopYPos + rowPadding + rowExtraTopPadding);
+                    DrawEncounterStatus(character, location, cellStart, cellStart);
                     counter++;
                 }
             }
 
             ImGui.EndTable();
         }
+
+        ImGui.PopStyleVar();
+        ImGui.PopStyleVar();
     }
 
     private void DrawEncounterComboMenu()
@@ -197,21 +224,27 @@ public class Table(MainWindowController mainWindowController)
         }
     }
 
-    private static void DrawEncounterStatus(CharData character, Location location)
+    private static void DrawEncounterStatus(CharData character, Location location, Vector2 cellStart, Vector2 cellEnd)
     {
+        var padding = new Vector2(2, 2) * ImGuiHelpers.GlobalScale;
+        cellStart = cellStart + ImGui.GetWindowPos() + padding;
+        cellEnd = cellEnd + ImGui.GetWindowPos() - padding;
+
         var encounterData = character.EncounterData[location].Tomestone;
-        var characterError = character.EncounterData[location].Tomestone.Status.Error ?? character.CharError;
+        var characterError = character.EncounterData[location].Tomestone.Status.Error ?? character.GenericTomestoneError;
+        var tomestoneInfoRegionAvailable = TomestoneStatusWidth();
+        var statingY = ImGui.GetCursorPosY();
         if (characterError != null)
         {
             ImGui.PushFont(UiBuilder.IconFont);
-            Util.CenterText(characterError.Symbol.ToIconString(), characterError.Color);
+            Util.CenterText(characterError.Type.Symbol.ToIconString(), characterError.Type.Color, tomestoneInfoRegionAvailable);
             ImGui.PopFont();
             Util.SetHoverTooltip(characterError.Message);
         }
         else if (encounterData.Status.Loading)
         {
             ImGui.PushFont(UiBuilder.IconFont);
-            Util.Rotate(() => Util.CenterText(FontAwesomeIcon.CircleNotch.ToIconString(), new Vector4(.8f, .8f, .8f, 1)));
+            Util.Rotate(() => Util.CenterText(FontAwesomeIcon.CircleNotch.ToIconString(), new Vector4(.8f, .8f, .8f, 1), tomestoneInfoRegionAvailable));
             ImGui.PopFont();
         }
         else if (encounterData.Data != null)
@@ -219,10 +252,11 @@ public class Table(MainWindowController mainWindowController)
             if (encounterData.Data.EncounterClear != null)
             {
                 ImGui.PushFont(UiBuilder.IconFont);
-                Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1));
+                Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1), tomestoneInfoRegionAvailable);
                 ImGui.PopFont();
 
-                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.Data.EncounterClear.HasInfo)
+                if (ImGui.IsMouseHoveringRect(cellStart, cellEnd))
+                //    if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location) && encounterData.Data.EncounterClear.HasInfo)
                 {
                     var clear = encounterData.Data.EncounterClear;
                     ImGui.BeginTooltip();
@@ -260,10 +294,11 @@ public class Table(MainWindowController mainWindowController)
             else if (encounterData.Data?.Progress != null)
             {
                 Service.Fonts.ProgressFont.Push();
-                Util.CenterText(encounterData.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                Util.CenterText(encounterData.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1), tomestoneInfoRegionAvailable);
                 Service.Fonts.ProgressFont.Pop();
 
-                if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
+                if (ImGui.IsMouseHoveringRect(cellStart, cellEnd))
+                //if (IsItemHoveredAndOpenLinkOnDoubleClick(character, location))
                 {
                     ImGui.BeginTooltip();
                     var align = ImGui.GetCursorPosX() + ImGui.CalcTextSize("P8 88.88% ").X;
@@ -297,7 +332,7 @@ public class Table(MainWindowController mainWindowController)
             else
             {
                 ImGui.PushFont(UiBuilder.IconFont);
-                Util.CenterText(FontAwesomeIcon.MinusCircle.ToIconString(), new Vector4(.5f, .5f, .5f, 1));
+                Util.CenterText(FontAwesomeIcon.MinusCircle.ToIconString(), new Vector4(.5f, .5f, .5f, 1), tomestoneInfoRegionAvailable);
                 ImGui.PopFont();
             }
         }
@@ -305,13 +340,130 @@ public class Table(MainWindowController mainWindowController)
         // TODO: else
 
 #if DEBUG
-        var ffLogsData = character.EncounterData[location].FFLogs;
-        if (ffLogsData != null && ffLogsData.Data != null && ffLogsData.Data.ClearsPerJob.ContainsKey(JobId.Empty))
+        if (!encounterData.Status.Loading && (characterError != null || encounterData.Data == null || encounterData.Data.Cleared))
         {
-            ImGui.SameLine();
-            ImGui.Text($"{ffLogsData.Data.ClearsPerJob[JobId.Empty].ThisExpansion}");
+            ImGui.PushFont(UiBuilder.IconFont);
+            var baseRowHeight = ImGui.GetTextLineHeight();
+            ImGui.PopFont();
+            Service.Fonts.DefaultSmaller.Push();
+
+            var textY = statingY + baseRowHeight - ImGui.GetTextLineHeight() + (1 * ImGuiHelpers.GlobalScale);
+
+            var ffLogsData = character.EncounterData[location].FFLogs;
+            var fflogsError = character.EncounterData[location].FFLogs.Status.Error ?? character.GenericFFLogsError;
+
+            if (fflogsError != null)
+            {
+                ImGui.SameLine();
+                ImGui.SetCursorPosY(textY);
+                Util.RightAlignText(fflogsError.Type.Glyph, fflogsError.Type.Color, FFLogsNumberStatusWidth());
+                Util.SetHoverTooltip(fflogsError.Message);
+            }
+            else if (ffLogsData.Status.Loading)
+            {
+                ImGui.SameLine();
+                ImGui.SetCursorPosY(textY);
+                Util.RightAlignCursor(".....", FFLogsNumberStatusWidth());
+                Util.Progress(".....");
+            }
+            else if (ffLogsData.Data != null)
+            {
+
+                if (ffLogsData.Data.ClearsPerJob.ContainsKey(JobId.Empty))
+                {
+                    var total = ffLogsData.Data.ClearsPerJob[JobId.Empty].Total;
+                    var count = ffLogsData.Data.ClearsPerJob[JobId.Empty].ThisExpansion;
+                    if (total > 0)
+                    {
+                        ImGui.SameLine();
+                        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
+                        ImGui.SetCursorPosY(textY);
+                        var countStr = count == 0 ? "\u2013" : $"{count}";
+                        Util.RightAlignText(countStr, null, FFLogsNumberStatusWidth());
+                        if (total > count)
+                        {
+                            ImGui.SameLine();
+                            ImGui.SetCursorPosY(textY);
+                            ImGui.Text("/");
+                            ImGui.SameLine();
+                            ImGui.SetCursorPosY(textY);
+                            Util.RightAlignText($"{total}", null, FFLogsNumberStatusWidth());
+                        }
+
+                        ImGui.PopStyleVar();
+                    }
+                }
+            }
+
+            Service.Fonts.DefaultSmaller.Pop();
         }
 #endif
+    }
+
+    private void DrawEncounterStatusMouseOver(EncounterData data, Location location)
+    {
+        ImGui.BeginTooltip();
+        var align = ImGui.GetCursorPosX() + ImGui.CalcTextSize("P8 88.88% ").X;
+        var encounterData = data.Tomestone;
+
+        DoubleClickToOpenOnTomestoneText();
+
+        foreach (var lockout in encounterData.Data.Progress.Lockouts)
+        {
+            var jobIcon = lockout.Job.SmallIcon;
+            jobIcon.Draw();
+            ImGui.SameLine();
+            Service.Fonts.ProgressFont.Push();
+            ImGui.TextUnformatted($"{lockout.Percent}");
+            Service.Fonts.ProgressFont.Pop();
+            if (lockout.Timestamp.HasValue)
+            {
+                var start = ImGui.CalcTextSize("X").Y;
+                Service.Fonts.DefaultSmaller.Push();
+                var end = ImGui.CalcTextSize("X").Y;
+                ImGui.SameLine();
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + start - end);
+                ImGui.SetCursorPosX(align + jobIcon.Size);
+                ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
+                Service.Fonts.DefaultSmaller.Pop();
+            }
+        }
+
+        ImGui.EndTooltip();
+
+
+        var clear = encounterData.Data.EncounterClear;
+        ImGui.BeginTooltip();
+        DoubleClickToOpenOnTomestoneText();
+
+        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, ImGui.GetStyle().ItemSpacing.Y));
+        if (clear.DateTime != null)
+        {
+            Service.Fonts.ClearedOnHeader.Push();
+            ImGui.Text("cleared on ");
+            ImGui.SameLine();
+            ImGui.Text(clear.DateTime.Value.ToString("yyyy-MM-dd"));
+            Service.Fonts.ClearedOnHeader.Pop();
+            ImGui.Text(FormatTimeRelative(clear.DateTime.Value));
+        }
+
+        var completionWeek = clear.CompletionWeek;
+        completionWeek ??= clear.CalculateCompletionWeek(location.Category.ReleaseDate);
+
+        if (completionWeek != null)
+        {
+            var start = ImGui.CalcTextSize("X").Y;
+            Service.Fonts.DefaultSmaller.Push();
+            var end = ImGui.CalcTextSize("X").Y;
+            ImGui.SameLine();
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + start - end);
+            ImGui.Text($"   ({completionWeek})");
+            Service.Fonts.DefaultSmaller.Pop();
+        }
+
+        ImGui.PopStyleVar();
+        ImGui.EndTooltip();
+
     }
 
     private static bool IsItemHoveredAndOpenLinkOnDoubleClick(CharData character, Location location)
@@ -367,8 +519,44 @@ public class Table(MainWindowController mainWindowController)
         return $"{number} {unit}{plular} ago";
     }
 
+    private static float TomestoneStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.ProgressFont.Push();
+        size += ImGui.CalcTextSize("99%% P9").X;
+        Service.Fonts.ProgressFont.Pop();
+        return size;
+    }
+
+    private static float FFLogsNumberStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.DefaultSmaller.Push();
+        size += ImGui.CalcTextSize("999").X;
+        Service.Fonts.DefaultSmaller.Pop();
+        return size;
+    }
+
+    private static float FFLogsShashStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.DefaultSmaller.Push();
+        size += ImGui.CalcTextSize("/").X;
+        Service.Fonts.DefaultSmaller.Pop();
+        return size;
+    }
+
+    private static float FFLogsStatusWidth()
+    {
+        return (2 * FFLogsNumberStatusWidth()) + FFLogsShashStatusWidth();
+    }
+
     private static float MaxStatusWidth()
     {
-        return ImGui.CalcTextSize("99.99%% P9").X + (ImGui.GetStyle().ItemSpacing.X * 2);
+        float size = 0;
+        size += TomestoneStatusWidth();
+        size += FFLogsStatusWidth();
+        size += ImGui.GetStyle().ItemSpacing.X;
+        return size;
     }
 }

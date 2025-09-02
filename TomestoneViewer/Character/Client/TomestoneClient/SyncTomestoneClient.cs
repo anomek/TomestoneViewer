@@ -30,7 +30,7 @@ internal class SyncTomestoneClient(ITomestoneClient client) : ITomestoneClient
 
     public async Task<ClientResponse<TomestoneClientError, TomestoneEncounterData>> FetchEncounter(LodestoneId lodestoneId, TomestoneLocation location)
     {
-        return await this.encounter.GetOrAdd((lodestoneId, location), arg => new SyncQuery<ClientResponse<TomestoneClientError, TomestoneEncounterData>>(() => this.client.FetchEncounter(lodestoneId, location)))
+        return await this.encounter.GetOrAdd((lodestoneId, location), arg => new SyncQuery<ClientResponse<TomestoneClientError, TomestoneEncounterData>>(() => this.client.FetchEncounter(arg.Item1, arg.Item2)))
             .Run();
     }
 }

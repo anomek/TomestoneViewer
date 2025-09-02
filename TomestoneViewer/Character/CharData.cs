@@ -12,7 +12,9 @@ public class CharData
 
     public IReadOnlyDictionary<Location, EncounterData> EncounterData => this.loader.EncounterData;
 
-    public IEncounterDataError? CharError => this.loader.LoadError;
+    public IEncounterDataError? GenericTomestoneError => this.loader.GenericTomestoneError;
+
+    public IEncounterDataError? GenericFFLogsError => this.loader.GenericFFLogsError;
 
     public CharacterId CharId => this.characterId;
 

@@ -28,7 +28,7 @@ public class Links
     public string EncounterActivity(TomestoneLocation location)
     {
         return this.TomestoneMain()
-            + $"/activity?category={location.Category.CategoryQueryParam}&encounter={location.Category}"
+            + $"/activity?category={location.Category.CategoryQueryParam}&encounter={location.EncounterQueryParam}"
             + $"&expansion={location.ExpansionQueryParam}&zone={location.Category.ZoneQueryParam}";
     }
 

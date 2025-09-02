@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
-using TomestoneViewer.Character.Client;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 

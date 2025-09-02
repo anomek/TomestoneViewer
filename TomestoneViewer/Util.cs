@@ -39,20 +39,43 @@ public class Util
         return ret;
     }
 
-    public static void CenterCursor(float width)
+    public static void CenterCursor(float width, float? regionAvail = null)
     {
-        var offset = (ImGui.GetContentRegionAvail().X - width) / 2;
+        var regionAvilableReal = regionAvail.GetValueOrDefault(ImGui.GetContentRegionAvail().X);
+        var offset = (regionAvilableReal - width) / 2;
         ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
     }
 
-    public static void CenterCursor(string text)
+    public static void RightAlignCursor(float width, float? regionAvail = null)
     {
-        CenterCursor(ImGui.CalcTextSize(text, true).X);
+        var regionAvilableReal = regionAvail.GetValueOrDefault(ImGui.GetContentRegionAvail().X);
+        var offset = regionAvilableReal - width;
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset);
     }
 
-    public static void CenterText(string text, Vector4? color = null)
+    public static void CenterCursor(string text, float? regionAvail = null)
     {
-        CenterCursor(text);
+        CenterCursor(ImGui.CalcTextSize(text, true).X, regionAvail);
+    }
+
+    public static void RightAlignCursor(string text, float? regionAvail = null)
+    {
+        RightAlignCursor(ImGui.CalcTextSize(text, true).X, regionAvail);
+    }
+
+    public static void CenterText(string text, Vector4? color = null, float? regionAvail = null)
+    {
+        CenterCursor(text, regionAvail);
+
+        color ??= ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
+        ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
+        ImGui.TextUnformatted(text);
+        ImGui.PopStyleColor();
+    }
+
+    public static void RightAlignText(string text, Vector4? color = null, float? regionAvail = null)
+    {
+        RightAlignCursor(text, regionAvail);
 
         color ??= ImGui.ColorConvertU32ToFloat4(ImGui.GetColorU32(ImGuiCol.Text));
         ImGui.PushStyleColor(ImGuiCol.Text, color.Value);
@@ -62,12 +85,12 @@ public class Util
 
     public static void CenterError(IRenderableError error)
     {
-        CenterText(error.Message, error.Color);
+        CenterText(error.Message, error.Type.Color);
     }
 
     public static void CenterSelectableError(IRenderableError error)
     {
-        CenterSelectable(error.Message, error.Color);
+        CenterSelectable(error.Message, error.Type.Color);
     }
 
     public static bool CenterSelectable(string text, Vector4? color = null)
@@ -151,6 +174,12 @@ public class Util
         var bytes = new byte[offset];
         Marshal.Copy(new nint(ptr), bytes, 0, offset);
         return SeString.Parse(bytes);
+    }
+
+    public static void Progress(string text)
+    {
+        var progress = (((DateTime.Now.Second * 10) + (DateTime.Now.Millisecond / 100)) / 2) % text.Length;
+        ImGui.TextUnformatted(text.Substring(0, progress + 1));
     }
 
     public static void Rotate(Action action)

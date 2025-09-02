@@ -9,11 +9,23 @@ using System.Threading.Tasks;
 using TomestoneViewer.Character.Client.TomestoneClient;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
-public record FFLogsClientError(string Message, Vector4 Color, FontAwesomeIcon Symbol, bool Cachable) : IClientError
+public record FFLogsClientError(string Message, IRenderableError.ErrorType Type, bool Cachable) : IClientError
 {
     public static readonly FFLogsClientError SignatureNotFound = new(
-        "FFLogs client error (signature version not found)", ImGuiColors.DalamudRed, FontAwesomeIcon.ExclamationCircle, false);
+        "FFLogs client error (signature not found)", IRenderableError.ErrorType.ERROR, false);
 
     public static readonly FFLogsClientError ServerResponseError = new(
-        "FFLogs client error (unexpected response from server)", ImGuiColors.DalamudRed, FontAwesomeIcon.ExclamationCircle, false);
+        "FFLogs client error (unexpected response from server)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly FFLogsClientError RequestCancelled = new(
+        "Requst to server canceled (you should never see this)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly FFLogsClientError TooManyRequestsError = new(
+        "FFLogs client error (too many requests)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly FFLogsClientError ContentExpired = new(
+        "FFLogs client error (content expired)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly FFLogsClientError InternalError = new(
+        "FFLogs client error (unknown internal error)", IRenderableError.ErrorType.ERROR, false);
 }

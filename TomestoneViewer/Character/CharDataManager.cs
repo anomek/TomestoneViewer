@@ -30,7 +30,7 @@ public class CharDataManager(CharDataFactory charDataFactory)
 
     public IRenderableError? CharacterError
     {
-        get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.CharError;
+        get => (IRenderableError?)this.characterSelectorError ?? this.displayedChar?.GenericTomestoneError;
     }
 
     public void UpdatePartyMemebers(List<(CharacterId Id, JobId JobId)> partyMembers)

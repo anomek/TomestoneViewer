@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Character.Encounter;
+using TomestoneViewer.Character.Client;
+using System.Threading;
 
 namespace TomestoneViewer.Character;
 
@@ -16,11 +18,14 @@ internal class CharDataLoader
     private readonly CancelableFFLogsClient fflogsClient;
 
     private LodestoneId? lodestoneId;
-    private TomestoneClientError? loadError;
+    private FFLogsCharId? ffLogsCharId;
+    private TomestoneClientError? tomestoneLoadError;
+    private FFLogsClientError? fflogsLoadError;
 
     internal LodestoneId? LodestoneId => this.lodestoneId;
 
-    internal TomestoneClientError? LoadError => this.loadError;
+    internal TomestoneClientError? GenericTomestoneError => this.tomestoneLoadError;
+    internal FFLogsClientError? GenericFFLogsError => this.fflogsLoadError;
 
     internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
 
@@ -51,7 +56,7 @@ internal class CharDataLoader
             (await this.tomestoneClient.FetchLodestoneId(this.characterId))
                 .IfSuccessOrElse(
                 lodestoneId => this.lodestoneId = lodestoneId,
-                error => this.loadError = error);
+                error => this.tomestoneLoadError = error);
         }
 
         if (this.lodestoneId == null)
@@ -71,7 +76,7 @@ internal class CharDataLoader
                 }
                 else
                 {
-                    this.loadError = error;
+                    this.tomestoneLoadError = error;
                     return null;
                 }
             });
@@ -93,8 +98,28 @@ internal class CharDataLoader
     private async Task FetchFFLogsForLocation(Location location)
     {
 #if DEBUG
-        var result = await this.fflogsClient.FetchEncounter(this.characterId, location.FFLogs);
-        this.ApplyFFLogs(result, location, true);
+        if (this.ffLogsCharId == null)
+        {
+            (await this.fflogsClient.FetchCharacter(this.characterId, CancellationToken.None))
+                .IfSuccessOrElse(
+                    charId => this.ffLogsCharId = charId,
+                    error => this.fflogsLoadError = error
+                );
+        }
+
+        if (this.ffLogsCharId != null &&
+           (this.encounterData[location].Tomestone.Data == null || this.encounterData[location].Tomestone.Data.Cleared))
+        {
+            // sequential processing to avoid too many reqeusts
+            var results = new List<ClientResponse<FFLogsClientError, FFLogsEncounterData>>();
+            foreach (var zone in location.FFLogs.Zones)
+            {
+                results.Add(await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None));
+            }
+
+            //var result = await this.fflogsClient.FetchEncounter(this.ffLogsCharId, location.FFLogs);
+            this.ApplyFFLogs(results, location, true);
+        }
 #endif
         return;
     }
@@ -138,10 +163,12 @@ internal class CharDataLoader
             });
     }
 
-    private void ApplyFFLogs(ClientResponse<FFLogsClientError, FFLogsEncounterData> encounterProgressResponse, Location location, bool applyErrors)
+    private void ApplyFFLogs(IReadOnlyList<ClientResponse<FFLogsClientError, FFLogsEncounterData>> encounterProgressResponse, Location location, bool applyErrors)
     {
-        encounterProgressResponse.IfSuccessOrElse(
-            encounterProgress => this.encounterData[location].FFLogs.Load(encounterProgress),
+
+        ClientResponse<FFLogsClientError, FFLogsEncounterData>.Collate(encounterProgressResponse)
+            .IfSuccessOrElse(
+            encounterProgress => this.encounterData[location].FFLogs.Load(FFLogsEncounterData.Compile(encounterProgress)),
             error =>
             {
                 if (applyErrors)

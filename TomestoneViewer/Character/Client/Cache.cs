@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace TomestoneViewer.Character.Client.TomestoneClient;
+namespace TomestoneViewer.Character.Client;
 
 internal class Cache<TKey, TValue, TError>
     where TKey : notnull
