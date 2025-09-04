@@ -28,4 +28,7 @@ public record FFLogsClientError(string Message, IRenderableError.ErrorType Type,
 
     public static readonly FFLogsClientError InternalError = new(
         "FFLogs client error (unknown internal error)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly FFLogsClientError Disabled = new(
+        "FFLogs disabled (refresh to reload)", IRenderableError.ErrorType.ERROR, false);
 }

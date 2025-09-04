@@ -21,12 +21,13 @@ public class MainWindow : Window
 
     public MainWindow(
         IReadOnlyList<CharData> partyList,
-        MainWindowController mainWindowController)
+        MainWindowController mainWindowController,
+        Configuration config)
         : base("Tomestone Viewer##TomestoneViewerMainWindow")
     {
         this.menuBar = new MenuBar(mainWindowController);
         this.headerBar = new HeaderBar(partyList);
-        this.table = new Table(mainWindowController);
+        this.table = new Table(mainWindowController, () => config.FFLogsEnabled);
 
         this.RespectCloseHotkey = true;
         this.Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar;

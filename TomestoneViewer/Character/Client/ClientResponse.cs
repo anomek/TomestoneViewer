@@ -51,6 +51,11 @@ public class ClientResponse<TError, T>
         return this.Fold(ToFunc(onSuccess, true), ToFunc(onError, false));
     }
 
+    public bool OnSuccess(Action<T> onSuccess)
+    {
+        return this.IfSuccessOrElse(onSuccess, error => { });
+    }
+
     public bool HasError(Predicate<TError> predicate)
     {
         return this.error != null && predicate.Invoke(this.error);

@@ -60,7 +60,7 @@ public class Util
 
     public static void RightAlignCursor(string text, float? regionAvail = null)
     {
-        RightAlignCursor(ImGui.CalcTextSize(text, true).X, regionAvail);
+        RightAlignCursor(ImGui.CalcTextSize(text, false).X, regionAvail);
     }
 
     public static void CenterText(string text, Vector4? color = null, float? regionAvail = null)

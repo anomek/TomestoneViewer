@@ -8,12 +8,13 @@ using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
-internal class CachedFFLogsClient(IFFLogsClient client) : IFFLogsClient
+internal class CachedFFLogsClient(string cachePath, IFFLogsClient client) : IFFLogsClient
 { 
     private readonly IFFLogsClient client = client;
 
     private readonly Cache<CharacterId, FFLogsCharId, FFLogsClientError> characterCache = new();
     private readonly Cache<(FFLogsCharId, FFLogsLocation.FFLogsZone), FFLogsEncounterData, FFLogsClientError> encounterCache = new();
+    private readonly PersistentFFLogsCache persisntentEncounterCache = new(cachePath);
 
     public async Task<ClientResponse<FFLogsClientError, FFLogsCharId>> FetchCharacter(CharacterId characterId, CancellationToken cancellationToken)
     {
@@ -22,6 +23,13 @@ internal class CachedFFLogsClient(IFFLogsClient client) : IFFLogsClient
 
     public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(FFLogsCharId characterId, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
     {
-        return await this.encounterCache.Get((characterId, location), () => this.client.FetchEncounter(characterId, location, cancellationToken));
+        if (location.PreviousExpansion)
+        {
+            return await this.persisntentEncounterCache.Get(characterId.Id, location.BossId, () => this.client.FetchEncounter(characterId, location, cancellationToken));
+        }
+        else
+        { 
+            return await this.encounterCache.Get((characterId, location), () => this.client.FetchEncounter(characterId, location, cancellationToken));
+        }
     }
 }

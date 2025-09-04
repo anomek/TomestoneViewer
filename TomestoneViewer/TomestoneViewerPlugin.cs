@@ -24,13 +24,13 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
     public TomestoneViewerPlugin(IDalamudPluginInterface pluginInterface)
     {
         pluginInterface.Create<Service>();
+        Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
         this.territorryOfInterestDetector = new TerritoryOfInterestDetector(Location.AllTerritories());
 
         var tomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
-        var fflogsClient = new CachedFFLogsClient(new SyncFFLogsClient(new SafeFFLogsClient(new WebFFLogsClient())));
-
-        Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        var cachePath = pluginInterface.ConfigDirectory + "/FFLogsOldEncountersCache";
+        var fflogsClient = new ToggleableFFLogsClient(() => Service.Configuration.FFLogsEnabled, new CachedFFLogsClient(cachePath, new SyncFFLogsClient(new SafeFFLogsClient(new WebFFLogsClient()))));
 
         Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient, fflogsClient));
 
@@ -40,11 +40,11 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
 
         Service.GameData = new GameData();
         Service.HistoryManager = new HistoryManager();
-        Service.Fonts = new GUI.Fonts();
+        Service.Fonts = new GUI.Fonts(() => Service.Configuration.UseDefaultFont);
 
-        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, mainWindowController);
+        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, mainWindowController, Service.Configuration);
         mainWindowController.RegisterMainWindow(Service.MainWindow);
-        Service.ConfigWindow = new ConfigWindow();
+        Service.ConfigWindow = new ConfigWindow(Service.Configuration);
 
         this.windowSystem = new WindowSystem("Tomestone Viewer");
         this.windowSystem.AddWindow(Service.ConfigWindow);

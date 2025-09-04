@@ -97,12 +97,15 @@ internal class CharDataLoader
 
     private async Task FetchFFLogsForLocation(Location location)
     {
-#if DEBUG
         if (this.ffLogsCharId == null)
         {
             (await this.fflogsClient.FetchCharacter(this.characterId, CancellationToken.None))
                 .IfSuccessOrElse(
-                    charId => this.ffLogsCharId = charId,
+                    charId =>
+                    {
+                        this.fflogsLoadError = null;
+                        this.ffLogsCharId = charId;
+                    },
                     error => this.fflogsLoadError = error
                 );
         }
@@ -110,17 +113,15 @@ internal class CharDataLoader
         if (this.ffLogsCharId != null &&
            (this.encounterData[location].Tomestone.Data == null || this.encounterData[location].Tomestone.Data.Cleared))
         {
-            // sequential processing to avoid too many reqeusts
+            // sequential processing to avoid too many reqeusts - TODO: refactor, not needed any more
             var results = new List<ClientResponse<FFLogsClientError, FFLogsEncounterData>>();
             foreach (var zone in location.FFLogs.Zones)
             {
                 results.Add(await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None));
             }
 
-            //var result = await this.fflogsClient.FetchEncounter(this.ffLogsCharId, location.FFLogs);
             this.ApplyFFLogs(results, location, true);
         }
-#endif
         return;
     }
 

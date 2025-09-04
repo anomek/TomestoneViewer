@@ -82,14 +82,33 @@ internal class WebFFLogsClient : IFFLogsClient
     {
         var parser = new SimpleParser(content);
         uint count = 0;
+
+        Dictionary<JobId, uint> clearsCount = [];
+        Dictionary<JobId, DateTime> lastClear = [];
+
         while (parser.Seek("rank-percent boss-hist-cell"))
         {
-            count++;
+            var job = JobId.FromFFLogsString(parser.Find("alt=\"", "\""));
+            var datetime = DateTimeOffset.FromUnixTimeMilliseconds(parser.FindLong("new Date(", ")").GetValueOrDefault(0)).LocalDateTime;
+            if (clearsCount.TryGetValue(job, out var ignored))
+            {
+                clearsCount[job]++;
+            }
+            else
+            {
+                clearsCount[job] = 1;
+            }
+
+            if (!lastClear.TryGetValue(job, out var value) || value < datetime)
+            {
+                lastClear[job] = datetime;
+            }
         }
 
-        return new FFLogsEncounterData(new Dictionary<JobId, FFLogsEncounterData.CClearCount>() { {
-                JobId.Empty, new(location.PreviousExpansion ? 0 : count, location.PreviousExpansion ? count : 0, DateOnly.MinValue)
-            } });
+        return new FFLogsEncounterData(
+            clearsCount.Keys
+            .Select(jobid => (jobid, new FFLogsEncounterData.CClearCount(clearsCount[jobid], lastClear[jobid], location.PreviousExpansion)))
+            .ToDictionary());
     }
 
     private ClientResponse<FFLogsClientError, FFLogsCharId> ParseFetchCharacter(string content)

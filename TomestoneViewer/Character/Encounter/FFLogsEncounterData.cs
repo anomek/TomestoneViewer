@@ -6,6 +6,8 @@ namespace TomestoneViewer.Character.Encounter;
 
 public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData.CClearCount> ClearsPerJob)
 {
+    public FFLogsEncounterData.CClearCount AllClears => CClearCount.Compile(this.ClearsPerJob.Values);
+
     internal static FFLogsEncounterData Compile(IReadOnlyList<FFLogsEncounterData> encounterProgress)
     {
         return new(encounterProgress.SelectMany(data => data.ClearsPerJob)
@@ -13,14 +15,22 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
                          .ToDictionary(group => group.Key, group => CClearCount.Compile(group.ToList())));
     }
 
-    public record CClearCount(uint ThisExpansion, uint PreviousExpansions, DateOnly LastClear)
+    public record CClearCount(uint ThisExpansion, uint PreviousExpansions, DateTime LastClear)
     {
         public uint Total => this.ThisExpansion + this.PreviousExpansions;
-        internal static CClearCount Compile(IReadOnlyList<CClearCount> clears)
+
+
+        public CClearCount(uint clears, DateTime lastClear, bool isPreviousExpansion)
+            : this(isPreviousExpansion ? 0 : clears, isPreviousExpansion ? clears : 0, lastClear)
+        {
+        }
+
+
+        internal static CClearCount Compile(IEnumerable<CClearCount> clears)
         {
             uint thisExp = 0;
             uint prevExp = 0;
-            DateOnly lastClear = DateOnly.MinValue;
+            var lastClear = DateTime.MinValue;
             foreach (var clear in clears)
             {
                 thisExp += clear.ThisExpansion;
