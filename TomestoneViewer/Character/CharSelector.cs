@@ -31,6 +31,11 @@ public class CharSelector
         this.Error = charError;
     }
 
+    internal bool IsValid()
+    {
+        return this.CharId != null;
+    }
+
     public override string ToString()
     {
         return this.CharId?.ToString() ?? this.Error?.Message ?? "CharSelector inconsistent state";
@@ -156,4 +161,5 @@ public class CharSelector
             return new CharSelector(CharacterSelectorError.InvalidCharacterName);
         }
     }
+
 }

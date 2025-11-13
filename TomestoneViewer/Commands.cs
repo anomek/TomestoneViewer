@@ -49,7 +49,15 @@ public class Commands : IDisposable
                 Service.ConfigWindow.Toggle();
                 break;
             case CommandName when string.IsNullOrEmpty(trimmedArgs):
-                this.mainWindowController.TogglePartyView();
+                var currentTarget = CharSelector.SelectCurrentTarget();
+                if (currentTarget.IsValid())
+                {
+                    this.mainWindowController.OpenCharacter(currentTarget);
+                }
+                else
+                {
+                    this.mainWindowController.OpenParty();
+                }
                 break;
             case CommandName:
                 if (trimmedArgs.Equals("p", StringComparison.OrdinalIgnoreCase)
