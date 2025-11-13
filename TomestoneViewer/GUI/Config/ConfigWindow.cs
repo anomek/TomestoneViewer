@@ -31,5 +31,12 @@ public class ConfigWindow : Window
             this.config.UseDefaultFont = useDefaultFont;
             this.config.Save();
         }
+
+        var streamerMode = this.config.StreamerMode;
+        if (ImGui.Checkbox("Streamer mode", ref streamerMode))
+        {
+            this.config.StreamerMode = streamerMode;
+            this.config.Save();
+        }
     }
 }

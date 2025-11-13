@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 using Dalamud.Game.Gui.ContextMenu;
@@ -7,9 +8,10 @@ using TomestoneViewer.Controller;
 
 namespace TomestoneViewer;
 
-public class ContextMenu(MainWindowController mainWindowController)
+public class ContextMenu(MainWindowController mainWindowController, Configuration config)
 {
     private readonly MainWindowController mainWindowController = mainWindowController;
+    private readonly Configuration config = config;
 
     public void Enable()
     {
@@ -22,8 +24,13 @@ public class ContextMenu(MainWindowController mainWindowController)
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "switch looks better")]
-    private static bool IsMenuValid(IMenuArgs menuOpenedArgs)
+    private bool IsMenuValid(IMenuArgs menuOpenedArgs)
     {
+        if (this.config.StreamerMode)
+        {
+            return false;
+        }
+
         if (menuOpenedArgs.Target is not MenuTargetDefault menuTargetDefault)
         {
             return false;

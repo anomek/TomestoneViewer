@@ -17,6 +17,8 @@ public class Configuration : IPluginConfiguration
 
     public bool UseDefaultFont { get; set; } = false;
 
+    public bool StreamerMode { get; set; } = false;
+
     public void Save()
     {
         Service.Interface.SavePluginConfig(this);

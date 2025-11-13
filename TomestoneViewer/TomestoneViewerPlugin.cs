@@ -50,7 +50,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         this.windowSystem.AddWindow(Service.ConfigWindow);
         this.windowSystem.AddWindow(Service.MainWindow);
 
-        this.contextMenu = new ContextMenu(mainWindowController);
+        this.contextMenu = new ContextMenu(mainWindowController, Service.Configuration);
         this.contextMenu.Enable();
 
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
