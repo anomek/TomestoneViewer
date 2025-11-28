@@ -8,11 +8,65 @@ namespace TomestoneViewer.Character;
 
 public record JobId(uint Id) : IComparable<JobId>
 {
+    public enum RoleId
+    {
+       Tank, Melee, Ranged, Caster, RHealer, SHealer, Other, NoJobStone
+    }
+
+
     public static readonly JobId Empty = new(0);
 
     public Icon Icon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62100)).GetWrapOrEmpty().Handle, 25);
 
     public Icon SmallIcon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62225)).GetWrapOrEmpty().Handle, 25*(1-0.15f*2), 0.15f, 1 - 0.15f);
+
+
+    public RoleId GetRoleId()
+    {
+        switch (this.Id)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 26:
+            case 29:
+            case 36:
+                return JobId.RoleId.NoJobStone;
+            case 19:
+            case 21:
+            case 32:
+            case 37:
+                return JobId.RoleId.Tank;
+            case 20:
+            case 22:
+            case 30:
+            case 34:
+            case 39:
+            case 41:
+                return JobId.RoleId.Melee;
+            case 23:
+            case 31:
+            case 38:
+                return JobId.RoleId.Ranged;
+            case 24:
+            case 33:
+                return JobId.RoleId.RHealer;
+            case 25:
+            case 27:
+            case 35:
+            case 42:
+                return JobId.RoleId.Caster;
+            case 28:
+            case 40:
+                return JobId.RoleId.SHealer;
+            default:
+                return JobId.RoleId.Other; 
+        }
+    }
 
     public static JobId FromFFLogsString(string? value)
     {

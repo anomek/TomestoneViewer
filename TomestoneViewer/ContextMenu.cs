@@ -93,7 +93,7 @@ public class ContextMenu(MainWindowController mainWindowController, Configuratio
 
     private void OnOpenContextMenu(IMenuOpenedArgs menuOpenedArgs)
     {
-        if (!Service.Interface.UiBuilder.ShouldModifyUi || !IsMenuValid(menuOpenedArgs))
+        if (!Service.Interface.UiBuilder.ShouldModifyUi || !this.IsMenuValid(menuOpenedArgs))
         {
             return;
         }
@@ -111,7 +111,7 @@ public class ContextMenu(MainWindowController mainWindowController, Configuratio
 
     private void Search(IMenuItemClickedArgs menuItemClickedArgs)
     {
-        if (!IsMenuValid(menuItemClickedArgs))
+        if (!this.IsMenuValid(menuItemClickedArgs))
         {
             return;
         }

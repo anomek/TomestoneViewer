@@ -4,228 +4,42 @@ using Dalamud.Interface.Utility;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
+using TomestoneViewer.GUI.Formatters;
+using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class Table(MainWindowController mainWindowController, Func<bool> renderFFLogs)
+public class Table
 {
-    private readonly MainWindowController mainWindowController = mainWindowController;
-    private readonly Func<bool> renderFFLogs = renderFFLogs;
+    private readonly PartyView partyView;
+    private readonly SingleCharacterView characterView;
+
+    public Table(MainWindowController mainWindowController, Func<bool> renderFFLogs)
+    { 
+        this.partyView = new(mainWindowController, renderFFLogs);
+        this.characterView = new(mainWindowController, renderFFLogs);
+    }
 
     public void Draw(bool partyView)
     {
         if (partyView)
         {
-            this.DrawPartyView();
+            this.partyView.Draw();
         }
         else
         {
-            this.DrawSingleView();
+            this.characterView.Draw();
         }
     }
 
-    private void DrawPartyView()
-    {
-        //--------------------
-        // Refresh party state
-        //--------------------
-        if (Util.DrawButtonIcon(FontAwesomeIcon.Redo))
-        {
-            this.mainWindowController.OpenParty();
-        }
-
-        Util.SetHoverTooltip("Refresh party state");
-        ImGui.SameLine();
-
-        //------------------------------
-        // Encounter combo and favourite
-        //------------------------------
-        this.DrawEncounterComboMenu();
-
-        this.DrawPartyLayout();
-    }
-
-    private void DrawPartyLayout()
-    {
-        var currentParty = Service.CharDataManager.PartyMembers;
-        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2 * ImGuiHelpers.GlobalScale, 0));
-        if (ImGui.BeginTable(
-              "##MainWindowTablePartyView",
-              2,
-              ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerH))
-        {
-            ImGui.TableSetupColumn("name", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("status", ImGuiTableColumnFlags.WidthFixed, MaxStatusWidth());
-
-            ImGui.TableNextRow();
-            ImGui.TableNextRow();
-            var i = 0;
-            foreach (var charData in currentParty)
-            {
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn();
-                var startY = ImGui.GetCursorPosY();
-
-                var jobIcon = charData.JobId.Icon;
-
-                if (ImGui.Selectable($"##PartyListCharacterSelectable{i}", false, ImGuiSelectableFlags.None, new Vector2(0, jobIcon.Size)))
-                {
-                    this.mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
-                }
-
-                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-                ImGui.SameLine();
-                jobIcon.Draw();
-                ImGui.PopStyleVar();
-
-                ImGui.SameLine();
-                ImGui.SetCursorPosY(startY + (jobIcon.Size - ImGui.GetTextLineHeight()) / 2);
-                ImGui.Text($"{charData.CharId.FullName}");
-
-                ImGui.TableNextColumn();
-                var cellStart = ImGui.GetCursorPos();
-                ImGui.PushFont(UiBuilder.IconFont);
-                ImGui.SetCursorPosY(startY + (jobIcon.Size - ImGui.GetTextLineHeight()) / 2);
-                ImGui.PopFont();
-                DrawEncounterStatus(
-                    charData,
-                    Service.CharDataManager.CurrentEncounter,
-                    cellStart,
-                    cellStart + new Vector2(MaxStatusWidth(), jobIcon.Size));
-                ImGui.TableNextColumn();
-                i++;
-            }
-
-            ImGui.EndTable();
-        }
-
-        ImGui.PopStyleVar();
-        ImGui.PopStyleVar();
-    }
-
-    private void DrawSingleView()
-    {
-        if (Service.CharDataManager.DisplayedChar == null || Service.CharDataManager.CharacterError != null)
-        {
-            return;
-        }
-
-
-        ImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(0, 0));
-        ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2 * ImGuiHelpers.GlobalScale, 0));
-
-        if (ImGui.BeginTable(
-                    "##MainWindowTableSingleView",
-                    2,
-                    ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg)) // | ImGuiTableFlags.BordersOuterH 
-        {
-            ImGui.TableSetupColumn("name", ImGuiTableColumnFlags.WidthStretch);
-            ImGui.TableSetupColumn("status", ImGuiTableColumnFlags.WidthFixed, MaxStatusWidth());
-
-            ImGui.PushFont(UiBuilder.IconFont);
-            var rowPadding = 2 * ImGuiHelpers.GlobalScale;
-            var baseRowHeight = ImGui.CalcTextSize(FontAwesomeIcon.CheckCircle.ToIconString()).Y;
-            var rowHeight = baseRowHeight + (rowPadding * 2);
-            ImGui.PopFont();
-
-            var character = Service.CharDataManager.DisplayedChar;
-
-            var firstRow = true;
-            foreach (var category in Category.All())
-            {
-                // fake row to start to ensure dark background
-                ImGui.TableNextRow();
-
-
-                // category row
-                ImGui.TableNextRow();
-                ImGui.TableNextColumn();
-                ImGui.Separator();
-
-                Service.Fonts.EncounterTypeHeader.Push();
-                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + rowPadding + 1);
-                ImGui.TextUnformatted($" {category.DisplayName}");
-                Service.Fonts.EncounterTypeHeader.Pop();
-
-                ImGui.TableNextColumn();
-                ImGui.Separator();
-
-                firstRow = false;
-                var counter = 0;
-                foreach (var location in category.Locations)
-                {
-                    var rowExtraTopPadding = counter == 0 ? 1 : 0;
-                    ImGui.TableNextRow(rowHeight + rowExtraTopPadding);
-                    ImGui.TableNextColumn();
-                    Util.ConditionalSeparator(counter == 0);
-                    var rowTopYPos = ImGui.GetCursorPosY();
-
-                    ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding);
-                    if (ImGui.Selectable($"  ##EncounterListSelectable{location.DisplayName}", false, ImGuiSelectableFlags.None, new Vector2(0, rowHeight)))
-                    {
-                        this.mainWindowController.OpenParty(location);
-                    }
-
-                    ImGui.SameLine();
-                    ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding + (rowHeight - ImGui.GetTextLineHeight()) / 2);
-                    ImGui.TextUnformatted(location.DisplayName);
-
-                    ImGui.TableNextColumn();
-                    var cellStart = ImGui.GetCursorPos() + new Vector2(0, rowExtraTopPadding);
-                    Util.ConditionalSeparator(counter == 0);
-                    ImGui.SetCursorPosY(rowTopYPos + rowPadding + rowExtraTopPadding);
-                    DrawEncounterStatus(character, location, cellStart, cellStart + new Vector2(MaxStatusWidth(), rowHeight));
-                    counter++;
-                }
-            }
-
-            ImGui.EndTable();
-        }
-
-        ImGui.PopStyleVar();
-        ImGui.PopStyleVar();
-    }
-
-    private void DrawEncounterComboMenu()
-    {
-        ImGui.SameLine();
-
-        var minWidth = Location.All().Select(location => ImGui.CalcTextSize(location.DisplayName).X).Max()
-                               + (30 * ImGuiHelpers.GlobalScale);
-
-        var widthFromWindowSize = ImGui.GetContentRegionAvail().X;
-        ImGui.SetNextItemWidth(Math.Max(minWidth, widthFromWindowSize));
-
-        if (ImGui.BeginCombo("##EncounterLayoutCombo", $" {Service.CharDataManager.CurrentEncounter.DisplayName}", ImGuiComboFlags.HeightLargest))
-        {
-            ImGui.Separator();
-            foreach (var category in Category.All())
-            {
-                foreach (var encounter in category.Locations)
-                {
-                    var name = encounter.DisplayName;
-
-                    if (ImGui.Selectable($" {name}"))
-                    {
-                        this.mainWindowController.OpenParty(encounter);
-                    }
-                }
-
-                ImGui.Separator();
-            }
-
-            ImGui.EndCombo();
-        }
-    }
-
-    private void DrawEncounterStatus(CharData character, Location location, Vector2 cellStart, Vector2 cellEnd)
+    private void DrawEncounterStatus(CharData character, Location location, Vector2 cellStart, Vector2 cellEnd, int index)
     {
         var padding = new Vector2(2, 2) * ImGuiHelpers.GlobalScale;
         cellStart = cellStart + ImGui.GetWindowPos() + padding;
@@ -263,8 +77,6 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
                 ImGui.PushFont(UiBuilder.IconFont);
                 Util.CenterText(FontAwesomeIcon.CheckCircle.ToIconString(), new Vector4(0, 1, 0, 1), tomestoneInfoRegionAvailable);
                 ImGui.PopFont();
-
-
             }
             else if (encounterData.Data?.Progress != null)
             {
@@ -281,7 +93,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
         }
 
         // TODO: else
-        if (this.renderFFLogs())
+        // if (this.renderFFLogs())
         {
             if (!encounterData.Status.Loading && (characterError != null || encounterData.Data == null || encounterData.Data.Cleared))
             {
@@ -309,44 +121,17 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
                     Util.RightAlignCursor(".....", FFLogsNumberStatusWidth());
                     Util.Progress(".....");
                 }
-                else if (ffLogsData.Data != null)
+                else if (ffLogsData.Data != null && index != -1)
                 {
-
                     if (ffLogsData.Data.ClearsPerJob.Count > 0)
                     {
-                        DrawKillsCount(ffLogsData.Data.AllClears, textY);
+                        ImGui.TableNextColumn();
+                        ImGui.TableNextColumn();
                     }
                 }
 
                 Service.Fonts.DefaultSmaller.Pop();
             }
-        }
-    }
-
-    private static void DrawKillsCount(FFLogsEncounterData.CClearCount clears, float? alignment)
-    {
-        var total = clears.Total;
-        var count = clears.ThisExpansion;
-        if (total > 0)
-        {
-            Service.Fonts.DefaultSmaller.Push();
-            ImGui.SameLine();
-            ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 0));
-            if (alignment != null) ImGui.SetCursorPosY(alignment.Value);
-            var countStr = count == 0 ? "\u2013" : $"{count}";
-            Util.RightAlignText(countStr, null, FFLogsNumberStatusWidth());
-            if (total > count)
-            {
-                ImGui.SameLine();
-                if (alignment != null) ImGui.SetCursorPosY(alignment.Value);
-                ImGui.Text("/");
-                ImGui.SameLine();
-                if (alignment != null) ImGui.SetCursorPosY(alignment.Value);
-                Util.RightAlignText($"{total}", null, FFLogsNumberStatusWidth());
-            }
-
-            ImGui.PopStyleVar();
-            Service.Fonts.DefaultSmaller.Pop();
         }
     }
 
@@ -391,7 +176,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
                     ImGui.SameLine();
                     ImGui.SetCursorPosY(ImGui.GetCursorPosY() + start - end);
                     ImGui.SetCursorPosX(align + jobIcon.Size);
-                    ImGui.TextUnformatted($"{FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
+                    ImGui.TextUnformatted($"{TimeFormatters.FormatTimeRelative(lockout.Timestamp.Value.ToDateTime(TimeOnly.MinValue))}");
                     Service.Fonts.DefaultSmaller.Pop();
                 }
             }
@@ -407,7 +192,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
                 ImGui.SameLine();
                 ImGui.Text(clear.DateTime.Value.ToString("yyyy-MM-dd"));
                 Service.Fonts.ClearedOnHeader.Pop();
-                ImGui.Text(FormatTimeRelative(clear.DateTime.Value));
+                ImGui.Text(TimeFormatters.FormatTimeRelative(clear.DateTime.Value));
             }
 
             var completionWeek = clear.CompletionWeek;
@@ -427,7 +212,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
             ImGui.PopStyleVar();
         }
 
-        if (this.renderFFLogs.Invoke())
+        // if (this.renderFFLogs.Invoke())
         {
             var ffData = data.FFLogs.Data;
             if (ffData != null && ffData.ClearsPerJob.Count > 0)
@@ -454,11 +239,11 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
                         job.SmallIcon.Draw();
                         ImGui.SameLine();
                         var textY = ImGui.GetCursorPosY() + job.SmallIcon.Size - ImGui.GetTextLineHeight();
-                        DrawKillsCount(ffData.ClearsPerJob[job], textY);
+                        // DrawKillsCount(ffData.ClearsPerJob[job], textY);
                         ImGui.TableNextColumn();
                         Util.ConditionalSeparator(firstRow);
                         ImGui.SetCursorPosY(textY);
-                        Util.RightAlignText($"{FormatTimeRelative(ffData.ClearsPerJob[job].LastClear)}", null, width - ImGui.GetCursorPosX());
+                        Util.RightAlignText($"{TimeFormatters.FormatTimeRelative(ffData.ClearsPerJob[job].LastClear)}", null, width - ImGui.GetCursorPosX());
                         firstRow = false;
                     }
 
@@ -474,41 +259,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
         ImGui.EndTooltip();
     }
 
-    private static string FormatTimeRelative(DateTime timestamp)
-    {
-        var diff = DateTime.Now - timestamp;
-        int number;
-        string unit;
-        if (diff.TotalMinutes < 120)
-        {
-            number = (int)diff.TotalMinutes;
-            unit = "minute";
-        }
-        else if (diff.TotalHours < 48)
-        {
-            number = (int)diff.TotalHours;
-            unit = "hour";
-        }
-        else if (diff.TotalDays < 65)
-        {
-            number = (int)diff.TotalDays;
-            unit = "day";
-        }
-        else if (diff.TotalDays < 366)
-        {
-            number = (int)(diff.TotalDays / 30.43);
-            unit = "month";
-        }
-        else
-        {
-            number = (int)(diff.TotalDays / 365.25);
-            unit = "year";
-        }
-
-        var plular = number == 1 ? string.Empty : "s";
-        return $"{number} {unit}{plular} ago";
-    }
-
+ 
     private static float TomestoneStatusWidth()
     {
         float size = 0;
@@ -517,6 +268,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
         Service.Fonts.ProgressFont.Pop();
         return size;
     }
+
 
     private static float FFLogsNumberStatusWidth()
     {
@@ -545,7 +297,7 @@ public class Table(MainWindowController mainWindowController, Func<bool> renderF
     {
         float size = 0;
         size += TomestoneStatusWidth();
-        if (this.renderFFLogs())
+        // if (this.renderFFLogs())
         {
             size += FFLogsStatusWidth();
         }

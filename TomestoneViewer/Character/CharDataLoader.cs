@@ -99,15 +99,7 @@ internal class CharDataLoader
     {
         if (this.ffLogsCharId == null)
         {
-            (await this.fflogsClient.FetchCharacter(this.characterId, CancellationToken.None))
-                .IfSuccessOrElse(
-                    charId =>
-                    {
-                        this.fflogsLoadError = null;
-                        this.ffLogsCharId = charId;
-                    },
-                    error => this.fflogsLoadError = error
-                );
+            await this.FetchFFLogsCharacter();
         }
 
         if (this.ffLogsCharId != null &&
@@ -117,12 +109,33 @@ internal class CharDataLoader
             var results = new List<ClientResponse<FFLogsClientError, FFLogsEncounterData>>();
             foreach (var zone in location.FFLogs.Zones)
             {
-                results.Add(await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None));
+                results.Add(await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None)
+                    .RecoverAsync(
+                        error => error == FFLogsClientError.Forbidden,
+                        async () =>
+                        {
+                            await this.FetchFFLogsCharacter();
+                            return await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None);
+                        }));
             }
 
             this.ApplyFFLogs(results, location, true);
         }
+
         return;
+    }
+
+    private async Task FetchFFLogsCharacter()
+    {
+        (await this.fflogsClient.FetchCharacter(this.characterId, CancellationToken.None))
+            .IfSuccessOrElse(
+                charId =>
+                {
+                    this.fflogsLoadError = null;
+                    this.ffLogsCharId = charId;
+                },
+                error => this.fflogsLoadError = error
+           );
     }
 
     private async Task FetchTomestoneForLocation(CharacterSummary summary, Location location)

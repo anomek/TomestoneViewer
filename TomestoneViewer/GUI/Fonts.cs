@@ -19,6 +19,9 @@ internal class Fonts : IDisposable
 
     public IFontHandle Default => this.FontHandle(FontType.Default);
 
+
+    public IFontHandle DefaultSmallerStraight => this.FontHandle(FontType.DefaultSmallerStraight);
+
     public IFontHandle DefaultSmaller => this.FontHandle(FontType.DefaultSmaller);
 
     public IFontHandle EncounterTypeHeader => this.FontHandle(FontType.EncounterTypeHeader);
@@ -35,9 +38,10 @@ internal class Fonts : IDisposable
         this.useDefaultFonts = useDefaultFonts;
 
         fonts[FontType.Default] = this.From(GameFontFamilyAndSize.Axis12);
+
+        fonts[FontType.DefaultSmallerStraight] = Service.Interface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.Axis, 13));
         var defaultSmaller = new GameFontStyle(GameFontFamily.Axis, 13);
         defaultSmaller.Italic = true;
-
         fonts[FontType.DefaultSmaller] = Service.Interface.UiBuilder.FontAtlas.NewGameFontHandle(defaultSmaller);
         fonts[FontType.EncounterTypeHeader] = this.From(GameFontFamilyAndSize.MiedingerMid12);
         var tooltipDescriptionStyle = new GameFontStyle(GameFontFamily.Axis, 13);
@@ -66,6 +70,7 @@ internal class Fonts : IDisposable
     {
         Default,
         DefaultSmaller,
+        DefaultSmallerStraight,
         EncounterTypeHeader,
         TooltipDescription,
         ClearedOnHeader,

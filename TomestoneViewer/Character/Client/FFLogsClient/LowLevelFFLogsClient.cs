@@ -61,7 +61,8 @@ internal class LowLevelFFLogsClient
                     return new(FFLogsClientError.RequestCancelled);
                 }
 
-                var response = await this.httpClient.SendAsync(request.Invoke());
+                var requestMessage = request.Invoke();
+                var response = await this.httpClient.SendAsync(requestMessage);
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
                     Service.PluginLog.Info($"FFLogsClient: Too many requests");
@@ -80,15 +81,16 @@ internal class LowLevelFFLogsClient
                     Service.PluginLog.Error($"FFLogs returned content expired");
                     return new(FFLogsClientError.ContentExpired);
                 }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    Service.PluginLog.Error($"FFLogs returned forbidden: {requestMessage.Method} {requestMessage.RequestUri} {response.StatusCode} {content}");
+                    return new(FFLogsClientError.Forbidden);
+                }
                 else
                 {
-                    Service.PluginLog.Error($"FFLogs call failed: {response.StatusCode} {content}");
+                    Service.PluginLog.Error($"FFLogs call failed: {requestMessage.Method} {requestMessage.RequestUri} {response.StatusCode} {content}");
                     return new(FFLogsClientError.ServerResponseError);
                 }
-
-
-                //// Handle 419 to refresh page to grab new token
-                //if (response.StatusCode != HttpStatusCode.OK)
             }
         }
         finally

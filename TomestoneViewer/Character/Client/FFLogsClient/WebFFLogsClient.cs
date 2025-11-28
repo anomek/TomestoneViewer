@@ -34,9 +34,6 @@ internal class WebFFLogsClient : IFFLogsClient
             .FlatMap(this.ParseFetchCharacter);
     }
 
-
-  
-
     public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(FFLogsCharId character, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
     {
         Service.PluginLog.Info($"Fetching fflogs encounter for {character} on {location}");
@@ -51,7 +48,7 @@ internal class WebFFLogsClient : IFFLogsClient
         return await this.client.Call(request, cancellationToken)
             .RecoverAsync(error => error == FFLogsClientError.ContentExpired, () =>
             {
-               return this.UpdateToken()
+               return this.queryToken.Run()
                     .FlatMapAsync(ignored => this.client.Call(request, cancellationToken));
             })
             .Map(content => this.ParseFetchEncounter(content, location));
@@ -129,6 +126,4 @@ internal class WebFFLogsClient : IFFLogsClient
             return new(FFLogsClientError.SignatureNotFound);
         }
     }
-
-
 }

@@ -8,6 +8,16 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
 {
     public FFLogsEncounterData.CClearCount AllClears => CClearCount.Compile(this.ClearsPerJob.Values);
 
+
+    public FFLogsEncounterData.CClearCount Clears(JobId.RoleId role)
+    {
+        return CClearCount.Compile(
+            this.ClearsPerJob
+            .Where(pair => pair.Key.GetRoleId() == role)
+            .Select(pair => pair.Value)
+        );
+    }
+
     internal static FFLogsEncounterData Compile(IReadOnlyList<FFLogsEncounterData> encounterProgress)
     {
         return new(encounterProgress.SelectMany(data => data.ClearsPerJob)

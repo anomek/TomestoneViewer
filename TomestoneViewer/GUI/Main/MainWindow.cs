@@ -36,7 +36,9 @@ public class MainWindow : Window
     public override void PreDraw()
     {
         base.PreDraw();
-        ImGui.SetNextWindowSize(new Vector2(HeaderBar.GetMinWindowSize(), -1));
+
+        // FIXME: real calculations
+        ImGui.SetNextWindowSize(new Vector2(HeaderBar.GetMinWindowSize() * 1.3f, -1));
     }
 
     public void Open(bool takeFocus = true)

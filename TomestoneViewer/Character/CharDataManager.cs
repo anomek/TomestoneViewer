@@ -53,6 +53,17 @@ public class CharDataManager(CharDataFactory charDataFactory)
 
         this.partyMembers.Clear();
         this.partyMembers.AddRange(newPartyList);
+#if DEBUG
+        if (this.partyMembers.Count < 7)
+        {
+            var lizard = this.charDataFactory.Create(new CharacterId("Lizard", "Butterfly", "Sargatanas"));
+            lizard.JobId = new JobId(38);
+            this.partyMembers.Add(lizard);
+            var ozma = this.charDataFactory.Create(new CharacterId("Ozma", "Asterwyn", "Zalera"));
+            ozma.JobId = new JobId(25);
+            this.partyMembers.Add(ozma);
+        }
+#endif
     }
 
     public void SetTerritoryId(TerritoryId? teritorryId)

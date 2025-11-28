@@ -1,10 +1,11 @@
+using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState.JobGauge.Enums;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-
-using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer;
@@ -182,6 +183,20 @@ public class Util
         ImGui.TextUnformatted(text.Substring(0, progress + 1));
     }
 
+    public static float XHeight()
+    {
+        return ImGui.GetFont().Ascent * ImGuiHelpers.GlobalScale;
+    }
+
+    public static void ApplyBaseline(float? baseLine, float yOffset = 0)
+    {
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + yOffset);
+        if (baseLine != null)
+        {
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + baseLine.Value - XHeight());
+        }
+    }
+
     public static void Rotate(Action action)
     {
         var rotationStartIndex = ImGui.GetWindowDrawList().VtxBuffer.Size;
@@ -216,4 +231,6 @@ public class Util
     {
         return new Vector2((vector.X * cos) - (vector.Y * sin), (vector.X * sin) + (vector.Y * cos));
     }
+
+
 }

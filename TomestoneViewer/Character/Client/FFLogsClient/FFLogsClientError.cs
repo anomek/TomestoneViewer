@@ -26,6 +26,9 @@ public record FFLogsClientError(string Message, IRenderableError.ErrorType Type,
     public static readonly FFLogsClientError ContentExpired = new(
         "FFLogs client error (content expired)", IRenderableError.ErrorType.ERROR, false);
 
+    public static readonly FFLogsClientError Forbidden = new(
+        "FFLogs client error (forbidden)", IRenderableError.ErrorType.ERROR, false);
+
     public static readonly FFLogsClientError InternalError = new(
         "FFLogs client error (unknown internal error)", IRenderableError.ErrorType.ERROR, false);
 
