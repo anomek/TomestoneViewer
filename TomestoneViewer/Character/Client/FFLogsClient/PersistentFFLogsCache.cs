@@ -8,15 +8,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 internal class PersistentFFLogsCache
 {
-    private static readonly int VERSION = 1;
+    private static readonly int VERSION = 2;
     private readonly string path;
 
-    private Dictionary<(string UserId, int BossId), FFLogsEncounterData>? cache;
+    private Dictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>? cache;
 
     internal PersistentFFLogsCache(string path)
     {
@@ -24,9 +25,9 @@ internal class PersistentFFLogsCache
         this.Load();
     }
 
-    internal async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> Get(string userId, int bossId, Func<Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>>> query)
+    internal async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> Get(LodestoneId lodestoneId, int bossId, Func<Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>>> query)
     {
-        var key = (userId, bossId);
+        var key = (lodestoneId, bossId);
         if (this.cache != null && this.cache.TryGetValue(key, out var data))
         {
             return new(data);
@@ -50,7 +51,7 @@ internal class PersistentFFLogsCache
 
     private void Load()
     {
-        var copy = new Dictionary<(string UserId, int BossId), FFLogsEncounterData>();
+        var copy = new Dictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>();
         Stream? stream = null;
         BinaryReader? reader = null;
         try
@@ -73,9 +74,8 @@ internal class PersistentFFLogsCache
             var count = reader.ReadInt32();
             for (var i = 0; i < count; i++)
             {
-                var userId = reader.ReadString();
+                var userId = new LodestoneId(reader.ReadUInt32());
                 var bossId = reader.ReadInt32();
-
 
                 var count2 = reader.ReadInt32();
                 var encounterData = new Dictionary<JobId, FFLogsEncounterData.CClearCount>();
@@ -83,7 +83,7 @@ internal class PersistentFFLogsCache
                 {
                     var jobId = new JobId(reader.ReadUInt32());
                     var clears = reader.ReadUInt32();
-                    var lastClear = new DateTime(reader.ReadInt64());
+                    var lastClear = DateTimeOffset.FromUnixTimeMilliseconds(reader.ReadInt64());
 
                     encounterData[jobId] = new FFLogsEncounterData.CClearCount(0, clears, lastClear);
                 }
@@ -106,7 +106,7 @@ internal class PersistentFFLogsCache
 
     private void Save()
     {
-        var copy = new Dictionary<(string UserId, int BossId), FFLogsEncounterData>(this.cache);
+        var copy = new Dictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>(this.cache);
         var tempPath = this.path + ".tmp";
         Stream? stream = null;
         BinaryWriter? writer = null;
@@ -118,14 +118,14 @@ internal class PersistentFFLogsCache
             writer.Write(copy.Count);
             foreach (var item in copy)
             {
-                writer.Write(item.Key.UserId);
+                writer.Write(item.Key.UserId.Id);
                 writer.Write(item.Key.BossId);
                 writer.Write(item.Value.ClearsPerJob.Count);
                 foreach (var clear in item.Value.ClearsPerJob)
                 {
                     writer.Write(clear.Key.Id);
                     writer.Write(clear.Value.PreviousExpansions);
-                    writer.Write(clear.Value.LastClear.Ticks);
+                    writer.Write(clear.Value.LastClear.ToUnixTimeMilliseconds());
                 }
             }
         }

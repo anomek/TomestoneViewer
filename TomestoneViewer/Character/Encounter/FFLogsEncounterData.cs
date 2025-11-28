@@ -25,12 +25,12 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
                          .ToDictionary(group => group.Key, group => CClearCount.Compile(group.ToList())));
     }
 
-    public record CClearCount(uint ThisExpansion, uint PreviousExpansions, DateTime LastClear)
+    public record CClearCount(uint ThisExpansion, uint PreviousExpansions, DateTimeOffset LastClear)
     {
         public uint Total => this.ThisExpansion + this.PreviousExpansions;
 
 
-        public CClearCount(uint clears, DateTime lastClear, bool isPreviousExpansion)
+        public CClearCount(uint clears, DateTimeOffset lastClear, bool isPreviousExpansion)
             : this(isPreviousExpansion ? 0 : clears, isPreviousExpansion ? clears : 0, lastClear)
         {
         }
@@ -40,7 +40,7 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
         {
             uint thisExp = 0;
             uint prevExp = 0;
-            var lastClear = DateTime.MinValue;
+            var lastClear = DateTimeOffset.MinValue;
             foreach (var clear in clears)
             {
                 thisExp += clear.ThisExpansion;

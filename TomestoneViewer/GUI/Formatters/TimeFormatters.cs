@@ -8,9 +8,9 @@ namespace TomestoneViewer.GUI.Formatters;
 
 public class TimeFormatters
 {
-    public static string FormatTimeRelativeShort(DateTime timestamp)
+    public static string FormatTimeRelativeShort(DateTimeOffset timestamp)
     {
-        var diff = DateTime.Now - timestamp;
+        var diff = DateTimeOffset.Now - timestamp;
         if (diff.TotalDays < 1)
         {
             return "<1d";
@@ -22,9 +22,9 @@ public class TimeFormatters
         }
     }
 
-    public static string FormatTimeRelative(DateTime timestamp)
+    public static string FormatTimeRelative(DateTimeOffset timestamp)
     {
-        var diff = DateTime.Now - timestamp;
+        var diff = DateTimeOffset.Now - timestamp;
         int number;
         string unit;
         if (diff.TotalMinutes < 120)
@@ -54,8 +54,7 @@ public class TimeFormatters
         }
 
         var plular = number == 1 ? string.Empty : "s";
-        var unitFull =  $" {unit}{plular} ago";
-        return $"{number}{unitFull}";       
+        var unitFull = $" {unit}{plular} ago";
+        return $"{number}{unitFull}";
     }
-
 }

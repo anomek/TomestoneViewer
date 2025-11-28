@@ -1,5 +1,6 @@
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
+using System;
 
 namespace TomestoneViewer.GUI.Config;
 
@@ -38,5 +39,21 @@ public class ConfigWindow : Window
             this.config.StreamerMode = streamerMode;
             this.config.Save();
         }
+
+        var fflogsClientId = this.config.FFLogsClientId ;
+
+        if (ImGui.InputText("Client ID", ref fflogsClientId))
+        {
+            this.config.FFLogsClientId = fflogsClientId;
+            this.config.Save();
+        }
+
+        var fflogsClientSecret = this.config.FFLogsClientSecret;
+        if (ImGui.InputText("Client Secret", ref fflogsClientSecret))
+        {
+            this.config.FFLogsClientSecret = fflogsClientSecret;
+            this.config.Save();
+        }
+
     }
 }

@@ -1,9 +1,11 @@
 using FFXIVClientStructs.FFXIV.Client.System.Threading;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,79 +14,85 @@ namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class LowLevelFFLogsClient
 {
-    private static readonly TimeSpan COOLDOWN = TimeSpan.FromSeconds(70);
-    private static readonly TimeSpan MINIMUM_DELAY = TimeSpan.FromSeconds(20);
-    private static readonly int LIMIT = 30;
+    private readonly HttpClient httpClient = new();
 
-    private readonly HttpClient httpClient;
-    private readonly SemaphoreSlim semaphore = new(1, 1);
+    private SyncQuery<string?> tokenQuery;
 
-    private Queue<DateTime> successRequests = new();
+    private string? accessToken;
+
 
     internal LowLevelFFLogsClient()
     {
-        var handler = new HttpClientHandler()
-        {
-            UseCookies = true,
-            AllowAutoRedirect = false,
-        };
-
-        this.httpClient = new HttpClient(handler);
-        this.httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36");
+        tokenQuery = new(this.GetAuthToken);
     }
 
-
-
-    internal async Task<ClientResponse<FFLogsClientError, string>> Call(Func<HttpRequestMessage> request, CancellationToken token)
+    private async Task<string?> GetAuthToken()
     {
-        await this.semaphore.WaitAsync();
         try
         {
-            TimeSpan? delay;
-            while (true)
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.fflogs.com/oauth/token");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Service.Configuration.FFLogsClientId}:{Service.Configuration.FFLogsClientSecret}")));
+            request.Content = new FormUrlEncodedContent([new("grant_type", "client_credentials")]);
+            var response = await this.httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var json = (dynamic?)JsonConvert.DeserializeObject(content);
+                var token = json?.access_token;
+                this.accessToken = token;
+                Service.PluginLog.Info($"Acq token {this.accessToken}");
+                return token;
+            }
+            else
+            {
+                Service.PluginLog.Warning($"Failed to fetch access token: {response.StatusCode}");
+                return null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Service.PluginLog.Error($"Error fetching access token: {ex}");
+            return null;
+        }
+    }
+
+    internal async Task<ClientResponse<FFLogsClientError, dynamic?>> Call(Func<HttpRequestMessage> request, CancellationToken token)
+    {
+
+        int tries = 4;
+        FFLogsClientError? lastError = null;
+        while (tries > 0)
+        {
+            try
             {
                 if (token.IsCancellationRequested)
                 {
                     return new(FFLogsClientError.RequestCancelled);
                 }
 
-                delay = this.WaitTime();
-                if (delay != null)
-                {
-                    Service.PluginLog.Info($"Waiting until limit refreshes {delay}");
-                    await Task.Delay(delay.Value);
-                    continue;
-                }
-
-                if (token.IsCancellationRequested)
-                {
-                    return new(FFLogsClientError.RequestCancelled);
-                }
-
                 var requestMessage = request.Invoke();
-                var response = await this.httpClient.SendAsync(requestMessage);
-                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                var accessTokenToUse = this.accessToken ?? await this.tokenQuery.Run();
+                if (accessTokenToUse == null)
                 {
-                    Service.PluginLog.Info($"FFLogsClient: Too many requests");
-                    await Task.Delay(this.WaitTime().GetValueOrDefault(MINIMUM_DELAY));
-                    continue;
+                    Service.PluginLog.Warning("No access token, request wont be send");
+                    return new(FFLogsClientError.Unauthorized);
                 }
+
+                requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessTokenToUse);
+                var response = await this.httpClient.SendAsync(requestMessage);
 
                 var content = await response.Content.ReadAsStringAsync();
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    this.successRequests.Enqueue(DateTime.Now);
-                    return new(content);
+                    Service.PluginLog.Info($"FFLogs gor response {content}");
+                    return new(JsonConvert.DeserializeObject(content));
                 }
-                else if (response.StatusCode == (HttpStatusCode)419)
+
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    Service.PluginLog.Error($"FFLogs returned content expired");
-                    return new(FFLogsClientError.ContentExpired);
-                }
-                else if (response.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    Service.PluginLog.Error($"FFLogs returned forbidden: {requestMessage.Method} {requestMessage.RequestUri} {response.StatusCode} {content}");
-                    return new(FFLogsClientError.Forbidden);
+                    await tokenQuery.Run();
+                    Service.PluginLog.Info("FFLogs call got unathorized response");
+                    lastError = FFLogsClientError.Unauthorized;
                 }
                 else
                 {
@@ -92,27 +100,16 @@ internal class LowLevelFFLogsClient
                     return new(FFLogsClientError.ServerResponseError);
                 }
             }
-        }
-        finally
-        {
-            this.semaphore.Release();
-        }
-    }
+            catch (Exception ex)
+            {
+                Service.PluginLog.Error($"Error calling fflogs: {ex}");
+                lastError = FFLogsClientError.InternalError;
+            }
 
-
-    private TimeSpan? WaitTime()
-    {
-        DateTime now = DateTime.Now;
-        while (this.successRequests.TryPeek(out var result) && (now - result) > COOLDOWN)
-        {
-            this.successRequests.Dequeue();
+            tries--;
         }
 
-        if (this.successRequests.Count < LIMIT)
-        {
-            return null;
-        }
-
-        return COOLDOWN - (now - this.successRequests.ElementAt(LIMIT - 1));
+        Service.PluginLog.Error($"retries exhauseted with error: {lastError}");
+        return new(lastError ?? FFLogsClientError.InternalError);
     }
 }

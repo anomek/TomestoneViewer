@@ -18,7 +18,6 @@ internal class CharDataLoader
     private readonly CancelableFFLogsClient fflogsClient;
 
     private LodestoneId? lodestoneId;
-    private FFLogsCharId? ffLogsCharId;
     private TomestoneClientError? tomestoneLoadError;
     private FFLogsClientError? fflogsLoadError;
 
@@ -97,45 +96,20 @@ internal class CharDataLoader
 
     private async Task FetchFFLogsForLocation(Location location)
     {
-        if (this.ffLogsCharId == null)
-        {
-            await this.FetchFFLogsCharacter();
-        }
-
-        if (this.ffLogsCharId != null &&
+        if (this.lodestoneId != null &&
            (this.encounterData[location].Tomestone.Data == null || this.encounterData[location].Tomestone.Data.Cleared))
         {
             // sequential processing to avoid too many reqeusts - TODO: refactor, not needed any more
             var results = new List<ClientResponse<FFLogsClientError, FFLogsEncounterData>>();
             foreach (var zone in location.FFLogs.Zones)
             {
-                results.Add(await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None)
-                    .RecoverAsync(
-                        error => error == FFLogsClientError.Forbidden,
-                        async () =>
-                        {
-                            await this.FetchFFLogsCharacter();
-                            return await this.fflogsClient.FetchEncounter(this.ffLogsCharId, zone, CancellationToken.None);
-                        }));
+                results.Add(await this.fflogsClient.FetchEncounter(this.lodestoneId, zone, CancellationToken.None));
             }
 
             this.ApplyFFLogs(results, location, true);
         }
 
         return;
-    }
-
-    private async Task FetchFFLogsCharacter()
-    {
-        (await this.fflogsClient.FetchCharacter(this.characterId, CancellationToken.None))
-            .IfSuccessOrElse(
-                charId =>
-                {
-                    this.fflogsLoadError = null;
-                    this.ffLogsCharId = charId;
-                },
-                error => this.fflogsLoadError = error
-           );
     }
 
     private async Task FetchTomestoneForLocation(CharacterSummary summary, Location location)

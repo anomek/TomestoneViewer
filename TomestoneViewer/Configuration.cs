@@ -19,6 +19,10 @@ public class Configuration : IPluginConfiguration
 
     public bool StreamerMode { get; set; } = false;
 
+    public string FFLogsClientId { get; set; } = string.Empty;
+
+    public string FFLogsClientSecret { get; set; } = string.Empty;
+
     public void Save()
     {
         Service.Interface.SavePluginConfig(this);

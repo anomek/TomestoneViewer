@@ -18,19 +18,7 @@ internal class CancelableFFLogsClient(IFFLogsClient client) : IFFLogsClient
         this.tokenSource.Cancel();
     }
 
-    public async Task<ClientResponse<FFLogsClientError, FFLogsCharId>> FetchCharacter(CharacterId characterId, CancellationToken cancellationToken)
-    {
-        if (this.canceled)
-        {
-            return new(FFLogsClientError.RequestCancelled);
-        }
-        else
-        {
-            return await this.GetSafe(() => this.client.FetchCharacter(characterId, this.tokenSource.Token));
-        }
-    }
-
-    public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(FFLogsCharId characterId, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
+    public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(LodestoneId characterId, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
     {
         if (this.canceled)
         {
