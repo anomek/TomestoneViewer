@@ -1,6 +1,7 @@
 using FFXIVClientStructs.FFXIV.Component.Text;
 using Serilog;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ internal class PersistentFFLogsCache
     private static readonly int VERSION = 2;
     private readonly string path;
 
-    private Dictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>? cache;
+    private IDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>? cache;
 
     internal PersistentFFLogsCache(string path)
     {
@@ -99,7 +100,7 @@ internal class PersistentFFLogsCache
         {
             stream?.Close();
             reader?.Close();
-            this.cache = copy;
+            this.cache = new ConcurrentDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>(copy);
         }
     }
 
