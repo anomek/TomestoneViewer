@@ -5,6 +5,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using TomestoneViewer.Character;
+using TomestoneViewer.External;
 using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI;
 using TomestoneViewer.GUI.Config;

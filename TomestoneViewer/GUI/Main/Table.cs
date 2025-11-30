@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
 using TomestoneViewer.GUI.Formatters;
@@ -20,11 +21,17 @@ public class Table
 {
     private readonly PartyView partyView;
     private readonly SingleCharacterView characterView;
+    private readonly LowLevelFFLogsClient lowLevelFFLogsClient;
+    private readonly Func<bool> renderFFLogs;
+    private readonly WindowsController mainWindowController;
 
-    public Table(MainWindowController mainWindowController, Func<bool> renderFFLogs)
+    internal Table(WindowsController mainWindowController, Func<bool> renderFFLogs, LowLevelFFLogsClient lowLevelFFLogsClient)
     { 
+        this.mainWindowController = mainWindowController;
         this.partyView = new(mainWindowController, renderFFLogs);
         this.characterView = new(mainWindowController, renderFFLogs);
+        this.renderFFLogs = renderFFLogs;
+        this.lowLevelFFLogsClient = lowLevelFFLogsClient;
     }
 
     public void Draw(bool partyView)
@@ -36,6 +43,16 @@ public class Table
         else
         {
             this.characterView.Draw();
+        }
+
+        if (renderFFLogs() && !lowLevelFFLogsClient.CredentialsValid)
+        {
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), "Credentials to FF Logs not set");
+            ImGui.SameLine();
+            if(ImGui.Button("Fix"))
+            {
+                mainWindowController.OpenConfig();
+            }
         }
     }
 

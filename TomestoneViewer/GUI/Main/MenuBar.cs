@@ -8,9 +8,9 @@ using TomestoneViewer.Controller;
 
 namespace TomestoneViewer.GUI.Main;
 
-public class MenuBar(MainWindowController mainWindowController)
+public class MenuBar(WindowsController mainWindowController)
 {
-    private readonly MainWindowController mainWindowController = mainWindowController;
+    private readonly WindowsController mainWindowController = mainWindowController;
 
     public void Draw(bool partyView)
     {

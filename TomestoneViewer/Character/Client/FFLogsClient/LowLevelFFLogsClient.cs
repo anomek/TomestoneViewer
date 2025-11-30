@@ -14,17 +14,26 @@ namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class LowLevelFFLogsClient
 {
+    internal bool CredentialsValid { get => this.accessToken != null; }
+
     private readonly HttpClient httpClient = new();
 
     private SyncQuery<string?> tokenQuery;
 
     private string? accessToken;
 
-
     internal LowLevelFFLogsClient()
     {
         tokenQuery = new(this.GetAuthToken);
+        GetAuthToken();
     }
+
+    internal async Task RefreshToken()
+    {
+        await this.tokenQuery.Finish();
+        await this.tokenQuery.Run();
+    }
+
 
     private async Task<string?> GetAuthToken()
     {
@@ -45,6 +54,7 @@ internal class LowLevelFFLogsClient
             }
             else
             {
+                this.accessToken = null;
                 Service.PluginLog.Warning($"Failed to fetch access token: {response.StatusCode}");
                 return null;
             }

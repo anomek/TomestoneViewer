@@ -35,7 +35,7 @@ namespace TomestoneViewer.GUI.Main;
 internal class PartyTableView : IWidget, Tabular.ITabularData
 {
 
-    private readonly MainWindowController mainWindowController;
+    private readonly WindowsController mainWindowController;
 
     private readonly Func<bool> ffLogsEnabled;
 
@@ -91,7 +91,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             Total = true,
         };
 
-        public Row(MainWindowController mainWindowController, Func<bool> ffLogsEnabled)
+        public Row(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
         {
             this.ffLogsEnabled = ffLogsEnabled;
             totalClears.ffLogsEnabled = ffLogsEnabled;
@@ -121,7 +121,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
         }
     }
 
-    public PartyTableView(MainWindowController mainWindowController, Func<bool> ffLogsEnabled)
+    public PartyTableView(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
     {
         this.ffLogsEnabled = ffLogsEnabled;
         this.mainWindowController = mainWindowController;

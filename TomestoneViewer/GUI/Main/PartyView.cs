@@ -13,12 +13,12 @@ using TomestoneViewer.GUI.Widgets;
 namespace TomestoneViewer.GUI.Main;
 internal class PartyView
 {
-    private readonly MainWindowController mainWindowController;
+    private readonly WindowsController mainWindowController;
 
     private readonly PartyTableView partyTableView;
     private readonly TextWidget tableLegend;
 
-    public PartyView(MainWindowController mainWindowController, Func<bool> ffLogsEnabled)
+    public PartyView(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
     {
         this.mainWindowController = mainWindowController;
         this.partyTableView = new(mainWindowController, ffLogsEnabled);

@@ -22,6 +22,15 @@ internal class SyncQuery<T>(Func<CancellationToken, Task<T>> query)
     {
     }
 
+    internal async Task Finish()
+    {
+        var copy = runningTask;
+        if (copy != null)
+        {
+            await copy;
+        }
+    }
+
     internal async Task<T> Run()
     {
         return await this.Run(CancellationToken.None);

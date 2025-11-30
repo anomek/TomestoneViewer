@@ -5,6 +5,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.GameFonts;
 using Dalamud.Interface.Windowing;
 using TomestoneViewer.Character;
+using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Controller;
 
 using static Dalamud.Interface.Utility.Raii.ImRaii;
@@ -19,15 +20,16 @@ public class MainWindow : Window
 
     public bool PartyView { get; set; } = true;
 
-    public MainWindow(
+    internal MainWindow(
         IReadOnlyList<CharData> partyList,
-        MainWindowController mainWindowController,
-        Configuration config)
+        WindowsController mainWindowController,
+        Configuration config,
+        LowLevelFFLogsClient lowLevelFFLogsClient)
         : base("Tomestone Viewer##TomestoneViewerMainWindow")
     {
         this.menuBar = new MenuBar(mainWindowController);
         this.headerBar = new HeaderBar(partyList);
-        this.table = new Table(mainWindowController, () => config.FFLogsEnabled);
+        this.table = new Table(mainWindowController, () => config.FFLogsEnabled, lowLevelFFLogsClient);
 
         this.RespectCloseHotkey = true;
         this.Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar;

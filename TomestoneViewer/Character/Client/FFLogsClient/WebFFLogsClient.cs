@@ -18,10 +18,11 @@ namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class WebFFLogsClient : IFFLogsClient
 {
-    private readonly LowLevelFFLogsClient client = new();
+    private readonly LowLevelFFLogsClient client;
 
-    internal WebFFLogsClient()
+    internal WebFFLogsClient(LowLevelFFLogsClient client)
     {
+        this.client = client;
     }
 
 

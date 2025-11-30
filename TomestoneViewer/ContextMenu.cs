@@ -8,9 +8,9 @@ using TomestoneViewer.Controller;
 
 namespace TomestoneViewer;
 
-public class ContextMenu(MainWindowController mainWindowController, Configuration config)
+public class ContextMenu(WindowsController mainWindowController, Configuration config)
 {
-    private readonly MainWindowController mainWindowController = mainWindowController;
+    private readonly WindowsController mainWindowController = mainWindowController;
     private readonly Configuration config = config;
 
     public void Enable()

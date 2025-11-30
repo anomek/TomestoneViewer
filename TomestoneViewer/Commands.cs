@@ -11,9 +11,9 @@ public class Commands : IDisposable
     private const string CommandName = "/ts";
     private const string SettingsCommandName = "/tsconfig";
 
-    private readonly MainWindowController mainWindowController;
+    private readonly WindowsController mainWindowController;
 
-    public Commands(MainWindowController mainWindowController)
+    public Commands(WindowsController mainWindowController)
     {
         this.mainWindowController = mainWindowController;
 
