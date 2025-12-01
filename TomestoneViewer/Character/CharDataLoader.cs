@@ -7,6 +7,7 @@ using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Character.Client;
 using System.Threading;
+using TomestoneViewer.External;
 
 namespace TomestoneViewer.Character;
 
@@ -16,10 +17,13 @@ internal class CharDataLoader
     private readonly IReadOnlyDictionary<Location, EncounterData> encounterData;
     private readonly CancelableTomestoneClient tomestoneClient;
     private readonly CancelableFFLogsClient fflogsClient;
+    private readonly PlayerTrackInterface playerTrackInterface;
 
     private LodestoneId? lodestoneId;
     private TomestoneClientError? tomestoneLoadError;
     private FFLogsClientError? fflogsLoadError;
+
+    internal string PlayerTrackComment { get; private set; } = string.Empty;
 
     internal LodestoneId? LodestoneId => this.lodestoneId;
 
@@ -28,7 +32,7 @@ internal class CharDataLoader
 
     internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
 
-    internal CharDataLoader(CharacterId characterId, ITomestoneClient tomestoneClient, IFFLogsClient fflogsClient)
+    internal CharDataLoader(CharacterId characterId, ITomestoneClient tomestoneClient, IFFLogsClient fflogsClient, PlayerTrackInterface playerTrackInterface)
     {
         this.characterId = characterId;
         this.encounterData = Location.All()
@@ -36,6 +40,7 @@ internal class CharDataLoader
             .AsReadOnly();
         this.tomestoneClient = new CancelableTomestoneClient(tomestoneClient);
         this.fflogsClient = new CancelableFFLogsClient(fflogsClient);
+        this.playerTrackInterface = playerTrackInterface;
     }
 
     internal void Cancel()
@@ -48,6 +53,12 @@ internal class CharDataLoader
     {
         // TODO: move it out of client?
         Service.HistoryManager.AddHistoryEntry(this.characterId);
+        var worldId = Service.GameData.GetWorldId(this.characterId.World);
+        if ( worldId.HasValue)
+        {
+            this.PlayerTrackComment = playerTrackInterface.GetPlayerNotes(this.characterId.FullName, worldId.Value);
+        }
+        
 
         // Fetch lodestoneId
         if (this.lodestoneId == null)

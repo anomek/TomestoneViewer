@@ -12,6 +12,7 @@ public class GameData
     private readonly ConcurrentDictionary<string, TerritoryId?> territoryCache = [];
     private readonly ConcurrentDictionary<string, string?> regionCache = [];
     private readonly ConcurrentDictionary<ushort, string?> worldNameCache = [];
+    private readonly ConcurrentDictionary<string, uint?> worldIdChache = [];
 
     public TerritoryId? GetTerritoryId(string dutyName)
     {
@@ -29,6 +30,12 @@ public class GameData
     {
         return this.worldNameCache.GetOrAdd(worldId, this.FindWorldName);
     }
+
+    internal uint? GetWorldId(string worldName)
+    {
+        return this.worldIdChache.GetOrAdd(worldName, this.FindWorldId);
+    }
+
 
     private TerritoryId? FindTerritoryId(string dutyName)
     {
@@ -72,5 +79,16 @@ public class GameData
         }
 
         return world.HasValue ? world.Value.Name.ToString() : null;
+    }
+
+    private uint? FindWorldId(string worldName)
+    {
+        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString() == worldName);
+        if (world is not { IsPublic: true })
+        {
+            return null;
+        }
+
+        return world.HasValue ? world.Value.RowId : null;
     }
 }

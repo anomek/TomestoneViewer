@@ -19,6 +19,8 @@ public class Configuration : IPluginConfiguration
 
     public bool StreamerMode { get; set; } = false;
 
+    public bool PlayerTrackEnabled { get; set; } = true;
+
     public string FFLogsClientId { get; set; } = string.Empty;
 
     public string FFLogsClientSecret { get; set; } = string.Empty;

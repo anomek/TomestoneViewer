@@ -16,6 +16,8 @@ public class CharData
 
     public IEncounterDataError? GenericFFLogsError => this.loader.GenericFFLogsError;
 
+    public string PlayerTrackComment => this.loader.PlayerTrackComment;
+
     public CharacterId CharId => this.characterId;
 
     public Links Links { get => this.links; }

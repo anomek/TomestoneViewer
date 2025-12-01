@@ -81,6 +81,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
     {
         private readonly Func<bool> ffLogsEnabled;
         private readonly NameplateWidget nameplate = new();
+        private readonly PlayerTrackWidget playerTrack = new();
         private readonly EncounterStatusView roleClears = new()
         {
             Total = false,
@@ -107,6 +108,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             this.totalClears.EncounterData = charData?.EncounterData[Service.CharDataManager.CurrentEncounter];
             this.totalClears.CharData = charData;
             this.totalClears.BaseLine = this.nameplate.BaseLine;
+            this.playerTrack.CharData = charData;
         }
 
         public IWidget? Get(int column)
@@ -114,8 +116,9 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             return column switch
             {
                 0 => this.nameplate,
-                1 => this.ffLogsEnabled() ? this.roleClears : null,
-                2 => this.totalClears,
+                1 => this.playerTrack,
+                2 => this.ffLogsEnabled() ? this.roleClears : null,
+                3 => this.totalClears,
                 _ => null,
             };
         }
@@ -125,7 +128,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
     {
         this.ffLogsEnabled = ffLogsEnabled;
         this.mainWindowController = mainWindowController;
-        this.table = new Tabular(3)
+        this.table = new Tabular(4)
         {
             Name = "MainWindowTablePartyView",
             TableFlags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.SizingFixedFit,
@@ -134,8 +137,9 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             Data = this,
         };
         this.table.Columns[0].SetStretch("nameplate");
-        this.table.Columns[1].SetFixed("status on role");
-        this.table.Columns[2].SetFixed("status total");
+        this.table.Columns[1].SetFixed("player track");
+        this.table.Columns[2].SetFixed("status on role");
+        this.table.Columns[3].SetFixed("status total");
 
         for (int i = 0; i < 8; i++)
         {
@@ -175,8 +179,8 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
 
             return column switch
             {
-                1 => header1,
-                2 => header2,
+                2 => header1,
+                3 => header2,
                 _ => null,
             };
         }

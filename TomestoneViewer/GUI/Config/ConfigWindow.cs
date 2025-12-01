@@ -94,6 +94,7 @@ public class ConfigWindow : Window
                 {
                     this.config.FFLogsClientId = this.ffLogsViewerConfigReader.ClientId ?? string.Empty;
                     this.config.FFLogsClientSecret = this.ffLogsViewerConfigReader.ClientSecret ?? string.Empty;
+                    this.config.Save();
                     var _ = this.lowLevelFFLogsClient.RefreshToken();
                 }
             }

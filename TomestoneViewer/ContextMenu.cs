@@ -81,6 +81,7 @@ public class ContextMenu(WindowsController mainWindowController, Configuration c
             else
             {
                 var world = Service.GameData.GetWorldName((ushort)menuTargetDefault.TargetHomeWorld.RowId);
+                Service.PluginLog.Info($"{menuTargetDefault.TargetName} {menuTargetDefault.TargetHomeWorld.RowId}");
                 if (world == null)
                 {
                     return;

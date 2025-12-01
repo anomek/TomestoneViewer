@@ -205,82 +205,8 @@ internal class SingleCharacterView
         {
             return;
         }
+
         this.tableData.Update();
         this.table.Draw();
-        if (true) return;
-
-        ImGui.PushFont(UiBuilder.IconFont);
-        var rowPadding = 2 * ImGuiHelpers.GlobalScale;
-        var baseRowHeight = ImGui.CalcTextSize(FontAwesomeIcon.CheckCircle.ToIconString()).Y;
-        var rowHeight = baseRowHeight + (rowPadding * 2);
-        ImGui.PopFont();
-
-        var character = Service.CharDataManager.DisplayedChar;
-
-        var firstRow = true;
-        foreach (var category in Category.All())
-        {
-            // fake row to start to ensure dark background
-            ImGui.TableNextRow();
-
-
-            // category row
-            ImGui.TableNextRow();
-            ImGui.TableNextColumn();
-            ImGui.Separator();
-
-            Service.Fonts.EncounterTypeHeader.Push();
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + rowPadding + 1);
-            ImGui.TextUnformatted($" {category.DisplayName}");
-            Service.Fonts.EncounterTypeHeader.Pop();
-
-            ImGui.TableNextColumn();
-            ImGui.Separator();
-
-            firstRow = false;
-            var counter = 0;
-            foreach (var location in category.Locations)
-            {
-                var rowExtraTopPadding = counter == 0 ? 1 : 0;
-                ImGui.TableNextRow(rowHeight + rowExtraTopPadding);
-                ImGui.TableNextColumn();
-                Util.ConditionalSeparator(counter == 0);
-                var rowTopYPos = ImGui.GetCursorPosY();
-
-                ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding);
-                if (ImGui.Selectable($"  ##EncounterListSelectable{location.DisplayName}", false, ImGuiSelectableFlags.None, new Vector2(0, rowHeight)))
-                {
-                    // this.mainWindowController.OpenParty(location);
-                }
-
-                ImGui.SameLine();
-                ImGui.SetCursorPosY(rowTopYPos + rowExtraTopPadding + (rowHeight - ImGui.GetTextLineHeight()) / 2);
-                ImGui.TextUnformatted(location.DisplayName);
-
-                ImGui.TableNextColumn();
-                var cellStart = ImGui.GetCursorPos() + new Vector2(0, rowExtraTopPadding);
-                Util.ConditionalSeparator(counter == 0);
-                ImGui.SetCursorPosY(rowTopYPos + rowPadding + rowExtraTopPadding);
-                counter++;
-            }
-        }
-
-        ImGui.EndTable();
-    }
-
-    // there must be better way to do that lol
-    public IWidget? Get(int row, int column)
-    {
-
-        return null;
-    }
-
-    public int GetRowCount()
-    {
-        var categories = Category.All();
-        var locations = categories
-            .SelectMany(c => c.Locations)
-            .Count();
-        return locations + categories.Count();
     }
 }

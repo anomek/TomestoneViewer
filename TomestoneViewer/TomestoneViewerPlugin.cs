@@ -7,6 +7,7 @@ using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
+using TomestoneViewer.External;
 using TomestoneViewer.GameSystems;
 using TomestoneViewer.GUI.Config;
 using TomestoneViewer.GUI.Main;
@@ -27,16 +28,16 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         pluginInterface.Create<Service>();
         Service.Configuration = pluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
-
-
         this.territorryOfInterestDetector = new TerritoryOfInterestDetector(Location.AllTerritories());
 
         var tomestoneClient = new CachedTomestoneClient(new SyncTomestoneClient(new SafeTomestoneClient(new WebTomestoneClient())));
         var cachePath = pluginInterface.ConfigDirectory + "/FFLogsOldEncountersCache";
         var lowLevelFFLogsClient = new LowLevelFFLogsClient();
         var fflogsClient = new ToggleableFFLogsClient(() => Service.Configuration.FFLogsEnabled, new CachedFFLogsClient(cachePath, new SyncFFLogsClient(new SafeFFLogsClient(new WebFFLogsClient(lowLevelFFLogsClient)))));
+        var playerTrackInterface = new PlayerTrackInterface(pluginInterface);
 
-        Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient, fflogsClient));
+
+        Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient, fflogsClient, playerTrackInterface));
 
         var windowsController = new WindowsController(new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector));
 
@@ -63,6 +64,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
         Service.Interface.UiBuilder.Draw += this.windowSystem.Draw;
+        
 
 
 #if DEBUG

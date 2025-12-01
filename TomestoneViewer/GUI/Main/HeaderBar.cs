@@ -8,12 +8,14 @@ using Dalamud.Interface.Utility;
 using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 using TomestoneViewer.Manager;
+using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
 
 public class HeaderBar(IReadOnlyList<CharData> partyList)
 {
     private readonly IReadOnlyList<CharData> partyList = partyList;
+    private readonly PlayerTrackWidget playerTrackWidget = new() { DrawDummy = true };
 
     public void Draw()
     {
@@ -93,6 +95,9 @@ public class HeaderBar(IReadOnlyList<CharData> partyList)
         {
             Util.CenterSelectable($"{displayChar.CharId}");
             Util.LinkOpenOrPopup(displayChar);
+            this.playerTrackWidget.CharData = displayChar;
+            ImGui.SameLine();
+            this.playerTrackWidget.Draw();
         }
     }
 
