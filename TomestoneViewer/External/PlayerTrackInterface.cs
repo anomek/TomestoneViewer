@@ -21,6 +21,13 @@ public class PlayerTrackInterface
 
     internal string GetPlayerNotes(string name, uint world)
     {
-        return this.subscriber.InvokeFunc(name, world);
+        if (this.Available)
+        {
+            return this.subscriber.InvokeFunc(name, world);
+        }
+        else
+        {
+            return string.Empty;
+        }
     }
 }
