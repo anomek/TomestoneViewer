@@ -27,7 +27,6 @@ internal class EncounterplateWidget : IWidget
         }
 
         ImGui.SameLine();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY());
         Util.ApplyBaseline(this.BaseLine);
         ImGui.TextUnformatted($"{Location.DisplayName}");
         return default;

@@ -119,8 +119,8 @@ internal class SingleCharacterView
 
         public void Update()
         {
-            this.baseRowHeight = RowBaseHeight();
-            var baseLine = baseRowHeight - ImGui.GetFont().Ascent + 1;
+            this.baseRowHeight = RowBaseHeight() + GetRowPadding();
+            var baseLine = ImGui.GetFont().Ascent * ImGuiHelpers.GlobalScale + GetRowPadding() + 1 * ImGuiHelpers.GlobalScale;
             var character = Service.CharDataManager.DisplayedChar;
             foreach (var location in Location.All())
             {
