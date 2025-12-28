@@ -45,6 +45,8 @@ internal class Service
 
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
 
+    [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
+
     [PluginService] internal static IFlyTextGui FlyTextGui { get; private set; } = null!;
 
     [PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;

@@ -44,11 +44,11 @@ public class TeamList
         }
 
         // Add self if not in party
-        if (this.Members.Count == 0 && Service.ClientState.LocalPlayer != null)
+        if (this.Members.Count == 0 && Service.PlayerState.IsLoaded)
         {
-            var selfName = Service.ClientState.LocalPlayer.Name.TextValue;
-            var selfWorldId = Service.ClientState.LocalPlayer.HomeWorld.RowId;
-            var selfJobId = Service.ClientState.LocalPlayer.ClassJob.RowId;
+            var selfName = Service.PlayerState.CharacterName;
+            var selfWorldId = Service.PlayerState.HomeWorld.RowId;
+            var selfJobId = Service.PlayerState.ClassJob.RowId;
             this.AddTeamMember(selfName, (ushort)selfWorldId, selfJobId, true, false);
         }
     }
