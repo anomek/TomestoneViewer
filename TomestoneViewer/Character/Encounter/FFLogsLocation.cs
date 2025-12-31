@@ -9,7 +9,6 @@ namespace TomestoneViewer.Character.Encounter;
 public record FFLogsLocation(params IReadOnlyList<FFLogsLocation.FFLogsZone> Zones)
 {
     public record FFLogsZone(
-        FFLogsZoneId ZoneId,
         int BossId,
         bool PreviousExpansion)
     {

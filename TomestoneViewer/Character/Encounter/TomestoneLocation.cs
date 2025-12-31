@@ -20,7 +20,7 @@ public record TomestoneLocation(
         )
     {
         public static readonly TomestoneCategory ULTIMATE = new("ultimates", "ultimates");
-        public static readonly TomestoneCategory SAVAGE = new("raids", "aac-cruiserweight-savage");
+        public static readonly TomestoneCategory SAVAGE = new("raids", "aac-heavyweight-savage");
     }
 
 }
