@@ -7,7 +7,7 @@ namespace TomestoneViewer.Character.Encounter;
 public record Location(
     string DisplayName,
     Category Category,
-    TerritoryId TerritoryId,
+    TerritoryId? TerritoryId,
     TomestoneLocation Tomestone,
     FFLogsLocation FFLogs)
 {
@@ -41,9 +41,12 @@ public record Location(
         new("m11s", Category.SAVAGE, new(1325),
             new(TomestoneLocation.TomestoneCategory.SAVAGE, "the-tyrant", ExpansionQueryParam.DT, null),
             new(new FFLogsLocation.FFLogsZone(103, false))),
-        new("m12s", Category.SAVAGE, new(1327),
+        new("m12sp1", Category.SAVAGE, new(1327),
             new(TomestoneLocation.TomestoneCategory.SAVAGE, "lindwurm", ExpansionQueryParam.DT, null),
             new(new FFLogsLocation.FFLogsZone(104, false))),
+        new("m12sp2", Category.SAVAGE, null,
+            new(TomestoneLocation.TomestoneCategory.SAVAGE, "lindwurm-ii", ExpansionQueryParam.DT, null),
+            new(new FFLogsLocation.FFLogsZone(105, false))),
     ];
 
     public static IReadOnlyList<Location> All()
@@ -62,6 +65,7 @@ public record Location(
     {
         return All()
             .Select(location => location.TerritoryId)
+            .Where(territoryId => territoryId != null)
             .ToHashSet();
     }
 }

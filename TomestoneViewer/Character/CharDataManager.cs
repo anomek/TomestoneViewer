@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 
 using TomestoneViewer.Character.Encounter;
@@ -66,18 +67,24 @@ public class CharDataManager(CharDataFactory charDataFactory)
 #endif
     }
 
-    public void SetTerritoryId(TerritoryId? teritorryId)
+    public void SetLocation(Location? location, TerritoryId? teritorryId)
     {
-        if (teritorryId == null)
+        if (teritorryId == null && location == null)
         {
+            Service.PluginLog.Warning("Setting location, but none was provided");
             return;
         }
 
-        Service.PluginLog.Info($"Set encounter {teritorryId}");
-        var encounter = Location.Find(teritorryId);
-        if (encounter != null)
+        location ??= Location.Find(teritorryId);
+
+        if (location != null)
         {
-            this.CurrentEncounter = encounter;
+            this.CurrentEncounter = location;
+            Service.PluginLog.Info($"Set encounter {location.DisplayName}");
+        }
+        else
+        {
+            Service.PluginLog.Warning($"Can't set encounter to {teritorryId}");
         }
     }
 

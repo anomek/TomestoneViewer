@@ -22,7 +22,7 @@ public class CharacterSelectorController(
     public void RefreshPartyData(Location? location = null)
     {
         this.UpdatePartyMembers();
-        this.charDataManager.SetTerritoryId(location?.TerritoryId ?? this.territoryOfInterestDetector.TerritoryId);
+        this.charDataManager.SetLocation(location, this.territoryOfInterestDetector.TerritoryId);
         this.charDataManager.FetchPartyLogs();
     }
 
