@@ -37,8 +37,6 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
 
     private readonly WindowsController mainWindowController;
 
-    private readonly Func<bool> ffLogsEnabled;
-
     private readonly Tabular table;
 
     private readonly Tooltiped header1 = new()
@@ -79,7 +77,6 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
 
     private class Row
     {
-        private readonly Func<bool> ffLogsEnabled;
         private readonly NameplateWidget nameplate = new();
         private readonly PlayerTrackWidget playerTrack = new();
         private readonly EncounterStatusView roleClears = new()
@@ -92,10 +89,8 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             Total = true,
         };
 
-        public Row(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
+        public Row(WindowsController mainWindowController)
         {
-            this.ffLogsEnabled = ffLogsEnabled;
-            totalClears.ffLogsEnabled = ffLogsEnabled;
             this.nameplate.Callback = charData => mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
         }
 
@@ -117,16 +112,15 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
             {
                 0 => this.nameplate,
                 1 => this.playerTrack,
-                2 => this.ffLogsEnabled() ? this.roleClears : null,
+                2 => Service.Configuration.FFLogsEnabled ? this.roleClears : null,
                 3 => this.totalClears,
                 _ => null,
             };
         }
     }
 
-    public PartyTableView(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
+    public PartyTableView(WindowsController mainWindowController)
     {
-        this.ffLogsEnabled = ffLogsEnabled;
         this.mainWindowController = mainWindowController;
         this.table = new Tabular(4)
         {
@@ -143,13 +137,13 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
 
         for (int i = 0; i < 8; i++)
         {
-            this.rows.Add(new Row(this.mainWindowController, this.ffLogsEnabled));
+            this.rows.Add(new Row(this.mainWindowController));
         }
     }
 
     public Vector2 Draw()
     {
-        if (ffLogsEnabled())
+        if (Service.Configuration.FFLogsEnabled)
         {
             this.table.Columns[1].SetFixed("status on role");
         }
@@ -172,7 +166,7 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
     {
         if (row == 0)
         {
-            if (!ffLogsEnabled())
+            if (!Service.Configuration.FFLogsEnabled)
             {
                 return null;
             }

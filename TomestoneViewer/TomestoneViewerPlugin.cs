@@ -47,7 +47,7 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.HistoryManager = new HistoryManager();
         Service.Fonts = new GUI.Fonts(() => Service.Configuration.UseDefaultFont);
 
-        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, windowsController, Service.Configuration, lowLevelFFLogsClient);
+        Service.MainWindow = new MainWindow(Service.CharDataManager.PartyMembers, windowsController, lowLevelFFLogsClient);
         Service.ConfigWindow = new ConfigWindow(
             Service.Configuration,
             lowLevelFFLogsClient,

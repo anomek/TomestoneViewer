@@ -55,7 +55,7 @@ public class CharDataManager(CharDataFactory charDataFactory)
         this.partyMembers.Clear();
         this.partyMembers.AddRange(newPartyList);
 #if DEBUG
-        if (this.partyMembers.Count < 7)
+        if (this.partyMembers.Count == 1)
         {
             var lizard = this.charDataFactory.Create(new CharacterId("Lizard", "Butterfly", "Sargatanas"));
             lizard.JobId = new JobId(38);
@@ -63,6 +63,18 @@ public class CharDataManager(CharDataFactory charDataFactory)
             var ozma = this.charDataFactory.Create(new CharacterId("Ozma", "Asterwyn", "Zalera"));
             ozma.JobId = new JobId(25);
             this.partyMembers.Add(ozma);
+            var rand1 = this.charDataFactory.Create(new CharacterId("Ai", "Kotoba", "Mateus"));
+            rand1.JobId = new JobId(25);
+            this.partyMembers.Add(rand1);
+            var rand2 = this.charDataFactory.Create(new CharacterId("Zenon", "Zoa", "Midgardsormr"));
+            rand2.JobId = new JobId(25);
+            this.partyMembers.Add(rand2);
+            var rand3 = this.charDataFactory.Create(new CharacterId("Sae", "Ra'nori", "Faerie"));
+            rand3.JobId = new JobId(25);
+            this.partyMembers.Add(rand3);
+            var rand4 = this.charDataFactory.Create(new CharacterId("Yoyo", "Ginju", "Sargatanas"));
+            rand4.JobId = new JobId(25);
+            this.partyMembers.Add(rand4);
         }
 #endif
     }

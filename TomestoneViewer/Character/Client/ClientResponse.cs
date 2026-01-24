@@ -71,6 +71,11 @@ public class ClientResponse<TError, T>
         return this.Fold(value => transform(value), error => new(error));
     }
 
+    public async Task<ClientResponse<TError, TResult>> MapAsync<TResult>(Func<T, Task<TResult>> transform)
+    {
+        return await this.FoldAsync(async value => new ClientResponse<TError, TResult>(await transform(value)), async error => new(error));
+    }
+
     public async Task<ClientResponse<TError, TResult>> FlatMapAsync<TResult>(Func<T, Task<ClientResponse<TError, TResult>>> transform)
     {
         return await this.FoldAsync(value => transform(value), async error => new(error));

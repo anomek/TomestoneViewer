@@ -10,16 +10,16 @@ using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
+
 internal class EncounterStatusView : IWidget
 {
     public EncounterData? EncounterData { get; set; }
     public CharData? CharData { get; set; }
 
-    public Func<bool> ffLogsEnabled { get; set; } = () => true;
-
     public bool Total { get; set; }
 
     public float? BaseLine { get; set; } = null;
+
     public float YOffset { get; set; }
 
     private ClearCountWidget clearCountWidget = new()
@@ -28,8 +28,6 @@ internal class EncounterStatusView : IWidget
     };
 
     private TomestoneProgWidget progWidget = new();
-    
-
 
 
     public Vector2 Draw()
@@ -39,7 +37,7 @@ internal class EncounterStatusView : IWidget
             return default;
         }
 
-        if (this.EncounterData.FFLogs.Data != null && ffLogsEnabled())
+        if (this.EncounterData.FFLogs.Data != null && Service.Configuration.FFLogsEnabled)
         {
             var data = this.EncounterData.FFLogs.Data;
             clearCountWidget.Clears = this.Total ? data.AllClears : data.Clears(CharData.JobId.GetRoleId());

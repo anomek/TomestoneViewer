@@ -13,6 +13,7 @@ using TomestoneViewer.Character.Encounter;
 using static TomestoneViewer.Character.Encounter.EncounterData;
 
 namespace TomestoneViewer.GUI.Widgets;
+
 internal class TomestoneProgWidget : IWidget
 {
     public LoadableData<TomestoneEncounterData> Data { get; set; }
@@ -20,8 +21,9 @@ internal class TomestoneProgWidget : IWidget
     public float? BaseLine { get; set; }
     public float YOffset { get; set; }
 
+
     public Vector2 Draw()
-    {        
+    {
         var characterError = this.Data.Status.Error ?? this.GenericTomestoneError;
 
         var iconOffsetAdj = 2 * ImGuiHelpers.GlobalScale;
@@ -51,10 +53,30 @@ internal class TomestoneProgWidget : IWidget
             }
             else if (this.Data.Data?.Progress != null)
             {
-                Service.Fonts.ProgressFont.Push();
-                Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
-                Util.CenterText(this.Data.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
-                Service.Fonts.ProgressFont.Pop();
+                var lastSeenMechanic = this.Data.Data.Progress.LastSeenMechanic;
+                if (lastSeenMechanic == null || !Service.Configuration.ShowLastMechanic)
+                {
+                    Service.Fonts.ProgressFont.Push();
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    Util.CenterText(this.Data.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                    Service.Fonts.ProgressFont.Pop();
+
+                }
+                else
+                {
+                    var y = ImGui.GetCursorPosY();
+                    Service.Fonts.LastMechanicFont.Push();
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    ImGui.TextUnformatted(lastSeenMechanic);
+                    Service.Fonts.LastMechanicFont.Pop();
+
+                    ImGui.SameLine();
+                    ImGui.SetCursorPosY(y);
+                    Service.Fonts.ProgressFont.Push();
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    Util.RightAlignText(this.Data.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
+                    Service.Fonts.ProgressFont.Pop();
+                }
             }
             else
             {
@@ -70,6 +92,22 @@ internal class TomestoneProgWidget : IWidget
 
     public float GetMinWidth()
     {
-        return 0;
+        var lastSeenMechanic = this.Data?.Data?.Progress?.LastSeenMechanic;
+        if (lastSeenMechanic != null && Service.Configuration.ShowLastMechanic)
+        {
+            var total = 0f;
+            Service.Fonts.LastMechanicFont.Push();
+            total += ImGui.CalcTextSize(lastSeenMechanic).X;
+            Service.Fonts.LastMechanicFont.Pop();
+            Service.Fonts.ProgressFont.Push();
+            total += ImGui.CalcTextSize(this.Data?.Data?.Progress?.ToString() ?? string.Empty).X;
+            Service.Fonts.ProgressFont.Pop();
+            return total;
+        }
+        else
+        {
+            return 0;
+        }
+
     }
 }

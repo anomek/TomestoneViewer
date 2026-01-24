@@ -18,10 +18,10 @@ internal class PartyView
     private readonly PartyTableView partyTableView;
     private readonly TextWidget tableLegend;
 
-    public PartyView(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
+    public PartyView(WindowsController mainWindowController)
     {
         this.mainWindowController = mainWindowController;
-        this.partyTableView = new(mainWindowController, ffLogsEnabled);
+        this.partyTableView = new(mainWindowController);
         this.tableLegend = new TextWidget()
         {
             Text = "last cleared, clears this expansions/clears in total",

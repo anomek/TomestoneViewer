@@ -32,6 +32,8 @@ internal class Fonts : IDisposable
 
     public IFontHandle ProgressFont => this.FontHandle(FontType.ProgressFont);
 
+    public IFontHandle LastMechanicFont => this.FontHandle(FontType.LastMechanicFont);
+
     internal Fonts(Func<bool> useDefaultFonts)
     {
         var fonts = new Dictionary<FontType, IFontHandle>();
@@ -50,6 +52,10 @@ internal class Fonts : IDisposable
         fonts[FontType.ClearedOnHeader] = this.From(GameFontFamilyAndSize.Jupiter16);
 
         fonts[FontType.ProgressFont] = Service.Interface.UiBuilder.FontAtlas.NewGameFontHandle(new GameFontStyle(GameFontFamily.TrumpGothic, 18));
+
+        var lastMechanicStyle = new GameFontStyle(GameFontFamily.Axis, 10);
+        lastMechanicStyle.Italic = true;
+        fonts[FontType.LastMechanicFont] = Service.Interface.UiBuilder.FontAtlas.NewGameFontHandle(lastMechanicStyle);
 
         this.fonts = fonts.AsReadOnly();
     }
@@ -75,6 +81,7 @@ internal class Fonts : IDisposable
         TooltipDescription,
         ClearedOnHeader,
         ProgressFont,
+        LastMechanicFont,
     }
 
     public void Dispose()

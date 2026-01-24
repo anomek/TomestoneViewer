@@ -39,7 +39,6 @@ internal class WebFFLogsClient : IFFLogsClient
             payload["query"] = query;
             payload["variables"] = new object();
             r.Content = new StringContent(JsonConvert.SerializeObject(payload), new MediaTypeHeaderValue("application/json"));
-            Service.PluginLog.Info($"{r.Content}");
             return r;
         };
         return (await this.client.Call(request, cancellationToken))

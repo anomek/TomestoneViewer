@@ -23,13 +23,12 @@ public class MainWindow : Window
     internal MainWindow(
         IReadOnlyList<CharData> partyList,
         WindowsController mainWindowController,
-        Configuration config,
         LowLevelFFLogsClient lowLevelFFLogsClient)
         : base("Tomestone Viewer##TomestoneViewerMainWindow")
     {
         this.menuBar = new MenuBar(mainWindowController);
         this.headerBar = new HeaderBar(partyList);
-        this.table = new Table(mainWindowController, () => config.FFLogsEnabled, lowLevelFFLogsClient);
+        this.table = new Table(mainWindowController, lowLevelFFLogsClient);
 
         this.RespectCloseHotkey = true;
         this.Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.MenuBar | ImGuiWindowFlags.NoScrollbar;

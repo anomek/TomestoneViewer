@@ -51,6 +51,13 @@ public class ConfigWindow : Window
             this.config.Save();
         }
 
+        var showLastMechanic = this.config.ShowLastMechanic;
+        if (ImGui.Checkbox("Show last mechanic", ref showLastMechanic))
+        {
+            this.config.ShowLastMechanic = showLastMechanic;
+            this.config.Save();
+        }
+
         ImGui.Separator();
 
         var loadFromFFlogs = this.config.FFLogsEnabled;

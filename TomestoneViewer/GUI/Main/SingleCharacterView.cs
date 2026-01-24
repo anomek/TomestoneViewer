@@ -49,9 +49,9 @@ internal class SingleCharacterView
     private readonly Tabular table;
     private readonly TableData tableData;
 
-    internal SingleCharacterView(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
+    internal SingleCharacterView(WindowsController mainWindowController)
     {
-        this.tableData = new(mainWindowController, ffLogsEnabled);
+        this.tableData = new(mainWindowController);
         this.table = new(2)
         {
             Name = "MainWindowTableSingleView",
@@ -73,7 +73,7 @@ internal class SingleCharacterView
         private readonly Dictionary<Location, (EncounterplateWidget, EncounterStatusView, int)> statusViews = [];
         private readonly List<TextWidget> categories = [];
         private float baseRowHeight;
-        internal TableData(WindowsController mainWindowController, Func<bool> ffLogsEnabled)
+        internal TableData(WindowsController mainWindowController)
         {
 
             var rowCounter = 0;
@@ -106,7 +106,6 @@ internal class SingleCharacterView
                     var statusView = new EncounterStatusView()
                     {
                         Total = true,
-                        ffLogsEnabled = ffLogsEnabled,
                     };
                     statusViews[location] = (encounterplate, statusView, rowCounter);
                     widgets.Add([encounterplate, statusView]);

@@ -22,15 +22,13 @@ public class Table
     private readonly PartyView partyView;
     private readonly SingleCharacterView characterView;
     private readonly LowLevelFFLogsClient lowLevelFFLogsClient;
-    private readonly Func<bool> renderFFLogs;
     private readonly WindowsController mainWindowController;
 
-    internal Table(WindowsController mainWindowController, Func<bool> renderFFLogs, LowLevelFFLogsClient lowLevelFFLogsClient)
+    internal Table(WindowsController mainWindowController, LowLevelFFLogsClient lowLevelFFLogsClient)
     { 
         this.mainWindowController = mainWindowController;
-        this.partyView = new(mainWindowController, renderFFLogs);
-        this.characterView = new(mainWindowController, renderFFLogs);
-        this.renderFFLogs = renderFFLogs;
+        this.partyView = new(mainWindowController);
+        this.characterView = new(mainWindowController);
         this.lowLevelFFLogsClient = lowLevelFFLogsClient;
     }
 
@@ -45,7 +43,7 @@ public class Table
             this.characterView.Draw();
         }
 
-        if (renderFFLogs() && !lowLevelFFLogsClient.CredentialsValid)
+        if (Service.Configuration.FFLogsEnabled && !lowLevelFFLogsClient.CredentialsValid)
         {
             ImGui.TextColored(new Vector4(1, 0, 0, 1), "Credentials to FF Logs not set");
             ImGui.SameLine();

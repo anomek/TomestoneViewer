@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TomestoneViewer.Character.Encounter;
 
-public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts)
+public record ProgPoint(IReadOnlyList<ProgPoint.Lockout> Lockouts, string? LastSeenMechanic)
 {
     public override string ToString()
     {
