@@ -1,9 +1,9 @@
+using Newtonsoft.Json;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
@@ -18,9 +18,21 @@ internal partial class LowLevelTomestoneClient
 
     internal LowLevelTomestoneClient()
     {
+        var cookieContainer = new CookieContainer();
+        var humanVerifiedCookie = new Cookie
+        {
+            Name = "tomestone_human_verified",
+            Value = "1",
+            Domain = "tomestone.gg",
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(7300),
+            Secure = true,
+        };
+        cookieContainer.Add(new Uri("https://tomestone.gg"), humanVerifiedCookie);
         var handler = new HttpClientHandler()
         {
-            UseCookies = false,
+            CookieContainer = cookieContainer,
+            UseCookies = true,
             AllowAutoRedirect = false,
         };
         this.httpClient = new HttpClient(handler);
