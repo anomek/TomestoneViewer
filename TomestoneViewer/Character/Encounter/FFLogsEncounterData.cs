@@ -8,6 +8,7 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
 {
     public FFLogsEncounterData.CClearCount AllClears => CClearCount.Compile(this.ClearsPerJob.Values);
 
+    public bool RecordedClear => this.AllClears.Total > 0;
 
     public FFLogsEncounterData.CClearCount Clears(JobId.RoleId role)
     {

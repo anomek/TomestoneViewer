@@ -24,6 +24,7 @@ internal class CharDataLoader
     private FFLogsClientError? fflogsLoadError;
 
     internal string PlayerTrackComment { get; private set; } = string.Empty;
+    internal CharacterId? MainCharacterId { get; private set; }
 
     internal LodestoneId? LodestoneId => this.lodestoneId;
 
@@ -58,7 +59,6 @@ internal class CharDataLoader
         {
             this.PlayerTrackComment = playerTrackInterface.GetPlayerNotes(this.characterId.FullName, worldId.Value);
         }
-        
 
         // Fetch lodestoneId
         if (this.lodestoneId == null)
@@ -96,6 +96,7 @@ internal class CharDataLoader
             return;
         }
 
+        this.MainCharacterId = summary.MainCharacter;
 
         // Fetch locations
         await Task.WhenAll(
@@ -125,7 +126,7 @@ internal class CharDataLoader
 
     private async Task FetchTomestoneForLocation(CharacterSummary summary, Location location)
     {
-        if (summary.TryGet(location.Tomestone.UltimateId, out var encounterProgress))
+        if (summary.TryGet(location.Tomestone.LocationId, out var encounterProgress))
         {
             this.encounterData[location].Tomestone.Load(encounterProgress);
             if (encounterProgress.Cleared)

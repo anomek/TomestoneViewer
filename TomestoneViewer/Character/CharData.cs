@@ -18,6 +18,8 @@ public class CharData
 
     public string PlayerTrackComment => this.loader.PlayerTrackComment;
 
+    public CharacterId? MainCharacterId => this.loader.MainCharacterId;
+
     public CharacterId CharId => this.characterId;
 
     public Links Links { get => this.links; }

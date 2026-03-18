@@ -37,7 +37,7 @@ internal class EncounterStatusView : IWidget
             return default;
         }
 
-        if (this.EncounterData.FFLogs.Data != null && Service.Configuration.FFLogsEnabled)
+        if (this.EncounterData.FFLogs.Data != null && this.EncounterData.FFLogs.Data.RecordedClear && Service.Configuration.FFLogsEnabled)
         {
             var data = this.EncounterData.FFLogs.Data;
             clearCountWidget.Clears = this.Total ? data.AllClears : data.Clears(CharData.JobId.GetRoleId());

@@ -14,26 +14,22 @@ namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class LowLevelFFLogsClient
 {
-    internal bool CredentialsValid { get => this.accessToken != null; }
+    internal bool CredentialsValid { get => this.accessToken.Get() != null; }
 
     private readonly HttpClient httpClient = new();
-
-    private SyncQuery<string?> tokenQuery;
-
-    private string? accessToken;
+    private readonly SyncValue<string?> accessToken;
 
     internal LowLevelFFLogsClient()
     {
-        tokenQuery = new(this.GetAuthToken);
-        GetAuthToken();
+        this.accessToken = new(this.GetAuthToken);
+        var ignore = this.accessToken.Get();
     }
 
     internal async Task RefreshToken()
     {
-        await this.tokenQuery.Finish();
-        await this.tokenQuery.Run();
+        this.accessToken.clear();
+        await this.accessToken.Get();
     }
-
 
     private async Task<string?> GetAuthToken()
     {
@@ -48,13 +44,11 @@ internal class LowLevelFFLogsClient
                 var content = await response.Content.ReadAsStringAsync();
                 var json = (dynamic?)JsonConvert.DeserializeObject(content);
                 var token = json?.access_token;
-                this.accessToken = token;
                 Service.PluginLog.Info($"Acq token {this.accessToken}");
                 return token;
             }
             else
             {
-                this.accessToken = null;
                 Service.PluginLog.Warning($"Failed to fetch access token: {response.StatusCode}");
                 return null;
             }
@@ -81,7 +75,7 @@ internal class LowLevelFFLogsClient
                 }
 
                 var requestMessage = request.Invoke();
-                var accessTokenToUse = this.accessToken ?? await this.tokenQuery.Run();
+                var accessTokenToUse = await this.accessToken.Get();
                 if (accessTokenToUse == null)
                 {
                     Service.PluginLog.Warning("No access token, request wont be send");
@@ -97,10 +91,9 @@ internal class LowLevelFFLogsClient
                     Service.PluginLog.Info($"FFLogs gor response {content}");
                     return new(JsonConvert.DeserializeObject(content));
                 }
-
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    await tokenQuery.Run();
+                    await this.RefreshToken();
                     Service.PluginLog.Info("FFLogs call got unathorized response");
                     lastError = FFLogsClientError.Unauthorized;
                 }

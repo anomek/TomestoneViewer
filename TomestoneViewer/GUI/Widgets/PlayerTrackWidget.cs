@@ -19,7 +19,15 @@ internal class PlayerTrackWidget : IWidget
 
     public Vector2 Draw()
     {
-        var text = this.CharData?.PlayerTrackComment ?? string.Empty;
+        string text = "";
+        if (this.CharData?.MainCharacterId != null)
+        {
+            text += $"Alt of {this.CharData.MainCharacterId.FullName}\n";
+        }
+        if (this.CharData?.PlayerTrackComment != null)
+        {
+            text += this.CharData?.PlayerTrackComment;
+        }
         if (text != string.Empty)
         {
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 1 * ImGuiHelpers.GlobalScale);

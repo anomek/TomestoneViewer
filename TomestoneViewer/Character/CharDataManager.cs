@@ -75,6 +75,9 @@ public class CharDataManager(CharDataFactory charDataFactory)
             var rand4 = this.charDataFactory.Create(new CharacterId("Yoyo", "Ginju", "Sargatanas"));
             rand4.JobId = new JobId(25);
             this.partyMembers.Add(rand4);
+            var rand5 = this.charDataFactory.Create(new CharacterId("Elie", "Blue", "Sargatanas"));
+            rand5.JobId = new JobId(25);
+            this.partyMembers.Add(rand5);
         }
 #endif
     }

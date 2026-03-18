@@ -25,12 +25,11 @@ internal class WebFFLogsClient : IFFLogsClient
         this.client = client;
     }
 
-
     public async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> FetchEncounter(LodestoneId character, FFLogsLocation.FFLogsZone location, CancellationToken cancellationToken)
     {
         Service.PluginLog.Info($"Fetching fflogs encounter for {character} on {location}");
         var uri = $"https://www.fflogs.com/api/v2/client";
-        
+
         var request = () =>
         {
             var r = new HttpRequestMessage(HttpMethod.Post, uri);

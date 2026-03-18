@@ -4,18 +4,18 @@ using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
-public record CharacterSummary(IReadOnlyDictionary<UltimateId, TomestoneEncounterData> UltimatesProgress)
+public record CharacterSummary(IReadOnlyDictionary<TomestoneLocationId, TomestoneEncounterData> EncountersProgres, CharacterId? MainCharacter)
 {
     public static CharacterSummary Empty()
     {
-        return new(new Dictionary<UltimateId, TomestoneEncounterData>().AsReadOnly());
+        return new(new Dictionary<TomestoneLocationId, TomestoneEncounterData>().AsReadOnly(), null);
     }
 
-    public bool TryGet(UltimateId? id, [MaybeNullWhen(false)] out TomestoneEncounterData encounterClear)
+    public bool TryGet(TomestoneLocationId? id, [MaybeNullWhen(false)] out TomestoneEncounterData encounterClear)
     {
-        if (id != null && this.UltimatesProgress.ContainsKey(id))
+        if (id != null && this.EncountersProgres.ContainsKey(id))
         {
-            encounterClear = this.UltimatesProgress[id];
+            encounterClear = this.EncountersProgres[id];
             return true;
         }
         else

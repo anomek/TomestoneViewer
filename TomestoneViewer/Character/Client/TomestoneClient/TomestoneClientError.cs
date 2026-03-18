@@ -37,4 +37,10 @@ public record TomestoneClientError(string Message, IRenderableError.ErrorType Ty
 
     public static readonly TomestoneClientError RequestCancelled = new(
         "Requst to server canceled (you should never see this)", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly TomestoneClientError EmptyLodestoneResponse = new(
+        "Lodestone returned empty response", IRenderableError.ErrorType.ERROR, false);
+
+    public static readonly TomestoneClientError LodestoneClientError = new(
+        "Lodestone client error (unknown internal error)", IRenderableError.ErrorType.ERROR, false);
 }

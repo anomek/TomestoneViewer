@@ -10,17 +10,14 @@ public record TomestoneLocation(
     TomestoneLocation.TomestoneCategory Category,
     string EncounterQueryParam,
     ExpansionQueryParam ExpansionQueryParam,
-    UltimateId? UltimateId
-)
+    TomestoneLocationId LocationId)
 {
-
     public record TomestoneCategory(
             string CategoryQueryParam,
-            string ZoneQueryParam
-        )
+            string ZoneQueryParam,
+            string SummaryFieldName)
     {
-        public static readonly TomestoneCategory ULTIMATE = new("ultimates", "ultimates");
-        public static readonly TomestoneCategory SAVAGE = new("raids", "aac-heavyweight-savage");
+        public static readonly TomestoneCategory ULTIMATE = new("ultimates", "ultimates", "ultimate");
+        public static readonly TomestoneCategory SAVAGE = new("raids", "aac-heavyweight-savage", "savage");
     }
-
 }

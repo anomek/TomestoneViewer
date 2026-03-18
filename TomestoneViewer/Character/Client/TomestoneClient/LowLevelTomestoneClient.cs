@@ -41,6 +41,7 @@ internal partial class LowLevelTomestoneClient
 
     internal async Task<ClientResponse<TomestoneClientError, HttpResponseMessage>> GetDirect(string uri)
     {
+        
         try
         {
             return new(await this.httpClient.GetAsync(uri));
