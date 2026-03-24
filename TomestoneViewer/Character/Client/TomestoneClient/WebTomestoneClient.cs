@@ -251,7 +251,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
         string? lastMechanic = null;
         foreach (var point in graph)
         {
-            if (point.duration > best)
+            if (point.duration > best && point.mechanic != null)
             {
                 best = point.duration;
                 var suffix = point.mechanic.number > 1
