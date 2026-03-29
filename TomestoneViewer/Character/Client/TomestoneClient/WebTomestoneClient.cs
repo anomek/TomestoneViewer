@@ -61,7 +61,9 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 return new(TomestoneClientError.EmptyLodestoneResponse);
             }
 
-            var character = response.Results.FirstOrDefault();
+            var character = response.Results
+                .FirstOrDefault(entry => entry.Name == characterId.FullName);
+
             if (character == null)
             {
                 return new(TomestoneClientError.CharacterDoesNotExist);
