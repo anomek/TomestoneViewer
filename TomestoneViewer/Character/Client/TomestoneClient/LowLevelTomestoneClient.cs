@@ -142,8 +142,10 @@ internal partial class LowLevelTomestoneClient
         try
         {
             response = await this.httpClient.GetAsync("https://tomestone.gg/");
-            var content = new SimpleParser(await response.Content.ReadAsStringAsync());
-            var version = content.Find("&quot;version&quot;:&quot;", "&quot;");
+            var responseString = await response.Content.ReadAsStringAsync();
+            Service.PluginLog.Debug($"Response to fetch intertia: ${responseString}");
+            var content = new SimpleParser(responseString);
+            var version = content.Find("\"version\":\"", "\"");
 
             if (version != null)
             {
@@ -151,7 +153,7 @@ internal partial class LowLevelTomestoneClient
             }
             else
             {
-                Service.PluginLog.Error($"Can't find version in response: {content}");
+                Service.PluginLog.Error($"Can't find version in response: {responseString}");
                 return new(TomestoneClientError.InertiaVersionNotFound);
             }
         }
