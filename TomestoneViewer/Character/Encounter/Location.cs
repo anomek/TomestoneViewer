@@ -14,6 +14,12 @@ public record Location(
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:Parameters should be on same line or separate lines", Justification = "Need more flexible formatting here")]
     private static readonly IReadOnlyList<Location> ALL =
     [
+        // TODO: add territory id after release
+        new("UMAD", Category.ULTIMATE, new(0), 
+            // TODO: add tomestone location for tomestone
+            new(TomestoneLocation.TomestoneCategory.ULTIMATE, "dancing-mad-ultimate", ExpansionQueryParam.DT, new(0)),
+            // TODO: add bossid for fflogs
+            new(new FFLogsLocation.FFLogsZone(0, false))),
         new("FRU", Category.ULTIMATE, new(1238),
             new(TomestoneLocation.TomestoneCategory.ULTIMATE, "futures-rewritten-ultimate",  ExpansionQueryParam.DT,  new(5651)),
             new(new FFLogsLocation.FFLogsZone(1079, false))),
