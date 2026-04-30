@@ -196,6 +196,12 @@ internal partial class WebTomestoneClient : ITomestoneClient
             return new(TomestoneClientError.CharacterActivityStreamDisabled);
         }
 
+        var activities2 = activities.activites;
+        if (activities2 == null || !(activities2 as JValue).Contains("paginator"))
+        {
+            return new(TomestoneEncounterData.EncounterNotStarted());
+        }
+
         var data = activities.activities?.paginator?.data;
         if (data == null)
         {
