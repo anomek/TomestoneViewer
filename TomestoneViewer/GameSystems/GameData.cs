@@ -60,7 +60,7 @@ public class GameData
             return null;
         }
 
-        return world.Value.DataCenter.Value.Region switch
+        return world.Value.DataCenter.Value.Region.RowId switch
         {
             1 => "JP",
             2 => "NA",

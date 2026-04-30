@@ -71,7 +71,7 @@ public class TeamList
         {
             var hudPartyMember = partyMemberList[i];
             var hudPartyMemberNameRaw = hudPartyMember.Name;
-            if (hudPartyMemberNameRaw != null)
+            if (hudPartyMemberNameRaw.HasValue)
             {
                 var hudPartyMemberName = Util.ReadSeString(hudPartyMemberNameRaw).TextValue;
                 for (var j = 0; j < groupManager.MemberCount; j++)

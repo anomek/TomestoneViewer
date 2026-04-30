@@ -37,7 +37,7 @@ public unsafe class TerritoryOfInterestDetector
         Service.ClientState.TerritoryChanged -= this.OnTerritoryChanged;
     }
 
-    private void OnTerritoryChanged(ushort territoryId)
+    private void OnTerritoryChanged(uint territoryId)
     {
         this.UpdateTerritoryId(new TerritoryId(territoryId));
     }
