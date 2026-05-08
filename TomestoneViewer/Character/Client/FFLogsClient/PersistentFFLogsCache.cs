@@ -1,24 +1,21 @@
-using FFXIVClientStructs.FFXIV.Component.Text;
-using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
 using TomestoneViewer.Character.Client.TomestoneClient;
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
+
 internal class PersistentFFLogsCache
 {
     private static readonly int VERSION = 2;
     private readonly string path;
 
-    private IDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>? cache;
+    private IDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData> cache =
+        new ConcurrentDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>();
 
     internal PersistentFFLogsCache(string path)
     {
@@ -29,26 +26,22 @@ internal class PersistentFFLogsCache
     internal async Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>> Get(LodestoneId lodestoneId, int bossId, Func<Task<ClientResponse<FFLogsClientError, FFLogsEncounterData>>> query)
     {
         var key = (lodestoneId, bossId);
-        if (this.cache != null && this.cache.TryGetValue(key, out var data))
+        if (this.cache.TryGetValue(key, out var data))
         {
             return new(data);
         }
         else
         {
             var response = await query.Invoke();
-            if (this.cache != null)
+            response.OnSuccess(success =>
             {
-                response.OnSuccess(success =>
-                {
-                    this.cache[key] = success;
-                    this.Save();
-                });
-            }
+                this.cache[key] = success;
+                this.Save();
+            });
 
             return response;
         }
     }
-
 
     private void Load()
     {
@@ -103,7 +96,6 @@ internal class PersistentFFLogsCache
             this.cache = new ConcurrentDictionary<(LodestoneId UserId, int BossId), FFLogsEncounterData>(copy);
         }
     }
-
 
     private void Save()
     {

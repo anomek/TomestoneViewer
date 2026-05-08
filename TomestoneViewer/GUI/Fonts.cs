@@ -19,7 +19,6 @@ internal class Fonts : IDisposable
 
     public IFontHandle Default => this.FontHandle(FontType.Default);
 
-
     public IFontHandle DefaultSmallerStraight => this.FontHandle(FontType.DefaultSmallerStraight);
 
     public IFontHandle DefaultSmaller => this.FontHandle(FontType.DefaultSmaller);

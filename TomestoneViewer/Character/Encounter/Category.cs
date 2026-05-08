@@ -13,6 +13,7 @@ public record Category(
     DateTime? ReleaseDate)
 {
     public static readonly Category ULTIMATE = new("Ultimates", null);
+
     // FIXME: add time to release date, translate to local time
     public static readonly Category SAVAGE = new("Savage", new(2025, 4, 1));
 

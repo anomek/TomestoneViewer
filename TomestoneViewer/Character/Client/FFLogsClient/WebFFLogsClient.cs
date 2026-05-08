@@ -1,18 +1,15 @@
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.Client;
-using TomestoneViewer.Character.Client.TomestoneClient;
-using System.Net.Http.Headers;
+
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using TomestoneViewer.Character.Client.TomestoneClient;
+using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
@@ -30,7 +27,7 @@ internal class WebFFLogsClient : IFFLogsClient
         Service.PluginLog.Info($"Fetching fflogs encounter for {character} on {location}");
         var uri = $"https://www.fflogs.com/api/v2/client";
 
-        var request = () =>
+        HttpRequestMessage Request()
         {
             var r = new HttpRequestMessage(HttpMethod.Post, uri);
             var query = $"query CharacterData {{ characterData  {{ character(lodestoneID: {character}) {{ encounterRankings(encounterID:{location.BossId}) }} }} }}";
@@ -39,8 +36,9 @@ internal class WebFFLogsClient : IFFLogsClient
             payload["variables"] = new object();
             r.Content = new StringContent(JsonConvert.SerializeObject(payload), new MediaTypeHeaderValue("application/json"));
             return r;
-        };
-        return (await this.client.Call(request, cancellationToken))
+        }
+
+        return (await this.client.Call(Request, cancellationToken))
             .Map<FFLogsEncounterData>(content => this.ParseFetchEncounter(content, location));
     }
 
@@ -49,10 +47,11 @@ internal class WebFFLogsClient : IFFLogsClient
         Dictionary<JobId, uint> clearsCount = [];
         Dictionary<JobId, DateTimeOffset> lastClear = [];
 
-        var encounters = content?.data?.characterData?.character?.encounterRankings?.ranks;
+        var encounterRankings = content?.data?.characterData?.character?.encounterRankings as JObject;
+        var encounters = encounterRankings?["ranks"] as JArray;
         if (encounters != null)
         {
-            foreach (var ranking in encounters)
+            foreach (dynamic ranking in encounters)
             {
                 var datetime = DateTimeOffset.FromUnixTimeMilliseconds((long)ranking.startTime + (long)ranking.duration);
                 var job = JobId.FromFFLogsString((string)ranking.spec);

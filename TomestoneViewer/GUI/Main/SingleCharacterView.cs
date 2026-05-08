@@ -1,51 +1,18 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TomestoneViewer.GUI.Widgets;
-using Dalamud.Bindings.ImGui;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TomestoneViewer.Character;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Controller;
-using TomestoneViewer.GUI.Widgets;
-using Dalamud.Bindings.ImGui;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
-using TomestoneViewer.GUI.Formatters;
 using TomestoneViewer.GUI.Widgets;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 
 namespace TomestoneViewer.GUI.Main;
 
 internal class SingleCharacterView
 {
-
     private readonly Tabular table;
     private readonly TableData tableData;
 
@@ -55,7 +22,7 @@ internal class SingleCharacterView
         this.table = new(2)
         {
             Name = "MainWindowTableSingleView",
-            Data = tableData,
+            Data = this.tableData,
             CellPadding = new Vector2(0, 0),
             ItemSpacing = new Vector2(2, 0),
             TableFlags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg | ImGuiTableFlags.SizingFixedFit,
@@ -65,7 +32,18 @@ internal class SingleCharacterView
         this.table.Columns[1].SetFixed("status");
     }
 
-    class TableData : Tabular.ITabularData
+    public void Draw()
+    {
+        if (Service.CharDataManager.DisplayedChar == null || Service.CharDataManager.CharacterError != null)
+        {
+            return;
+        }
+
+        this.tableData.Update();
+        this.table.Draw();
+    }
+
+    private class TableData : Tabular.ITabularData
     {
         private readonly List<IWidget?[]> widgets = [];
         private readonly List<int> categoryRows = [];
@@ -73,16 +51,16 @@ internal class SingleCharacterView
         private readonly Dictionary<Location, (EncounterplateWidget, EncounterStatusView, int)> statusViews = [];
         private readonly List<TextWidget> categories = [];
         private float baseRowHeight;
+
         internal TableData(WindowsController mainWindowController)
         {
-
             var rowCounter = 0;
             foreach (var category in Category.All())
             {
                 if (rowCounter % 2 == 0)
                 {
-                    widgets.Add([null, null]);
-                    emptyRows.Add(rowCounter);
+                    this.widgets.Add([null, null]);
+                    this.emptyRows.Add(rowCounter);
                     rowCounter++;
                 }
 
@@ -91,9 +69,9 @@ internal class SingleCharacterView
                     Text = $" {category.DisplayName}",
                     Font = () => Service.Fonts.EncounterTypeHeader,
                 };
-                widgets.Add([categoryWidget, null]);
-                categories.Add(categoryWidget);
-                categoryRows.Add(rowCounter);
+                this.widgets.Add([categoryWidget, null]);
+                this.categories.Add(categoryWidget);
+                this.categoryRows.Add(rowCounter);
 
                 rowCounter++;
                 foreach (var location in category.Locations)
@@ -107,34 +85,36 @@ internal class SingleCharacterView
                     {
                         Total = true,
                     };
-                    statusViews[location] = (encounterplate, statusView, rowCounter);
-                    widgets.Add([encounterplate, statusView]);
+                    this.statusViews[location] = (encounterplate, statusView, rowCounter);
+                    this.widgets.Add([encounterplate, statusView]);
                     rowCounter++;
                 }
             }
-            widgets.Add([null, null]);
-            emptyRows.Add(rowCounter);
+
+            this.widgets.Add([null, null]);
+            this.emptyRows.Add(rowCounter);
         }
 
         public void Update()
         {
-            this.baseRowHeight = RowBaseHeight() + GetRowPadding();
-            var baseLine = ImGui.GetFont().Ascent * ImGuiHelpers.GlobalScale + GetRowPadding() + 1 * ImGuiHelpers.GlobalScale;
+            this.baseRowHeight = this.RowBaseHeight() + GetRowPadding();
+            var baseLine = (ImGui.GetFont().Ascent * ImGuiHelpers.GlobalScale) + GetRowPadding() + (1 * ImGuiHelpers.GlobalScale);
             var character = Service.CharDataManager.DisplayedChar;
             foreach (var location in Location.All())
             {
-                var plate = statusViews[location].Item1;
-                var view = statusViews[location].Item2;
-                var rowNo = statusViews[location].Item3;
-                plate.YOffset = GetRowExtraTopPadding(rowNo);
+                var plate = this.statusViews[location].Item1;
+                var view = this.statusViews[location].Item2;
+                var rowNo = this.statusViews[location].Item3;
+                plate.YOffset = this.GetRowExtraTopPadding(rowNo);
                 plate.Height = this.baseRowHeight;
                 plate.BaseLine = baseLine;
-                view.YOffset = GetRowExtraTopPadding(rowNo);
+                view.YOffset = this.GetRowExtraTopPadding(rowNo);
                 view.CharData = character;
                 view.BaseLine = baseLine;
-                view.EncounterData = character?.EncounterData[location];    
+                view.EncounterData = character?.EncounterData[location];
             }
-            foreach (var category in categories)
+
+            foreach (var category in this.categories)
             {
                 category.YOffset = GetRowPadding() + 1;
             }
@@ -146,35 +126,40 @@ internal class SingleCharacterView
             {
                 return null;
             }
-            if (row >= widgets.Count)
+
+            if (row >= this.widgets.Count)
             {
                 return null;
             }
-            return widgets[row][column];
 
+            return this.widgets[row][column];
         }
 
         public bool HasSeparatorBeforeRow(int row)
         {
-            return categoryRows.Contains(row) || categoryRows.Contains(row - 1);
+            return this.categoryRows.Contains(row) || this.categoryRows.Contains(row - 1);
         }
 
         public int GetRowCount()
         {
-            return widgets.Count;
+            return this.widgets.Count;
         }
-
 
         public float? GetRowHeight(int row)
         {
-            if (categoryRows.Contains(row) || emptyRows.Contains(row))
+            if (this.categoryRows.Contains(row) || this.emptyRows.Contains(row))
             {
                 return null;
             }
             else
             {
-                return this.baseRowHeight + GetRowExtraTopPadding(row);
+                return this.baseRowHeight + this.GetRowExtraTopPadding(row);
             }
+        }
+
+        private static float GetRowPadding()
+        {
+            return 2 * ImGuiHelpers.GlobalScale;
         }
 
         private float RowBaseHeight()
@@ -191,21 +176,5 @@ internal class SingleCharacterView
             bool firstLocationRow = this.categoryRows.Contains(row - 1);
             return firstLocationRow ? 1 : 0;
         }
-
-        private float GetRowPadding()
-        {
-            return 2 * ImGuiHelpers.GlobalScale;
-        }
-    }
-
-    public void Draw()
-    {
-        if (Service.CharDataManager.DisplayedChar == null || Service.CharDataManager.CharacterError != null)
-        {
-            return;
-        }
-
-        this.tableData.Update();
-        this.table.Draw();
     }
 }

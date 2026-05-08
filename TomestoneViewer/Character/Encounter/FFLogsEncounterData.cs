@@ -15,8 +15,7 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
         return CClearCount.Compile(
             this.ClearsPerJob
             .Where(pair => pair.Key.GetRoleId() == role)
-            .Select(pair => pair.Value)
-        );
+            .Select(pair => pair.Value));
     }
 
     internal static FFLogsEncounterData Compile(IReadOnlyList<FFLogsEncounterData> encounterProgress)
@@ -30,12 +29,10 @@ public record FFLogsEncounterData(IReadOnlyDictionary<JobId, FFLogsEncounterData
     {
         public uint Total => this.ThisExpansion + this.PreviousExpansions;
 
-
         public CClearCount(uint clears, DateTimeOffset lastClear, bool isPreviousExpansion)
             : this(isPreviousExpansion ? 0 : clears, isPreviousExpansion ? clears : 0, lastClear)
         {
         }
-
 
         internal static CClearCount Compile(IEnumerable<CClearCount> clears)
         {

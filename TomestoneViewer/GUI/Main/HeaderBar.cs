@@ -1,13 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
-using TomestoneViewer.Manager;
 using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;

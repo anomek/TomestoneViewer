@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Client;
@@ -41,7 +38,7 @@ internal class SyncValue<T>(Func<Task<T>> query)
         return this.value;
     }
 
-    internal void clear()
+    internal void Clear()
     {
         lock (this.syncLock)
         {

@@ -1,16 +1,15 @@
+using System;
+using System.Linq;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
 using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
+
 internal class PartyView
 {
     private readonly WindowsController mainWindowController;

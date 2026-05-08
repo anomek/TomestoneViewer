@@ -1,14 +1,5 @@
-using Dalamud.Interface;
-using Dalamud.Interface.Colors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using TomestoneViewer.Character.Client.TomestoneClient;
-
 namespace TomestoneViewer.Character.Client.FFLogsClient;
+
 public record FFLogsClientError(string Message, IRenderableError.ErrorType Type, bool Cachable) : IClientError
 {
     public static readonly FFLogsClientError SignatureNotFound = new(

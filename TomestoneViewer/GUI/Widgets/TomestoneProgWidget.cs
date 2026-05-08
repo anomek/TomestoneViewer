@@ -1,29 +1,32 @@
+using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using TomestoneViewer.Character.Client;
 using TomestoneViewer.Character.Encounter;
+
 using static TomestoneViewer.Character.Encounter.EncounterData;
 
 namespace TomestoneViewer.GUI.Widgets;
 
 internal class TomestoneProgWidget : IWidget
 {
-    public LoadableData<TomestoneEncounterData> Data { get; set; }
-    public IEncounterDataError? GenericTomestoneError { get; set; }
-    public float? BaseLine { get; set; }
-    public float YOffset { get; set; }
+    public LoadableData<TomestoneEncounterData>? Data { get; set; }
 
+    public IEncounterDataError? GenericTomestoneError { get; set; }
+
+    public float? BaseLine { get; set; }
+
+    public float YOffset { get; set; }
 
     public Vector2 Draw()
     {
+        if (this.Data == null)
+        {
+            return default;
+        }
+
         var characterError = this.Data.Status.Error ?? this.GenericTomestoneError;
 
         var iconOffsetAdj = 2 * ImGuiHelpers.GlobalScale;
@@ -57,23 +60,22 @@ internal class TomestoneProgWidget : IWidget
                 if (lastSeenMechanic == null || !Service.Configuration.ShowLastMechanic)
                 {
                     Service.Fonts.ProgressFont.Push();
-                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + (1 * ImGuiHelpers.GlobalScale));
                     Util.CenterText(this.Data.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
                     Service.Fonts.ProgressFont.Pop();
-
                 }
                 else
                 {
                     var y = ImGui.GetCursorPosY();
                     Service.Fonts.LastMechanicFont.Push();
-                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + (1 * ImGuiHelpers.GlobalScale));
                     ImGui.TextUnformatted(lastSeenMechanic);
                     Service.Fonts.LastMechanicFont.Pop();
 
                     ImGui.SameLine();
                     ImGui.SetCursorPosY(y);
                     Service.Fonts.ProgressFont.Push();
-                    Util.ApplyBaseline(this.BaseLine, this.YOffset + 1 * ImGuiHelpers.GlobalScale);
+                    Util.ApplyBaseline(this.BaseLine, this.YOffset + (1 * ImGuiHelpers.GlobalScale));
                     Util.RightAlignText(this.Data.Data.Progress.ToString(), new Vector4(1, .7f, .1f, 1));
                     Service.Fonts.ProgressFont.Pop();
                 }
@@ -108,6 +110,5 @@ internal class TomestoneProgWidget : IWidget
         {
             return 0;
         }
-
     }
 }

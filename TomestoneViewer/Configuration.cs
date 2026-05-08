@@ -25,7 +25,7 @@ public class Configuration : IPluginConfiguration
 
     public string FFLogsClientSecret { get; set; } = string.Empty;
 
-    public bool ShowLastMechanic {  get; set; } = true;
+    public bool ShowLastMechanic { get; set; } = true;
 
     public void Save()
     {

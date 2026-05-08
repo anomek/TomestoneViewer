@@ -55,7 +55,7 @@ public class CharDataManager(CharDataFactory charDataFactory)
         this.partyMembers.Clear();
         this.partyMembers.AddRange(newPartyList);
 #if DEBUG
-        if (this.partyMembers.Count == 1)
+        if (this.partyMembers.Count <= 1)
         {
             var lizard = this.charDataFactory.Create(new CharacterId("Lizard", "Butterfly", "Sargatanas"));
             lizard.JobId = new JobId(38);
@@ -82,24 +82,25 @@ public class CharDataManager(CharDataFactory charDataFactory)
 #endif
     }
 
-    public void SetLocation(Location? location, TerritoryId? teritorryId)
+    public void SetLocation(Location? location, TerritoryId? territoryId)
     {
-        if (teritorryId == null && location == null)
+        if (territoryId != null && location == null)
         {
-            Service.PluginLog.Warning("Setting location, but none was provided");
-            return;
-        }
+            location ??= Location.Find(territoryId);
 
-        location ??= Location.Find(teritorryId);
-
-        if (location != null)
-        {
-            this.CurrentEncounter = location;
-            Service.PluginLog.Info($"Set encounter {location.DisplayName}");
+            if (location != null)
+            {
+                this.CurrentEncounter = location;
+                Service.PluginLog.Info($"Set encounter {location.DisplayName}");
+            }
+            else
+            {
+                Service.PluginLog.Warning($"Can't set encounter to {territoryId}");
+            }
         }
         else
         {
-            Service.PluginLog.Warning($"Can't set encounter to {teritorryId}");
+            Service.PluginLog.Warning("Setting location, but none was provided");
         }
     }
 

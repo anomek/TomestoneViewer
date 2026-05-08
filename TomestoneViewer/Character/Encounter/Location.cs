@@ -14,12 +14,9 @@ public record Location(
     [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:Parameters should be on same line or separate lines", Justification = "Need more flexible formatting here")]
     private static readonly IReadOnlyList<Location> ALL =
     [
-        // TODO: add territory id after release
-        new("UMAD", Category.ULTIMATE, new(0), 
-            // TODO: add tomestone location for tomestone
-            new(TomestoneLocation.TomestoneCategory.ULTIMATE, "dancing-mad-ultimate", ExpansionQueryParam.DT, new(0)),
-            // TODO: add bossid for fflogs
-            new(new FFLogsLocation.FFLogsZone(0, false))),
+        new("UMAD", Category.ULTIMATE, new(0), // TODO: add territory id after release
+            new(TomestoneLocation.TomestoneCategory.ULTIMATE, "dancing-mad-ultimate", ExpansionQueryParam.DT, new(0)), // TODO: add tomestone location
+            new(new FFLogsLocation.FFLogsZone(0, false))), // TODO: add bossid for fflogs
         new("FRU", Category.ULTIMATE, new(1238),
             new(TomestoneLocation.TomestoneCategory.ULTIMATE, "futures-rewritten-ultimate",  ExpansionQueryParam.DT,  new(5651)),
             new(new FFLogsLocation.FFLogsZone(1079, false))),
@@ -32,8 +29,8 @@ public record Location(
         new("TEA", Category.ULTIMATE, new(887),
             new(TomestoneLocation.TomestoneCategory.ULTIMATE, "the-epic-of-alexander-ultimate", ExpansionQueryParam.SHB, new(3651)),
             new(new(1075, false), new(1062, true), new(1050, true))),
-        new("UWU",  Category.ULTIMATE, new(777),
-            new(TomestoneLocation.TomestoneCategory.ULTIMATE, "the-weapons-refrain-ultimate",ExpansionQueryParam.STB,   new(2652)),
+        new("UWU", Category.ULTIMATE, new(777),
+            new(TomestoneLocation.TomestoneCategory.ULTIMATE, "the-weapons-refrain-ultimate", ExpansionQueryParam.STB, new(2652)),
             new(new(1074, false), new(1061, true), new(1048, true), new(1042, true))),
         new("UCOB", Category.ULTIMATE, new(733),
             new(TomestoneLocation.TomestoneCategory.ULTIMATE, "the-unending-coil-of-bahamut-ultimate", ExpansionQueryParam.STB,  new(2651)),
@@ -71,7 +68,7 @@ public record Location(
     {
         return All()
             .Select(location => location.TerritoryId)
-            .Where(territoryId => territoryId != null)
+            .OfType<TerritoryId>()
             .ToHashSet();
     }
 }

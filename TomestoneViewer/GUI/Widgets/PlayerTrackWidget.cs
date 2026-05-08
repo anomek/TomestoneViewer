@@ -1,36 +1,35 @@
+using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using TomestoneViewer.Character;
 
 namespace TomestoneViewer.GUI.Widgets;
 
 internal class PlayerTrackWidget : IWidget
 {
-    internal CharData? CharData { get; set; }
-    internal bool DrawDummy { get; set; } = false;
-
     private float width = 0;
+
+    internal CharData? CharData { get; set; }
+
+    internal bool DrawDummy { get; set; } = false;
 
     public Vector2 Draw()
     {
-        string text = "";
+        string text = string.Empty;
         if (this.CharData?.MainCharacterId != null)
         {
             text += $"Alt of {this.CharData.MainCharacterId.FullName}\n";
         }
+
         if (this.CharData?.PlayerTrackComment != null)
         {
             text += this.CharData?.PlayerTrackComment;
         }
+
         if (text != string.Empty)
         {
-            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 1 * ImGuiHelpers.GlobalScale);
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + (1 * ImGuiHelpers.GlobalScale));
             var res = ImGuiHelpers.CompileSeStringWrapped("<icon(177)>");
             if (ImGui.IsItemHovered())
             {
@@ -47,7 +46,7 @@ internal class PlayerTrackWidget : IWidget
         {
             if (this.DrawDummy)
             {
-                ImGui.Text("");
+                ImGui.Text(string.Empty);
             }
 
             this.width = 0;
@@ -58,6 +57,6 @@ internal class PlayerTrackWidget : IWidget
 
     public float GetMinWidth()
     {
-        return width;
+        return this.width;
     }
 }

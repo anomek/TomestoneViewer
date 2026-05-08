@@ -2,20 +2,16 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Model;
 
 namespace TomestoneViewer.Character;
 
 public class CharSelector
 {
-    internal CharacterId? CharId { get; }
-
-    internal CharacterSelectorError? Error { get; }
-
     private CharSelector(CharacterId charId)
     {
         this.CharId = charId;
@@ -31,15 +27,9 @@ public class CharSelector
         this.Error = charError;
     }
 
-    internal bool IsValid()
-    {
-        return this.CharId != null;
-    }
+    internal CharacterId? CharId { get; }
 
-    public override string ToString()
-    {
-        return this.CharId?.ToString() ?? this.Error?.Message ?? "CharSelector inconsistent state";
-    }
+    internal CharacterSelectorError? Error { get; }
 
     public static CharSelector SelectCurrentTarget()
     {
@@ -105,6 +95,16 @@ public class CharSelector
         return new CharSelector(characterId);
     }
 
+    public override string ToString()
+    {
+        return this.CharId?.ToString() ?? this.Error?.Message ?? "CharSelector inconsistent state";
+    }
+
+    internal bool IsValid()
+    {
+        return this.CharId != null;
+    }
+
     private static string SanitizeRawText(string rawText)
     {
         rawText = rawText.Replace("'s party for", " ");
@@ -128,7 +128,7 @@ public class CharSelector
                 var character = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)placeholder;
                 var world = Service.GameData.GetWorldName(character->HomeWorld);
 
-                if (world != null && placeholder->Name != null)
+                if (world != null && !placeholder->Name.IsEmpty)
                 {
                     return CharacterId.FromFullName(Util.ReadSeString(placeholder->GetName()).TextValue, world);
                 }
@@ -161,5 +161,4 @@ public class CharSelector
             return new CharSelector(CharacterSelectorError.InvalidCharacterName);
         }
     }
-
 }

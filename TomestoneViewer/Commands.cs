@@ -58,6 +58,7 @@ public class Commands : IDisposable
                 {
                     this.mainWindowController.OpenParty();
                 }
+
                 break;
             case CommandName:
                 if (trimmedArgs.Equals("p", StringComparison.OrdinalIgnoreCase)

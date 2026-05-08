@@ -1,17 +1,15 @@
-using Lumina.Excel.Sheets;
-using NetStone;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using NetStone;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TomestoneViewer.Character.Encounter;
-using static FFXIVClientStructs.FFXIV.Client.System.String.Utf8String.Delegates;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
@@ -69,8 +67,13 @@ internal partial class WebTomestoneClient : ITomestoneClient
                 return new(TomestoneClientError.CharacterDoesNotExist);
             }
 
-            return new(new LodestoneId(uint.Parse(character.Id)));
+            var idStr = (string?)character.Id;
+            if (idStr == null)
+            {
+                return new(TomestoneClientError.ServerResponseError);
+            }
 
+            return new(new LodestoneId(uint.Parse(idStr)));
         }
         catch (HttpRequestException ex)
         {
@@ -105,23 +108,24 @@ internal partial class WebTomestoneClient : ITomestoneClient
             return new(TomestoneClientError.ServerResponseError);
         }
 
-        var headerEncounters = response?.props.headerEncounters;
+        var headerEncounters = response.props.headerEncounters;
         if (headerEncounters == null)
         {
             return new(TomestoneClientError.CharacterTomestoneDisabled);
         }
 
-        var ultimates = headerEncounters?.latestExpansion?.ultimate ?? new JArray();
+        var ultimates = (headerEncounters?.latestExpansion?.ultimate as JArray) ?? new JArray();
 
         // hardcoding [2] as current tier (we should make it more explicit somewhere
-        var savages = headerEncounters?.latestExpansion?.savage?[2]?.encounters ?? new JArray();
+        var savageTiers = headerEncounters?.latestExpansion?.savage as JArray;
+        var savages = ((savageTiers != null && savageTiers.Count > 2 ? savageTiers[2]?["encounters"] : null) as JArray) ?? new JArray();
 
         // mutating ultimates, very dirty
         ultimates.Merge(savages);
 
         Dictionary<TomestoneLocationId, TomestoneEncounterData> summary = [];
 
-        foreach (var encounter in ultimates)
+        foreach (dynamic encounter in ultimates)
         {
             var id = new TomestoneLocationId((int)encounter.id);
             if (encounter.achievement != null)
@@ -178,7 +182,6 @@ internal partial class WebTomestoneClient : ITomestoneClient
             Service.PluginLog.Info($"Found main character {mainCharacterId}");
         }
 
-
         return new(new CharacterSummary(summary, mainCharacterId));
     }
 
@@ -196,13 +199,13 @@ internal partial class WebTomestoneClient : ITomestoneClient
             return new(TomestoneClientError.CharacterActivityStreamDisabled);
         }
 
-        var activities2 = activities.activites;
-        if (activities2 == null || !(activities2 as JValue).Contains("paginator"))
+        var paginator = activities.activities?.paginator;
+        if (paginator == null)
         {
             return new(TomestoneEncounterData.EncounterNotStarted());
         }
 
-        var data = activities.activities?.paginator?.data;
+        var data = paginator.data;
         if (data == null)
         {
             Service.PluginLog.Error($"Failed to parse encounter: data is null");
@@ -215,7 +218,7 @@ internal partial class WebTomestoneClient : ITomestoneClient
             if (activity.activity.killsCount > 0)
             {
                 return new(TomestoneEncounterData.EncounterCleared(new EncounterClear(
-                    ParseDateTime(activity.endTime),
+                    ParseDateTime(activity.activity.endTime),
                     null)));
             }
             else

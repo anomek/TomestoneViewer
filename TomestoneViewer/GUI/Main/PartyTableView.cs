@@ -1,40 +1,16 @@
-using Dalamud.Bindings.ImGui;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TomestoneViewer.Character;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Controller;
-using TomestoneViewer.GUI.Widgets;
-using Dalamud.Bindings.ImGui;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
+
+using Dalamud.Bindings.ImGui;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
-using TomestoneViewer.GUI.Formatters;
 using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
 
 internal class PartyTableView : IWidget, Tabular.ITabularData
 {
-
     private readonly WindowsController mainWindowController;
 
     private readonly Tabular table;
@@ -74,50 +50,6 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
     };
 
     private List<Row> rows = [];
-
-    private class Row
-    {
-        private readonly NameplateWidget nameplate = new();
-        private readonly PlayerTrackWidget playerTrack = new();
-        private readonly EncounterStatusView roleClears = new()
-        {
-            Total = false,
-        };
-
-        private readonly EncounterStatusView totalClears = new()
-        {
-            Total = true,
-        };
-
-        public Row(WindowsController mainWindowController)
-        {
-            this.nameplate.Callback = charData => mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
-        }
-
-        public void Update(CharData? charData, Location location)
-        {
-            this.nameplate.CharData = charData;
-            this.roleClears.EncounterData = charData?.EncounterData[Service.CharDataManager.CurrentEncounter];
-            this.roleClears.CharData = charData;
-            this.roleClears.BaseLine = this.nameplate.BaseLine;
-            this.totalClears.EncounterData = charData?.EncounterData[Service.CharDataManager.CurrentEncounter];
-            this.totalClears.CharData = charData;
-            this.totalClears.BaseLine = this.nameplate.BaseLine;
-            this.playerTrack.CharData = charData;
-        }
-
-        public IWidget? Get(int column)
-        {
-            return column switch
-            {
-                0 => this.nameplate,
-                1 => this.playerTrack,
-                2 => Service.Configuration.FFLogsEnabled ? this.roleClears : null,
-                3 => this.totalClears,
-                _ => null,
-            };
-        }
-    }
 
     public PartyTableView(WindowsController mainWindowController)
     {
@@ -173,12 +105,12 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
 
             return column switch
             {
-                2 => header1,
-                3 => header2,
+                2 => this.header1,
+                3 => this.header2,
                 _ => null,
             };
         }
-        else if (row > rows.Count)
+        else if (row > this.rows.Count)
         {
             return null;
         }
@@ -193,7 +125,6 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
         return Service.CharDataManager.PartyMembers.Count + 2;
     }
 
-
     public float GetMinWidth()
     {
         return 0;
@@ -202,5 +133,49 @@ internal class PartyTableView : IWidget, Tabular.ITabularData
     public bool HasSeparatorBeforeRow(int row)
     {
         return row > 0;
+    }
+
+    private class Row
+    {
+        private readonly NameplateWidget nameplate = new();
+        private readonly PlayerTrackWidget playerTrack = new();
+        private readonly EncounterStatusView roleClears = new()
+        {
+            Total = false,
+        };
+
+        private readonly EncounterStatusView totalClears = new()
+        {
+            Total = true,
+        };
+
+        public Row(WindowsController mainWindowController)
+        {
+            this.nameplate.Callback = charData => mainWindowController.OpenCharacter(CharSelector.SelectById(charData.CharId));
+        }
+
+        public void Update(CharData? charData, Location location)
+        {
+            this.nameplate.CharData = charData;
+            this.roleClears.EncounterData = charData?.EncounterData[Service.CharDataManager.CurrentEncounter];
+            this.roleClears.CharData = charData;
+            this.roleClears.BaseLine = this.nameplate.BaseLine;
+            this.totalClears.EncounterData = charData?.EncounterData[Service.CharDataManager.CurrentEncounter];
+            this.totalClears.CharData = charData;
+            this.totalClears.BaseLine = this.nameplate.BaseLine;
+            this.playerTrack.CharData = charData;
+        }
+
+        public IWidget? Get(int column)
+        {
+            return column switch
+            {
+                0 => this.nameplate,
+                1 => this.playerTrack,
+                2 => Service.Configuration.FFLogsEnabled ? this.roleClears : null,
+                3 => this.totalClears,
+                _ => null,
+            };
+        }
     }
 }

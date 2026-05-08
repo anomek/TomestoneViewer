@@ -1,4 +1,3 @@
-using System;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.GUI.Config;

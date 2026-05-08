@@ -1,28 +1,15 @@
+using System;
+using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ManagedFontAtlas;
 using Dalamud.Interface.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TomestoneViewer.GUI.Widgets;
+
 internal class TextWidget : IWidget
 {
-    public string Text { get; set; } = string.Empty;
-    public float? MinWidth { get; set; }
-
-    public AlignType Align { get; set; } = AlignType.Left;
-
-    public Func<IFontHandle> Font { get; set; } = () => Service.Fonts.Default;
-    public bool CompileSeString { get; set; } = false;
-    public float YOffset { get; internal set; } = 0;
-
     private float? compiledWidth = null;
-
-    public float? BaseLine = null;
 
     public enum AlignType
     {
@@ -31,14 +18,28 @@ internal class TextWidget : IWidget
         Right,
     }
 
+    public string Text { get; set; } = string.Empty;
+
+    public float? MinWidth { get; set; }
+
+    public AlignType Align { get; set; } = AlignType.Left;
+
+    public Func<IFontHandle> Font { get; set; } = () => Service.Fonts.Default;
+
+    public bool CompileSeString { get; set; } = false;
+
+    public float YOffset { get; internal set; } = 0;
+
+    public float? BaseLine { get; set; } = null;
+
     public Vector2 Draw()
     {
         this.Font().Push();
-        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + YOffset);
+        ImGui.SetCursorPosY(ImGui.GetCursorPosY() + this.YOffset);
         Util.ApplyBaseline(this.BaseLine);
         if (this.CompileSeString)
         {
-            if (compiledWidth.HasValue)
+            if (this.compiledWidth.HasValue)
             {
                 switch (this.Align)
                 {
@@ -50,9 +51,9 @@ internal class TextWidget : IWidget
                     case AlignType.Right:
                         Util.RightAlignCursor(this.compiledWidth.Value, this.MinWidth);
                         break;
-
                 }
             }
+
             this.compiledWidth = ImGuiHelpers.CompileSeStringWrapped(this.Text).Size.X;
         }
         else
@@ -73,7 +74,6 @@ internal class TextWidget : IWidget
 
         this.Font().Pop();
 
-        // TODO: Implement when needed
         return default;
     }
 
@@ -85,7 +85,6 @@ internal class TextWidget : IWidget
         }
         else
         {
-            // TODO: make more accurate
             return this.MinWidth.GetValueOrDefault(0);
         }
     }

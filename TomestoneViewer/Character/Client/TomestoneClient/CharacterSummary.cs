@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+
 using TomestoneViewer.Character.Encounter;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;

@@ -8,7 +8,6 @@ namespace TomestoneViewer.Character.Client;
 // Kind of either class, I don't want to play with exceptions
 public static class ClientResponseExtensions
 {
-
     public static async Task<ClientResponse<TError, T>> RecoverAsync<TError, T>(this Task<ClientResponse<TError, T>> response, Predicate<TError> onError, Func<Task<ClientResponse<TError, T>>> recoveryAction)
         where TError : IClientError
     {

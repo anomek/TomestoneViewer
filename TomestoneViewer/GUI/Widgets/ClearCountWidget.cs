@@ -1,39 +1,23 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.ImGuiSeStringRenderer;
-using Dalamud.Interface.Utility;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using System;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using TomestoneViewer.Character;
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
 using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Controller;
 using TomestoneViewer.GUI.Formatters;
-using TomestoneViewer.GUI.Formatters;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace TomestoneViewer.GUI.Widgets;
 
 internal class ClearCountWidget() : IWidget
 {
+    private float swordIconWidth = 5;
 
     internal FFLogsEncounterData.CClearCount? Clears { get; set; }
+
     internal float? BaseLine { get; set; }
 
     internal bool IncludeLastClear { get; set; } = false;
-    internal float YOffset { get; set; }
 
-    private float swordIconWidth = 5;
+    internal float YOffset { get; set; }
 
     public Vector2 Draw()
     {
@@ -68,12 +52,10 @@ internal class ClearCountWidget() : IWidget
             var res = ImGuiHelpers.CompileSeStringWrapped("<icon(117)>");
             this.swordIconWidth = res.Size.X;
 
-
             ImGui.PopStyleVar();
             Service.Fonts.DefaultSmaller.Pop();
         }
 
-        // FIXME: at some point we may need real value
         return default;
     }
 
@@ -85,7 +67,8 @@ internal class ClearCountWidget() : IWidget
             size += TextAfterIconWidth();
             size += LastClearClockIconWidth();
         }
-        size += swordIconWidth;
+
+        size += this.swordIconWidth;
         size += TextAfterIconWidth();
         return size;
     }

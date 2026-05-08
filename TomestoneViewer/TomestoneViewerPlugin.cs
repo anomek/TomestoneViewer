@@ -36,7 +36,6 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         var fflogsClient = new ToggleableFFLogsClient(() => Service.Configuration.FFLogsEnabled, new CachedFFLogsClient(cachePath, new SyncFFLogsClient(new SafeFFLogsClient(new WebFFLogsClient(lowLevelFFLogsClient)))));
         var playerTrackInterface = new PlayerTrackInterface(pluginInterface);
 
-
         Service.CharDataManager = new CharDataManager(new CharDataFactory(tomestoneClient, fflogsClient, playerTrackInterface));
 
         var windowsController = new WindowsController(new CharacterSelectorController(Service.CharDataManager, this.territorryOfInterestDetector));
@@ -64,8 +63,6 @@ public sealed class TomestoneViewerPlugin : IDalamudPlugin
         Service.Interface.UiBuilder.OpenMainUi += OpenMainUi;
         Service.Interface.UiBuilder.OpenConfigUi += OpenConfigUi;
         Service.Interface.UiBuilder.Draw += this.windowSystem.Draw;
-        
-
 
 #if DEBUG
         Service.Interface.OpenDeveloperMenu();

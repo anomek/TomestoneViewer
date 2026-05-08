@@ -36,7 +36,6 @@ public class GameData
         return this.worldIdChache.GetOrAdd(worldName, this.FindWorldId);
     }
 
-
     private TerritoryId? FindTerritoryId(string dutyName)
     {
         var id = Service.DataManager.GetExcelSheet<ContentFinderCondition>()!

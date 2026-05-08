@@ -1,12 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using TomestoneViewer.Character.Client.TomestoneClient;
-using TomestoneViewer.Character.Client.FFLogsClient;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Character.Client;
 using System.Threading;
+using System.Threading.Tasks;
+
+using TomestoneViewer.Character.Client;
+using TomestoneViewer.Character.Client.FFLogsClient;
+using TomestoneViewer.Character.Client.TomestoneClient;
+using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.External;
 
 namespace TomestoneViewer.Character;
@@ -21,17 +21,6 @@ internal class CharDataLoader
 
     private LodestoneId? lodestoneId;
     private TomestoneClientError? tomestoneLoadError;
-    private FFLogsClientError? fflogsLoadError;
-
-    internal string PlayerTrackComment { get; private set; } = string.Empty;
-    internal CharacterId? MainCharacterId { get; private set; }
-
-    internal LodestoneId? LodestoneId => this.lodestoneId;
-
-    internal TomestoneClientError? GenericTomestoneError => this.tomestoneLoadError;
-    internal FFLogsClientError? GenericFFLogsError => this.fflogsLoadError;
-
-    internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
 
     internal CharDataLoader(CharacterId characterId, ITomestoneClient tomestoneClient, IFFLogsClient fflogsClient, PlayerTrackInterface playerTrackInterface)
     {
@@ -44,6 +33,16 @@ internal class CharDataLoader
         this.playerTrackInterface = playerTrackInterface;
     }
 
+    internal string PlayerTrackComment { get; private set; } = string.Empty;
+
+    internal CharacterId? MainCharacterId { get; private set; }
+
+    internal LodestoneId? LodestoneId => this.lodestoneId;
+
+    internal TomestoneClientError? GenericTomestoneError => this.tomestoneLoadError;
+
+    internal IReadOnlyDictionary<Location, EncounterData> EncounterData => this.encounterData;
+
     internal void Cancel()
     {
         this.tomestoneClient.Cancel();
@@ -52,15 +51,13 @@ internal class CharDataLoader
 
     internal async Task Load(Location? selectedLocation)
     {
-        // TODO: move it out of client?
         Service.HistoryManager.AddHistoryEntry(this.characterId);
         var worldId = Service.GameData.GetWorldId(this.characterId.World);
-        if ( worldId.HasValue)
+        if (worldId.HasValue)
         {
-            this.PlayerTrackComment = playerTrackInterface.GetPlayerNotes(this.characterId.FullName, worldId.Value);
+            this.PlayerTrackComment = this.playerTrackInterface.GetPlayerNotes(this.characterId.FullName, worldId.Value);
         }
 
-        // Fetch lodestoneId
         if (this.lodestoneId == null)
         {
             (await this.tomestoneClient.FetchLodestoneId(this.characterId))
@@ -74,7 +71,6 @@ internal class CharDataLoader
             return;
         }
 
-        // Fetch summary
         var summary = (await this.tomestoneClient.FetchCharacterSummary(this.lodestoneId))
             .Fold(
             summaryResponse => summaryResponse,
@@ -98,20 +94,18 @@ internal class CharDataLoader
 
         this.MainCharacterId = summary.MainCharacter;
 
-        // Fetch locations
         await Task.WhenAll(
             (selectedLocation == null ? Location.All() : [selectedLocation])
             .Select(location => this.FetchTomestoneForLocation(summary, location)
-                        .ContinueWith((s) => this.FetchFFLogsForLocation(location)))
+                        .ContinueWith(s => this.FetchFFLogsForLocation(location)))
             .OfType<Task>());
     }
 
     private async Task FetchFFLogsForLocation(Location location)
     {
         if (this.lodestoneId != null &&
-           (this.encounterData[location].Tomestone.Data == null || this.encounterData[location].Tomestone.Data.Cleared))
+           (this.encounterData[location].Tomestone.Data is not { } data || data.Cleared))
         {
-            // sequential processing to avoid too many reqeusts - TODO: refactor, not needed any more
             var results = new List<ClientResponse<FFLogsClientError, FFLogsEncounterData>>();
             foreach (var zone in location.FFLogs.Zones)
             {
@@ -126,19 +120,19 @@ internal class CharDataLoader
 
     private async Task FetchTomestoneForLocation(CharacterSummary summary, Location location)
     {
+        if (this.lodestoneId == null)
+        {
+            return;
+        }
+
         if (summary.TryGet(location.Tomestone.LocationId, out var encounterProgress))
         {
             this.encounterData[location].Tomestone.Load(encounterProgress);
-            if (encounterProgress.Cleared)
-            {
-                return;
-            }
-            else
+            if (!encounterProgress.Cleared)
             {
                 await this.tomestoneClient
                     .FetchEncounter(this.lodestoneId, location.Tomestone)
                     .ContinueWith(t => this.ApplyTomestone(t.Result, location, false));
-                return;
             }
         }
         else
@@ -146,7 +140,6 @@ internal class CharDataLoader
             await this.tomestoneClient
                 .FetchEncounter(this.lodestoneId, location.Tomestone)
                 .ContinueWith(t => this.ApplyTomestone(t.Result, location, true));
-            return;
         }
     }
 
@@ -165,7 +158,6 @@ internal class CharDataLoader
 
     private void ApplyFFLogs(IReadOnlyList<ClientResponse<FFLogsClientError, FFLogsEncounterData>> encounterProgressResponse, Location location, bool applyErrors)
     {
-
         ClientResponse<FFLogsClientError, FFLogsEncounterData>.Collate(encounterProgressResponse)
             .IfSuccessOrElse(
             encounterProgress => this.encounterData[location].FFLogs.Load(FFLogsEncounterData.Compile(encounterProgress)),

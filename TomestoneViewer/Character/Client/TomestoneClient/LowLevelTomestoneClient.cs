@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using Newtonsoft.Json;
 
 namespace TomestoneViewer.Character.Client.TomestoneClient;
 
@@ -41,7 +41,6 @@ internal partial class LowLevelTomestoneClient
 
     internal async Task<ClientResponse<TomestoneClientError, HttpResponseMessage>> GetDirect(string uri)
     {
-        
         try
         {
             return new(await this.httpClient.GetAsync(uri));
@@ -167,5 +166,4 @@ internal partial class LowLevelTomestoneClient
             response?.Dispose();
         }
     }
-
 }

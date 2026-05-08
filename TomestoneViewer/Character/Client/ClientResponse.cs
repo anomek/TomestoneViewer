@@ -141,6 +141,4 @@ public class ClientResponse<TError, T>
             return value;
         };
     }
-
-
 }

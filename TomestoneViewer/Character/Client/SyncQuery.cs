@@ -24,7 +24,7 @@ internal class SyncQuery<T>(Func<CancellationToken, Task<T>> query)
 
     internal async Task Finish()
     {
-        var copy = runningTask;
+        var copy = this.runningTask;
         if (copy != null)
         {
             await copy;

@@ -1,7 +1,7 @@
+using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
-using System;
-using System.Numerics;
 using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.External;
 
@@ -30,13 +30,11 @@ public class ConfigWindow : Window
     public override void OnOpen()
     {
         this.ffLogsViewerConfigReader.Refresh();
-        var _ = this.lowLevelFFLogsClient.RefreshToken();
+        _ = this.lowLevelFFLogsClient.RefreshToken();
     }
 
     public override void Draw()
     {
-
-
         var useDefaultFont = this.config.UseDefaultFont;
         if (ImGui.Checkbox("Use default font", ref useDefaultFont))
         {
@@ -75,7 +73,7 @@ public class ConfigWindow : Window
             {
                 this.config.FFLogsClientId = fflogsClientId;
                 this.config.Save();
-                var _ = lowLevelFFLogsClient.RefreshToken();
+                _ = this.lowLevelFFLogsClient.RefreshToken();
             }
 
             var fflogsClientSecret = this.config.FFLogsClientSecret;
@@ -83,7 +81,7 @@ public class ConfigWindow : Window
             {
                 this.config.FFLogsClientSecret = fflogsClientSecret;
                 this.config.Save();
-                var _ = lowLevelFFLogsClient.RefreshToken();
+                _ = this.lowLevelFFLogsClient.RefreshToken();
             }
 
             if (this.lowLevelFFLogsClient.CredentialsValid)
@@ -102,7 +100,7 @@ public class ConfigWindow : Window
                     this.config.FFLogsClientId = this.ffLogsViewerConfigReader.ClientId ?? string.Empty;
                     this.config.FFLogsClientSecret = this.ffLogsViewerConfigReader.ClientSecret ?? string.Empty;
                     this.config.Save();
-                    var _ = this.lowLevelFFLogsClient.RefreshToken();
+                    _ = this.lowLevelFFLogsClient.RefreshToken();
                 }
             }
 

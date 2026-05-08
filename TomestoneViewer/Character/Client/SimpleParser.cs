@@ -1,10 +1,4 @@
-using Dalamud.Bindings.ImGui;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TomestoneViewer.Character.Client;
 
@@ -13,30 +7,11 @@ internal class SimpleParser(string source)
     private readonly string source = source;
     private int offset;
 
+    private delegate bool TryParse<T>([NotNullWhen(true)] string? s, out T result);
 
     internal bool Seek(string text)
     {
         return this.Find(text, string.Empty) != null;
-    }
-
-
-    private delegate bool TryParse<T>([NotNullWhen(true)] string? s, out T result);
-
-    private T? FindAndParse<T>(string begining, string terminus, TryParse<T> tryParse)
-    {
-        var s = this.Find(begining, terminus);
-        if (s == null)
-        {
-            return default;
-        }
-        else if (tryParse.Invoke(s, out var value))
-        {
-            return value;
-        }
-        else
-        {
-            return default;
-        }
     }
 
     internal long? FindLong(string begining, string terminus)
@@ -67,5 +42,22 @@ internal class SimpleParser(string source)
 
         this.offset = end;
         return this.source.Substring(start, end - start);
+    }
+
+    private T? FindAndParse<T>(string begining, string terminus, TryParse<T> tryParse)
+    {
+        var s = this.Find(begining, terminus);
+        if (s == null)
+        {
+            return default;
+        }
+        else if (tryParse.Invoke(s, out var value))
+        {
+            return value;
+        }
+        else
+        {
+            return default;
+        }
     }
 }

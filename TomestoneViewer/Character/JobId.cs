@@ -1,7 +1,6 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Interface.Textures;
 using System;
+
+using Dalamud.Interface.Textures;
 using TomestoneViewer.GUI;
 
 namespace TomestoneViewer.Character;
@@ -10,16 +9,21 @@ public record JobId(uint Id) : IComparable<JobId>
 {
     public enum RoleId
     {
-       Tank, Melee, Ranged, Caster, RHealer, SHealer, Other, NoJobStone
+        Tank,
+        Melee,
+        Ranged,
+        Caster,
+        RHealer,
+        SHealer,
+        Other,
+        NoJobStone,
     }
-
 
     public static readonly JobId Empty = new(0);
 
     public Icon Icon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62100)).GetWrapOrEmpty().Handle, 25);
 
-    public Icon SmallIcon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62225)).GetWrapOrEmpty().Handle, 25*(1-0.15f*2), 0.15f, 1 - 0.15f);
-
+    public Icon SmallIcon => new(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(this == Empty ? 62143 : this.Id + 62225)).GetWrapOrEmpty().Handle, 25 * (1 - (0.15f * 2)), 0.15f, 1 - 0.15f);
 
     public RoleId GetRoleId()
     {
@@ -64,7 +68,7 @@ public record JobId(uint Id) : IComparable<JobId>
             case 40:
                 return JobId.RoleId.SHealer;
             default:
-                return JobId.RoleId.Other; 
+                return JobId.RoleId.Other;
         }
     }
 

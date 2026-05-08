@@ -1,11 +1,7 @@
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+
+using Newtonsoft.Json;
 
 namespace TomestoneViewer.External;
 
@@ -43,7 +39,6 @@ internal class FFLogsViewerConfigReader(string path)
             {
                 Service.PluginLog.Error($"Error while reading file {full}", ex);
             }
-
         }
     }
 }

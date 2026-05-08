@@ -1,53 +1,36 @@
-using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dalamud.Bindings.ImGui;
-using Dalamud.Interface;
-using Dalamud.Interface.Utility;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
-using TomestoneViewer.Character;
-using TomestoneViewer.Character.Encounter;
-using TomestoneViewer.Controller;
-using TomestoneViewer.GUI.Formatters;
-using TomestoneViewer.GUI.Widgets;
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
 
 namespace TomestoneViewer.GUI.Widgets;
 
 public class Tabular : IWidget
 {
-    // Properties
-    public required string Name { private get; init; }
-    private int ColumnCount { get; init; }
-
-    public required ITabularData Data { private get; init; }
-
-    public Vector2? CellPadding { private get; init; }
-    public Vector2? ItemSpacing { private get; init; }
-
-    public ImGuiTableFlags TableFlags { private get; init; } = ImGuiTableFlags.None;
-
-    // Edits
-
-    public IList<Column> Columns { get; private set; } = [];
-
-
     public Tabular(int columnCount)
     {
         this.ColumnCount = columnCount;
         for (int i = 0; i < this.ColumnCount; i++)
         {
-            Columns.Add(new Column());
+            this.Columns.Add(new Column());
         }
     }
+
+    public required string Name { private get; init; }
+
+    public required ITabularData Data { private get; init; }
+
+    public Vector2? CellPadding { private get; init; }
+
+    public Vector2? ItemSpacing { private get; init; }
+
+    public ImGuiTableFlags TableFlags { private get; init; } = ImGuiTableFlags.None;
+
+    public IList<Column> Columns { get; private set; } = [];
+
+    private int ColumnCount { get; init; }
 
     public Vector2 Draw()
     {
@@ -87,7 +70,6 @@ public class Tabular : IWidget
                     Util.ConditionalSeparator(hasSeparator);
                     this.Data.Get(row, column)?.Draw();
                 }
-
             }
 
             ImGui.EndTable();
@@ -106,62 +88,22 @@ public class Tabular : IWidget
         return ImGui.GetItemRectSize();
     }
 
-    private float GetColumnWidth(int column, int rowsCount)
-    {
-        float maxWidth = 0;
-        for (var i = 0; i < rowsCount; i++)
-        {
-            float? colWidth = Data.Get(i, column)?.GetMinWidth();
-            maxWidth = float.Max(maxWidth, colWidth.GetValueOrDefault(0));
-        }
-
-        return maxWidth + (ImGui.GetStyle().CellPadding.X * 2);
-    }
-
     public float GetMinWidth()
     {
         return 0;
     }
 
-    public class Column
+    private float GetColumnWidth(int column, int rowsCount)
     {
-        enum Type
+        float maxWidth = 0;
+        for (var i = 0; i < rowsCount; i++)
         {
-            Fixed, Streched
+            float? colWidth = this.Data.Get(i, column)?.GetMinWidth();
+            maxWidth = float.Max(maxWidth, colWidth.GetValueOrDefault(0));
         }
 
-        private string? name;
-        private Type? type;
-
-
-        public void SetStretch(string name)
-        {
-            this.name = name;
-            this.type = Type.Streched;
-        }
-
-        public void SetFixed(string name)
-        {
-            this.name = name;
-            this.type = Type.Fixed;
-        }
-
-        internal void Setup(Func<float> getMinWidth)
-        {
-            if (type != null && name != null)
-            {
-                if (type == Type.Fixed)
-                {
-                    ImGui.TableSetupColumn(name, ImGuiTableColumnFlags.WidthFixed, getMinWidth());
-                }
-                else if (type == Type.Streched)
-                {
-                    ImGui.TableSetupColumn(name, ImGuiTableColumnFlags.WidthStretch);
-                }
-            }
-        }
+        return maxWidth + (ImGui.GetStyle().CellPadding.X * 2);
     }
-
 
     public interface ITabularData
     {
@@ -177,6 +119,45 @@ public class Tabular : IWidget
         float? GetRowHeight(int row)
         {
             return null;
+        }
+    }
+
+    public class Column
+    {
+        private string? name;
+        private Type? type;
+
+        private enum Type
+        {
+            Fixed,
+            Streched,
+        }
+
+        public void SetStretch(string name)
+        {
+            this.name = name;
+            this.type = Type.Streched;
+        }
+
+        public void SetFixed(string name)
+        {
+            this.name = name;
+            this.type = Type.Fixed;
+        }
+
+        internal void Setup(Func<float> getMinWidth)
+        {
+            if (this.type != null && this.name != null)
+            {
+                if (this.type == Type.Fixed)
+                {
+                    ImGui.TableSetupColumn(this.name, ImGuiTableColumnFlags.WidthFixed, getMinWidth());
+                }
+                else if (this.type == Type.Streched)
+                {
+                    ImGui.TableSetupColumn(this.name, ImGuiTableColumnFlags.WidthStretch);
+                }
+            }
         }
     }
 }

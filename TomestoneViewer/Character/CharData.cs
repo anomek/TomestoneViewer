@@ -14,8 +14,6 @@ public class CharData
 
     public IEncounterDataError? GenericTomestoneError => this.loader.GenericTomestoneError;
 
-    public IEncounterDataError? GenericFFLogsError => this.loader.GenericFFLogsError;
-
     public string PlayerTrackComment => this.loader.PlayerTrackComment;
 
     public CharacterId? MainCharacterId => this.loader.MainCharacterId;

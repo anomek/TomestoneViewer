@@ -1,7 +1,7 @@
+using System.Numerics;
+
 using Dalamud.Interface;
 using Dalamud.Interface.Colors;
-using System.Numerics;
-using System.Reflection;
 
 namespace TomestoneViewer.Character;
 

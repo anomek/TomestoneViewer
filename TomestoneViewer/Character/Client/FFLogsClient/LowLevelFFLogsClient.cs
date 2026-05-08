@@ -1,8 +1,4 @@
-using FFXIVClientStructs.FFXIV.Client.System.Threading;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,59 +6,31 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 namespace TomestoneViewer.Character.Client.FFLogsClient;
 
 internal class LowLevelFFLogsClient
 {
-    internal bool CredentialsValid { get => this.accessToken.Get() != null; }
-
     private readonly HttpClient httpClient = new();
     private readonly SyncValue<string?> accessToken;
 
     internal LowLevelFFLogsClient()
     {
         this.accessToken = new(this.GetAuthToken);
-        var ignore = this.accessToken.Get();
+        _ = this.accessToken.Get();
     }
+
+    internal bool CredentialsValid { get => this.accessToken.Get() != null; }
 
     internal async Task RefreshToken()
     {
-        this.accessToken.clear();
+        this.accessToken.Clear();
         await this.accessToken.Get();
-    }
-
-    private async Task<string?> GetAuthToken()
-    {
-        try
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.fflogs.com/oauth/token");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Service.Configuration.FFLogsClientId}:{Service.Configuration.FFLogsClientSecret}")));
-            request.Content = new FormUrlEncodedContent([new("grant_type", "client_credentials")]);
-            var response = await this.httpClient.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var json = (dynamic?)JsonConvert.DeserializeObject(content);
-                var token = json?.access_token;
-                Service.PluginLog.Info($"Acq token {this.accessToken}");
-                return token;
-            }
-            else
-            {
-                Service.PluginLog.Warning($"Failed to fetch access token: {response.StatusCode}");
-                return null;
-            }
-        }
-        catch (Exception ex)
-        {
-            Service.PluginLog.Error($"Error fetching access token: {ex}");
-            return null;
-        }
     }
 
     internal async Task<ClientResponse<FFLogsClientError, dynamic?>> Call(Func<HttpRequestMessage> request, CancellationToken token)
     {
-
         int tries = 4;
         FFLogsClientError? lastError = null;
         while (tries > 0)
@@ -114,5 +82,34 @@ internal class LowLevelFFLogsClient
 
         Service.PluginLog.Error($"retries exhauseted with error: {lastError}");
         return new(lastError ?? FFLogsClientError.InternalError);
+    }
+
+    private async Task<string?> GetAuthToken()
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://www.fflogs.com/oauth/token");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Service.Configuration.FFLogsClientId}:{Service.Configuration.FFLogsClientSecret}")));
+            request.Content = new FormUrlEncodedContent([new("grant_type", "client_credentials")]);
+            var response = await this.httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var json = (dynamic?)JsonConvert.DeserializeObject(content);
+                var token = json?.access_token;
+                Service.PluginLog.Info($"Acq token {this.accessToken}");
+                return token;
+            }
+            else
+            {
+                Service.PluginLog.Warning($"Failed to fetch access token: {response.StatusCode}");
+                return null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Service.PluginLog.Error($"Error fetching access token: {ex}");
+            return null;
+        }
     }
 }

@@ -1,12 +1,7 @@
-using FFXIVClientStructs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TomestoneViewer.Character.Client.TomestoneClient;
 
 namespace TomestoneViewer.Character.Client;
+
 internal class SafeClientHandler<TError>(TError defaultError)
     where TError : IClientError
 {

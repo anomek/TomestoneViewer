@@ -1,19 +1,15 @@
+using System;
+using System.Linq;
+using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
-using Dalamud.Plugin.Services;
-using FFXIVClientStructs.FFXIV.Client.Game.Group;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
 using TomestoneViewer.Character;
 using TomestoneViewer.Character.Client.FFLogsClient;
 using TomestoneViewer.Character.Encounter;
 using TomestoneViewer.Controller;
 using TomestoneViewer.GUI.Formatters;
-using TomestoneViewer.GUI.Widgets;
 
 namespace TomestoneViewer.GUI.Main;
 
@@ -25,7 +21,7 @@ public class Table
     private readonly WindowsController mainWindowController;
 
     internal Table(WindowsController mainWindowController, LowLevelFFLogsClient lowLevelFFLogsClient)
-    { 
+    {
         this.mainWindowController = mainWindowController;
         this.partyView = new(mainWindowController);
         this.characterView = new(mainWindowController);
@@ -43,15 +39,47 @@ public class Table
             this.characterView.Draw();
         }
 
-        if (Service.Configuration.FFLogsEnabled && !lowLevelFFLogsClient.CredentialsValid)
+        if (Service.Configuration.FFLogsEnabled && !this.lowLevelFFLogsClient.CredentialsValid)
         {
             ImGui.TextColored(new Vector4(1, 0, 0, 1), "Credentials to FF Logs not set");
             ImGui.SameLine();
-            if(ImGui.Button("Fix"))
+            if (ImGui.Button("Fix"))
             {
-                mainWindowController.OpenConfig();
+                this.mainWindowController.OpenConfig();
             }
         }
+    }
+
+    private static float TomestoneStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.ProgressFont.Push();
+        size += ImGui.CalcTextSize("99%% P9").X;
+        Service.Fonts.ProgressFont.Pop();
+        return size;
+    }
+
+    private static float FFLogsNumberStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.DefaultSmaller.Push();
+        size += ImGui.CalcTextSize("999").X;
+        Service.Fonts.DefaultSmaller.Pop();
+        return size;
+    }
+
+    private static float FFLogsShashStatusWidth()
+    {
+        float size = 0;
+        Service.Fonts.DefaultSmaller.Push();
+        size += ImGui.CalcTextSize("/").X;
+        Service.Fonts.DefaultSmaller.Pop();
+        return size;
+    }
+
+    private static float FFLogsStatusWidth()
+    {
+        return (2 * FFLogsNumberStatusWidth()) + FFLogsShashStatusWidth();
     }
 
     private void DrawEncounterStatus(CharData character, Location location, Vector2 cellStart, Vector2 cellEnd, int index)
@@ -65,12 +93,10 @@ public class Table
         var tomestoneInfoRegionAvailable = TomestoneStatusWidth();
         var statingY = ImGui.GetCursorPosY();
 
-
         if (ImGui.IsMouseHoveringRect(cellStart, cellEnd))
         {
             this.DrawEncounterStatusMouseOver(character, character.EncounterData[location], location);
         }
-
 
         if (characterError != null)
         {
@@ -107,8 +133,6 @@ public class Table
             }
         }
 
-        // TODO: else
-        // if (this.renderFFLogs())
         {
             if (!encounterData.Status.Loading && (characterError != null || encounterData.Data == null || encounterData.Data.Cleared))
             {
@@ -120,7 +144,7 @@ public class Table
                 var textY = statingY + baseRowHeight - ImGui.GetTextLineHeight() + (1 * ImGuiHelpers.GlobalScale);
 
                 var ffLogsData = character.EncounterData[location].FFLogs;
-                var fflogsError = character.EncounterData[location].FFLogs.Status.Error ?? character.GenericFFLogsError;
+                var fflogsError = character.EncounterData[location].FFLogs.Status.Error;
 
                 if (fflogsError != null)
                 {
@@ -169,7 +193,7 @@ public class Table
         var clear = encounterData.Data.EncounterClear;
 
         Service.Fonts.TooltipDescription.Push();
-        ImGui.TextUnformatted("\u00AB double click to see on tomestone.gg \u00BB");
+        ImGui.TextUnformatted("« double click to see on tomestone.gg »");
         var width = ImGui.GetItemRectSize().X;
         Service.Fonts.TooltipDescription.Pop();
 
@@ -227,7 +251,6 @@ public class Table
             ImGui.PopStyleVar();
         }
 
-        // if (this.renderFFLogs.Invoke())
         {
             var ffData = data.FFLogs.Data;
             if (ffData != null && ffData.ClearsPerJob.Count > 0)
@@ -254,7 +277,6 @@ public class Table
                         job.SmallIcon.Draw();
                         ImGui.SameLine();
                         var textY = ImGui.GetCursorPosY() + job.SmallIcon.Size - ImGui.GetTextLineHeight();
-                        // DrawKillsCount(ffData.ClearsPerJob[job], textY);
                         ImGui.TableNextColumn();
                         Util.ConditionalSeparator(firstRow);
                         ImGui.SetCursorPosY(textY);
@@ -274,48 +296,14 @@ public class Table
         ImGui.EndTooltip();
     }
 
- 
-    private static float TomestoneStatusWidth()
-    {
-        float size = 0;
-        Service.Fonts.ProgressFont.Push();
-        size += ImGui.CalcTextSize("99%% P9").X;
-        Service.Fonts.ProgressFont.Pop();
-        return size;
-    }
-
-
-    private static float FFLogsNumberStatusWidth()
-    {
-        float size = 0;
-        Service.Fonts.DefaultSmaller.Push();
-        size += ImGui.CalcTextSize("999").X;
-        Service.Fonts.DefaultSmaller.Pop();
-        return size;
-    }
-
-    private static float FFLogsShashStatusWidth()
-    {
-        float size = 0;
-        Service.Fonts.DefaultSmaller.Push();
-        size += ImGui.CalcTextSize("/").X;
-        Service.Fonts.DefaultSmaller.Pop();
-        return size;
-    }
-
-    private static float FFLogsStatusWidth()
-    {
-        return (2 * FFLogsNumberStatusWidth()) + FFLogsShashStatusWidth();
-    }
-
     private float MaxStatusWidth()
     {
         float size = 0;
         size += TomestoneStatusWidth();
-        // if (this.renderFFLogs())
         {
             size += FFLogsStatusWidth();
         }
+
         size += ImGui.GetStyle().ItemSpacing.X;
         return size;
     }
