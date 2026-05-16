@@ -1,4 +1,4 @@
-# TomestoneViewer
+# ![TomestoneViewer](images/icon.png) TomestoneViewer
 
 Show your party member's or any other character prog points in ultimates and savage
 
@@ -10,8 +10,8 @@ See: https://github.com/anomek/MyDalamudPlugins
 
 Based on data available on [Tomestone.gg](https://tomestone.gg)
 
-![example image 1](res/image1.png)
-![example image 2](res/image2.png)
+![example image 1](images/image1.png)
+![example image 2](images/image2.png)
 
 ## Aknowledgements
 
