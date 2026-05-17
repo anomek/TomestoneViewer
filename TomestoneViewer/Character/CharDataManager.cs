@@ -84,23 +84,22 @@ public class CharDataManager(CharDataFactory charDataFactory)
 
     public void SetLocation(Location? location, TerritoryId? territoryId)
     {
-        if (territoryId != null && location == null)
+        if (territoryId == null && location == null)
         {
-            location ??= Location.Find(territoryId);
+            Service.PluginLog.Warning("Setting location, but none was provided");
+            return;
+        }
 
-            if (location != null)
-            {
-                this.CurrentEncounter = location;
-                Service.PluginLog.Info($"Set encounter {location.DisplayName}");
-            }
-            else
-            {
-                Service.PluginLog.Warning($"Can't set encounter to {territoryId}");
-            }
+        location ??= Location.Find(territoryId!);
+
+        if (location != null)
+        {
+            this.CurrentEncounter = location;
+            Service.PluginLog.Info($"Set encounter {location.DisplayName}");
         }
         else
         {
-            Service.PluginLog.Warning("Setting location, but none was provided");
+            Service.PluginLog.Warning($"Can't set encounter to {territoryId}");
         }
     }
 
