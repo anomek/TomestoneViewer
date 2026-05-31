@@ -52,7 +52,10 @@ public class ContextMenu(WindowsController mainWindowController, Configuration c
             case "BeginnerChatList":
             case "_PartyList":
                 return menuTargetDefault.TargetName != string.Empty
-                     && (Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == menuTargetDefault.TargetHomeWorld.RowId).IsPublic ?? false);
+                     && (Service.DataManager.GetExcelSheet<World>()?
+                            .Where(x => x.RowId == menuTargetDefault.TargetHomeWorld.RowId)
+                            .Select(x => (World?)x)
+                            .FirstOrDefault()?.IsPublic ?? false);
 
             case "BlackList":
                 return menuTargetDefault.TargetName != string.Empty;

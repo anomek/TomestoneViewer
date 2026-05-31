@@ -38,22 +38,25 @@ public class GameData
 
     private TerritoryId? FindTerritoryId(string dutyName)
     {
-        var id = Service.DataManager.GetExcelSheet<ContentFinderCondition>()!
-                  .FirstOrDefault(entry => string.Equals(
-                         entry.Name.ToString(),
-                         dutyName,
-                         StringComparison.InvariantCultureIgnoreCase))
-                   .TerritoryType.RowId;
-        return new(id);
+        var entry = Service.DataManager.GetExcelSheet<ContentFinderCondition>()?
+            .Where(entry => string.Equals(
+                entry.Name.ToString(),
+                dutyName,
+                StringComparison.InvariantCultureIgnoreCase))
+            .Select(entry => (ContentFinderCondition?)entry)
+            .FirstOrDefault();
+        return entry.HasValue ? new TerritoryId(entry.Value.TerritoryType.RowId) : null;
     }
 
     private string? FindRegion(string worldName)
     {
         var world = Service.DataManager.GetExcelSheet<World>()?
-            .FirstOrDefault(entry => string.Equals(
+            .Where(entry => string.Equals(
                             entry.Name.ToString(),
                             worldName,
-                            StringComparison.InvariantCultureIgnoreCase));
+                            StringComparison.InvariantCultureIgnoreCase))
+            .Select(entry => (World?)entry)
+            .FirstOrDefault();
         if (world is not { IsPublic: true })
         {
             return null;
@@ -71,23 +74,29 @@ public class GameData
 
     private string? FindWorldName(ushort worldId)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.RowId == worldId);
+        var world = Service.DataManager.GetExcelSheet<World>()?
+            .Where(x => x.RowId == worldId)
+            .Select(x => (World?)x)
+            .FirstOrDefault();
         if (world is not { IsPublic: true })
         {
             return null;
         }
 
-        return world.HasValue ? world.Value.Name.ToString() : null;
+        return world.Value.Name.ToString();
     }
 
     private uint? FindWorldId(string worldName)
     {
-        var world = Service.DataManager.GetExcelSheet<World>()?.FirstOrDefault(x => x.Name.ToString() == worldName);
+        var world = Service.DataManager.GetExcelSheet<World>()?
+            .Where(x => x.Name.ToString() == worldName)
+            .Select(x => (World?)x)
+            .FirstOrDefault();
         if (world is not { IsPublic: true })
         {
             return null;
         }
 
-        return world.HasValue ? world.Value.RowId : null;
+        return world.Value.RowId;
     }
 }
