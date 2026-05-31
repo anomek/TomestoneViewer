@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using NetStone;
+using NetStone.Model.Parseables.Search.Character;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using TomestoneViewer.Character.Encounter;
@@ -52,19 +53,24 @@ internal partial class WebTomestoneClient : ITomestoneClient
         Service.PluginLog.Info($"WebTomestoneClient.FetchLodestoneId {characterId}");
         try
         {
-            var response = await (await this.lodestoneClient.Get())
-                .SearchCharacter(new() { CharacterName = characterId.FullName, World = characterId.World });
-            if (response == null)
+            CharacterSearchEntry? character = null;
+            var page = 1;
+            while (character == null)
             {
-                return new(TomestoneClientError.EmptyLodestoneResponse);
-            }
+                var response = await (await this.lodestoneClient.Get())
+                    .SearchCharacter(new() { CharacterName = characterId.FullName, World = characterId.World }, page++);
+                if (response == null)
+                {
+                    return new(TomestoneClientError.EmptyLodestoneResponse);
+                }
 
-            var character = response.Results
-                .FirstOrDefault(entry => entry.Name == characterId.FullName);
+                character = response.Results
+                    .FirstOrDefault(entry => entry.Name == characterId.FullName);
 
-            if (character == null)
-            {
-                return new(TomestoneClientError.CharacterDoesNotExist);
+                if (!response.HasResults || (character == null && response.NumPages <= response.CurrentPage))
+                {
+                    return new(TomestoneClientError.CharacterDoesNotExist);
+                }
             }
 
             var idStr = (string?)character.Id;
