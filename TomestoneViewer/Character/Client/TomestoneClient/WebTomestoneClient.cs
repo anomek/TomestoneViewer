@@ -286,63 +286,6 @@ internal partial class WebTomestoneClient : ITomestoneClient
         return lastMechanic;
     }
 
-    private ClientResponse<TomestoneClientError, LodestoneId> ParseLodestoneIdResponse(HttpResponseMessage result)
-    {
-        if (result.StatusCode == System.Net.HttpStatusCode.Found)
-        {
-            var location = result.Headers.Location?.ToString();
-            if (location == null)
-            {
-                Service.PluginLog.Error($"Failed to fetch lodestoneId: location not returned in headers");
-                return new(TomestoneClientError.ServerResponseError);
-            }
-
-            var match = LocationRegex().Match(location);
-            if (match.Success)
-            {
-                var groupOne = match.Groups[1].Value;
-                if (uint.TryParse(groupOne, out var parsed))
-                {
-                    return new(new LodestoneId(parsed));
-                }
-                else
-                {
-                    Service.PluginLog.Error($"Failed to fetch lodestoneId: it's not an int {groupOne}");
-                    return new(TomestoneClientError.ServerResponseError);
-                }
-            }
-            else
-            {
-                Service.PluginLog.Error($"Failed to fetch lodestoneId: can't find id in location {location}");
-                return new(TomestoneClientError.ServerResponseError);
-            }
-        }
-        else if (result.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return new(TomestoneClientError.CharacterDoesNotExist);
-        }
-        else
-        {
-            Service.PluginLog.Error($"Failed to fetch lodestoneId: request returned status code: {result.StatusCode}");
-            return new(TomestoneClientError.ServerResponseError);
-        }
-    }
-
-    private static Func<HttpResponseMessage, T> Dispose<T>(Func<HttpResponseMessage, T> original)
-    {
-        return message =>
-        {
-            try
-            {
-                return original.Invoke(message);
-            }
-            finally
-            {
-                message.Dispose();
-            }
-        };
-    }
-
     private static DateTime? ParseDateTime(object value)
     {
         var stringValue = value?.ToString();

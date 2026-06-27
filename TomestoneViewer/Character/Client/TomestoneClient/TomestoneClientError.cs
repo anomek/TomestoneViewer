@@ -15,7 +15,7 @@ public record TomestoneClientError(string Message, IRenderableError.ErrorType Ty
     public bool CanIgnore => !this.Cachable;
 
     public static readonly TomestoneClientError CharacterDoesNotExist = new(
-        "Character does not exist", IRenderableError.ErrorType.ERROR, true);
+        "Can't find character in Lodestone", IRenderableError.ErrorType.ERROR, true);
 
     public static readonly TomestoneClientError CharacterTomestoneDisabled = new(
         "Character Tomestone is disabled", IRenderableError.ErrorType.FEATURE_DISABLED, true);
@@ -24,7 +24,7 @@ public record TomestoneClientError(string Message, IRenderableError.ErrorType Ty
         "Character log activity disabled (on Tomestone or FFLogs)", IRenderableError.ErrorType.FEATURE_DISABLED, true);
 
     public static readonly TomestoneClientError InertiaVersionNotFound = new(
-        "Tomestone client error (intertia version not found)", IRenderableError.ErrorType.ERROR, false);
+        "Tomestone client error (inertia version not found)", IRenderableError.ErrorType.ERROR, false);
 
     public static readonly TomestoneClientError ServerResponseError = new(
         "Tomestone client error (unexpected response from server)", IRenderableError.ErrorType.ERROR, false);
@@ -36,7 +36,7 @@ public record TomestoneClientError(string Message, IRenderableError.ErrorType Ty
         "Tomestone client error (unknown internal error)", IRenderableError.ErrorType.ERROR, false);
 
     public static readonly TomestoneClientError RequestCancelled = new(
-        "Requst to server canceled (you should never see this)", IRenderableError.ErrorType.ERROR, false);
+        "Reqeust to server canceled (you should never see this)", IRenderableError.ErrorType.ERROR, false);
 
     public static readonly TomestoneClientError EmptyLodestoneResponse = new(
         "Lodestone returned empty response", IRenderableError.ErrorType.ERROR, false);
